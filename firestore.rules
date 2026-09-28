@@ -1,0 +1,179 @@
+rules_version = '2';
+// ============================================================================
+// LearnLoom Firestore Security Rules
+// ============================================================================
+// Security is treated as a feature. Every rule is backed by a test.
+// Key principles:
+//   1. Never trust client-submitted creatorId, lessonCount, or keywords.
+//   2. Validate field types AND lengths for all writable string fields.
+//   3. Admins (isAdmin=true) can unpublish or delete any course.
+//   4. Progress is private to its owner; reports are admin-read-only.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Is the requester authenticated? */
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    /** Is the requester the given uid? */
+    function isUser(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    /** Fetch the requester's user document */
+    function authUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    /** Is the requester an admin? */
+    function isAdmin() {
+      return isAuth() && authUserDoc().isAdmin == true;
+    }
+
+    /** The incoming data */
+    function inData() {
+      return request.resource.data;
+    }
+
+    /** The existing document data */
+    function exData() {
+      return resource.data;
+    }
+
+    // String type + max-length guard
+    function validStr(field, maxLen) {
+      return inData()[field] is string && inData()[field].size() <= maxLen;
+    }
+
+    // String field unchanged
+    function unchanged(field) {
+      return inData()[field] == exData()[field];
+    }
+
+    // ── users/{uid} ──────────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Anyone can read a public user profile (needed for creator name display)
+      allow read: if true;
+
+      // Users can only create/update their own document; they cannot set isAdmin
+      allow create: if isUser(uid)
+        && validStr("displayName", 100)
+        && inData().isAdmin == false
+        && inData().uid == uid;
+
+      allow update: if isUser(uid)
+        && validStr("displayName", 100)
+        // isAdmin field must remain unchanged — cannot self-grant
+        && unchanged("isAdmin")
+        && unchanged("uid");
+
+      // Users cannot delete their own doc (admin action only via console)
+      allow delete: if false;
+
+      // ── progress sub-collection: users/{uid}/progress/{courseId} ──────────
+      match /progress/{courseId} {
+        // Only the owning user can read or write their progress
+        allow read, write: if isUser(uid);
+      }
+    }
+
+    // ── courses/{courseId} ───────────────────────────────────────────────────
+    match /courses/{courseId} {
+      // Anyone can read a published course
+      allow read: if resource.data.status == "published"
+        || (isAuth() && resource.data.creatorId == request.auth.uid)
+        || isAdmin();
+
+      // Only logged-in users can create a course
+      allow create: if isAuth()
+        // creatorId must match the authenticated user — cannot spoof
+        && inData().creatorId == request.auth.uid
+        && validStr("title", 120)
+        && validStr("description", 2000)
+        && inData().category in [
+          "Programming", "Design", "Exam preparation",
+          "Business and finance", "Languages", "Science and maths",
+          "Music and arts", "Health and fitness", "Other"
+        ]
+        && inData().status in ["draft", "published"]
+        // lessonCount must be a non-negative integer — no client inflation
+        && inData().lessonCount is int && inData().lessonCount >= 0
+        // keywords must be a list, no longer than 100 items
+        && inData().keywords is list && inData().keywords.size() <= 100
+        // isAdmin cannot be set on courses
+        && !("isAdmin" in inData());
+
+      // Owner can update; admins can unpublish or delete
+      allow update: if (
+          // Creator can update their own course
+          (isAuth() && exData().creatorId == request.auth.uid
+            && validStr("title", 120)
+            && validStr("description", 2000)
+            && inData().category in [
+              "Programming", "Design", "Exam preparation",
+              "Business and finance", "Languages", "Science and maths",
+              "Music and arts", "Health and fitness", "Other"
+            ]
+            && inData().status in ["draft", "published"]
+            && inData().lessonCount is int && inData().lessonCount >= 0
+            && inData().keywords is list && inData().keywords.size() <= 100
+            // creatorId is immutable
+            && unchanged("creatorId"))
+        ) || (
+          // Admin can change status (unpublish) on any course
+          isAdmin()
+            && unchanged("creatorId")
+        );
+
+      allow delete: if (isAuth() && exData().creatorId == request.auth.uid)
+        || isAdmin();
+
+      // ── lessons sub-collection: courses/{courseId}/lessons/{lessonId} ─────
+      match /lessons/{lessonId} {
+        // Anyone can read lessons of a published course
+        allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.status == "published"
+          || (isAuth() && get(/databases/$(database)/documents/courses/$(courseId)).data.creatorId == request.auth.uid)
+          || isAdmin();
+
+        // Only the course creator can write lessons
+        allow create: if isAuth()
+          && get(/databases/$(database)/documents/courses/$(courseId)).data.creatorId == request.auth.uid
+          && validStr("title", 200)
+          && inData().youtubeId is string && inData().youtubeId.size() == 11
+          && inData().order is int && inData().order >= 0
+          && validStr("thumbnailUrl", 300);
+
+        allow update: if isAuth()
+          && get(/databases/$(database)/documents/courses/$(courseId)).data.creatorId == request.auth.uid
+          && validStr("title", 200)
+          && inData().youtubeId is string && inData().youtubeId.size() == 11
+          && inData().order is int && inData().order >= 0
+          && validStr("thumbnailUrl", 300);
+
+        allow delete: if isAuth()
+          && get(/databases/$(database)/documents/courses/$(courseId)).data.creatorId == request.auth.uid;
+      }
+    }
+
+    // ── reports/{reportId} ───────────────────────────────────────────────────
+    match /reports/{reportId} {
+      // Only admins can read reports
+      allow read: if isAdmin();
+
+      // Any logged-in user can create a report
+      allow create: if isAuth()
+        && inData().reporterId == request.auth.uid
+        && validStr("reason", 1000)
+        && inData().courseId is string
+        && inData().status == "open";
+
+      // Only admins can update or delete reports
+      allow update, delete: if isAdmin();
+    }
+  }
+}

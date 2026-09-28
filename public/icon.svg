@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Rounded squircle clipping / filter -->
+    <linearGradient id="tealBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E" />
+      <stop offset="100%" stop-color="#0D6B63" />
+    </linearGradient>
+    <linearGradient id="cyanPill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3AE2C7" />
+      <stop offset="100%" stop-color="#2ED2B9" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background squircle -->
+  <rect x="4" y="4" width="120" height="120" rx="34" fill="url(#tealBg)" />
+
+  <!-- Base layer: Vertical White Pillars (Y: 28 to 100, X: 42 and 72, width: 14) -->
+  <!-- Left vertical pillar -->
+  <rect x="41" y="28" width="14" height="72" rx="7" fill="#FFFFFF" />
+  <!-- Right vertical pillar -->
+  <rect x="73" y="28" width="14" height="72" rx="7" fill="#FFFFFF" />
+
+  <!-- Base layer: Horizontal Cyan Bars (X: 20 to 108, Y: 46 and 74, height: 14) -->
+  <!-- Top horizontal cyan bar -->
+  <rect x="20" y="45" width="88" height="14" rx="7" fill="url(#cyanPill)" />
+  <!-- Bottom horizontal cyan bar -->
+  <rect x="20" y="75" width="88" height="14" rx="7" fill="url(#cyanPill)" />
+
+  <!-- Weave Overlays for Alternating Interlace:
+       Top-Left: Cyan OVER White (already drawn over)
+       Top-Right: White OVER Cyan -> redraw intersection of Right pillar
+       Bottom-Left: White OVER Cyan -> redraw intersection of Left pillar
+       Bottom-Right: Cyan OVER White (already drawn over)
+  -->
+  <!-- Top-Right: White over Cyan -->
+  <rect x="73" y="43" width="14" height="18" fill="#FFFFFF" />
+
+  <!-- Bottom-Left: White over Cyan -->
+  <rect x="41" y="73" width="14" height="18" fill="#FFFFFF" />
+</svg>

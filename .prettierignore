@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+coverage
+.firebase
+emulator-data
+*.log
+.env
+.env.local
+.env.production

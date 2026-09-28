@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tealBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E" />
+      <stop offset="100%" stop-color="#0D6B63" />
+    </linearGradient>
+    <linearGradient id="cyanPill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3AE2C7" />
+      <stop offset="100%" stop-color="#2ED2B9" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon group at x=10, y=10, 100x100 -->
+  <g transform="translate(10, 10) scale(0.78125)">
+    <!-- Squircle (128x128 in scale) -->
+    <rect x="4" y="4" width="120" height="120" rx="34" fill="url(#tealBg)" />
+    <!-- Left vertical pillar -->
+    <rect x="41" y="28" width="14" height="72" rx="7" fill="#FFFFFF" />
+    <!-- Right vertical pillar -->
+    <rect x="73" y="28" width="14" height="72" rx="7" fill="#FFFFFF" />
+    <!-- Top horizontal cyan bar -->
+    <rect x="20" y="45" width="88" height="14" rx="7" fill="url(#cyanPill)" />
+    <!-- Bottom horizontal cyan bar -->
+    <rect x="20" y="75" width="88" height="14" rx="7" fill="url(#cyanPill)" />
+    <!-- Weave overlays -->
+    <rect x="73" y="43" width="14" height="18" fill="#FFFFFF" />
+    <rect x="41" y="73" width="14" height="18" fill="#FFFFFF" />
+  </g>
+
+  <!-- Wordmark Text -->
+  <text x="125" y="68" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#0F172A">Learn</tspan><tspan fill="#0D9488">loom</tspan>
+  </text>
+  <text x="126" y="94" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="500" fill="#64748B" letter-spacing="0.2">
+    Weave videos into courses
+  </text>
+</svg>
