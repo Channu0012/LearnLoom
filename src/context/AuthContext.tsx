@@ -143,8 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Google Sign-In is not enabled yet in your Firebase Console. In Firebase Console > Authentication > Sign-in method, click Google and Enable it."
         );
       } else if (fbErr?.code === "auth/unauthorized-domain") {
+        const host = typeof window !== "undefined" ? window.location.hostname : "this domain";
         setAuthError(
-          "Domain not authorized. In Firebase Console > Authentication > Settings > Authorized domains, ensure 'localhost' is listed."
+          `Domain not authorized (${host}). Please ensure '${host}' is listed in Firebase Console > Authentication > Settings > Authorized domains.`
         );
       } else {
         setAuthError(

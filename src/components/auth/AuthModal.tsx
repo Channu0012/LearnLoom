@@ -129,8 +129,8 @@ export function AuthModal() {
             className="font-heading font-extrabold text-2xl text-foreground"
           >
             {authModalMode === "signin"
-              ? "Welcome back to Learnloom"
-              : "Start Learning on Learnloom"}
+              ? "Welcome back to LearnLoom"
+              : "Start Learning on LearnLoom"}
           </h2>
           <p className="font-body text-xs sm:text-sm text-muted-foreground mt-1">
             {authModalMode === "signin"
