@@ -2,6 +2,12 @@
 
 > **Weave YouTube videos into distraction-free, structured courses.**
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-learnloom--zeta.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://learnloom-zeta.vercel.app)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+🌐 **Live Application**: [https://learnloom-zeta.vercel.app](https://learnloom-zeta.vercel.app)
+
 LearnLoom is a modern, open learning platform that organizes scattered YouTube videos and playlists into focused, distraction-free courses. Learn at your own pace without algorithmic rabbit holes, intrusive sidebar recommendations, or comment distractions.
 
 ---
@@ -9,28 +15,33 @@ LearnLoom is a modern, open learning platform that organizes scattered YouTube v
 ## 🌟 Key Features
 
 ### ⚡ Quick Watch (One-Time Distraction-Free Player)
+
 - **Zero data stored**: Paste any YouTube link (video, playlist, or shorts) and watch immediately.
 - **Pure privacy**: No login required, no tracking, and zero database entries stored.
 - **Theatre mode & Cinema lighting**: Immersive distraction-free player with focus dimming.
 - **Private browser scratchpad**: Take study notes saved locally in your browser session only.
 
 ### 🎬 Universal Coursera-Grade Player & Real Video Tracking
+
 - **Ad-free & Distraction-Free**: Clean player via `youtube-nocookie.com` with zero algorithmic sidebar clutter.
 - **100% Real Video Completion Tracking**: Automatically detects when a video ends via the YouTube Player API.
 - **⏱️ 3-Second Auto-Play Next Video Countdown**: When a video completes in a course playlist, an animated 3-second countdown automatically queues and starts the next lesson (with immediate "Play Now" or "Cancel" options).
 - **Big-Screen & Fullscreen Toggle**: Optimized for focused desktop and tablet viewing.
 
 ### 📚 Structured Curriculum & Infinite Scalability
+
 - **10 Curated Categories**: Programming, Design, Business & Finance, Languages, Science & Maths, Exam Prep, Music & Arts, Health & Fitness, Movies, and Other.
 - **Numbered Pagination**: Supports extensive catalogs with millions of videos and courses through fast, paginated chunk loading.
 - **Syllabus Navigator**: 10-lesson paginated chapter drawer with video thumbnails, lesson status checkmarks, and page-jump controls.
 
 ### 🎓 My Learning Portal
+
 - **Organized Tabs**: Quickly toggle between **All Courses**, **In Progress**, and **Completed ✓**.
 - **Instant Resume**: Pick up right where you left off with one click.
 - **Completion Badges**: Celebrate course milestones with clear progress tracking and 100% completion status.
 
 ### 🛡️ Creator-First & Private by Design
+
 - **Original Creator Attribution**: Every view counts toward the original YouTube creator. We never re-host, download, or alter creator content.
 - **Robust Security**: Comprehensive Firestore security rules ensuring user data privacy, authorization integrity, and rate limiting.
 
