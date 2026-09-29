@@ -135,7 +135,7 @@ export function AuthModal() {
           <p className="font-body text-xs sm:text-sm text-muted-foreground mt-1">
             {authModalMode === "signin"
               ? "Sign in to track progress, save notes, and publish courses."
-              : "Create a free account to weave videos into courses & earn certificates."}
+              : "Create a free account to track lessons, take notes, and build daily streaks."}
           </p>
         </div>
 

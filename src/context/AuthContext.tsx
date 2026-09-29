@@ -27,13 +27,13 @@ interface AuthContextValue {
   isSigningIn: boolean;
   authError: string | null;
   signIn: () => Promise<void>;
-  signInWithEmail: (email: string, pass: string) => Promise<boolean>;
-  signUpWithEmail: (email: string, pass: string, displayName: string) => Promise<boolean>;
+  signInWithEmail: (_email: string, _pass: string) => Promise<boolean>;
+  signUpWithEmail: (_email: string, _pass: string, _displayName: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearAuthError: () => void;
   isAuthModalOpen: boolean;
   authModalMode: "signin" | "signup";
-  openAuthModal: (mode?: "signin" | "signup") => void;
+  openAuthModal: (_mode?: "signin" | "signup") => void;
   closeAuthModal: () => void;
 }
 

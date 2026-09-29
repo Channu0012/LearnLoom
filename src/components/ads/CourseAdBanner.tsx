@@ -59,7 +59,7 @@ export function CourseAdBanner({ category = "Tech & Education" }: CourseAdBanner
               Level up your skills in {category}
             </p>
             <p className="font-body text-xs text-muted-foreground mt-0.5">
-              Practice coding, build portfolio projects, and earn certifications with
+              Practice coding, build portfolio projects, and master in-demand skills with
               industry-standard developer tools.
             </p>
           </div>

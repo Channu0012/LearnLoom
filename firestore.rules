@@ -98,7 +98,7 @@ service cloud.firestore {
         && inData().category in [
           "Programming", "Design", "Exam preparation",
           "Business and finance", "Languages", "Science and maths",
-          "Music and arts", "Health and fitness", "Other"
+          "Music and arts", "Health and fitness", "Movies", "Other"
         ]
         && inData().status in ["draft", "published"]
         // lessonCount must be a non-negative integer — no client inflation
@@ -117,7 +117,7 @@ service cloud.firestore {
             && inData().category in [
               "Programming", "Design", "Exam preparation",
               "Business and finance", "Languages", "Science and maths",
-              "Music and arts", "Health and fitness", "Other"
+              "Music and arts", "Health and fitness", "Movies", "Other"
             ]
             && inData().status in ["draft", "published"]
             && inData().lessonCount is int && inData().lessonCount >= 0

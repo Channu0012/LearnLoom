@@ -11,13 +11,11 @@ export function CourseCard({ course }: CourseCardProps) {
     ? `https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`
     : null;
 
-  const creatorInitial = (course.creatorName || "A")[0].toUpperCase();
-
   return (
     <Link
       href={`/course/${course.id}?start=true`}
       className="clay-card block overflow-hidden group cursor-pointer bg-card active:scale-[0.98] transition-all duration-150"
-      aria-label={`${course.title} — ${course.lessonCount} lesson${course.lessonCount !== 1 ? "s" : ""}, curated by ${course.creatorName}`}
+      aria-label={`${course.title} — ${course.lessonCount} lesson${course.lessonCount !== 1 ? "s" : ""}, free course on LearnLoom`}
     >
       {/* Thumbnail Container */}
       <div className="relative aspect-video overflow-hidden rounded-t-xl bg-muted">
@@ -92,20 +90,22 @@ export function CourseCard({ course }: CourseCardProps) {
           </h3>
         </div>
 
-        {/* Creator Info & CTA */}
+        {/* Course Info & CTA */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-5 h-5 rounded-full bg-primary-100 dark:bg-primary-950/80 border border-primary-200 dark:border-primary-800 flex items-center justify-center font-heading font-bold text-[10px] text-primary-700 dark:text-primary-300 flex-shrink-0">
-              {creatorInitial}
-            </div>
-            <p className="text-xs text-muted-foreground font-body truncate">
-              {course.creatorName || "Anonymous"}
-            </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[11px] text-muted-foreground font-body">LearnLoom Course</span>
           </div>
 
           <span className="text-[11px] font-heading font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1 group-hover:text-primary-700 transition-colors">
             <span>Start Course</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="group-hover:translate-x-0.5 transition-transform">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+              className="group-hover:translate-x-0.5 transition-transform"
+            >
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </span>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+// import { StreakWidget } from "@/components/layout/StreakWidget";
 
 export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
@@ -84,8 +85,33 @@ export function Header() {
           </div>
         </Link>
 
-        {/* Desktop nav — Note: "Explore" removed per design specification */}
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-5" aria-label="Main navigation">
+          <Link
+            href="/quick-watch"
+            className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <span>Quick Watch</span>
+          </Link>
+          <Link
+            href="/explore"
+            className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors"
+          >
+            Explore
+          </Link>
           {user && (
             <>
               <Link
@@ -126,32 +152,28 @@ export function Header() {
         </nav>
 
         {/* Auth controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/quick-watch"
+            className="md:hidden p-2 rounded-xl text-foreground/80 hover:bg-muted"
+            title="Quick Watch"
+            aria-label="Quick Watch"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </Link>
           {!loading && (
             <>
               {user ? (
                 <div className="flex items-center gap-3 relative">
-                  <Link
-                    href="/create"
-                    className="btn-accent text-sm px-4 py-2 inline-flex items-center gap-1.5"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    <span>Create</span>
-                  </Link>
-
                   <button
                     id="user-menu-btn"
                     onClick={() => setMenuOpen((o) => !o)}
@@ -193,6 +215,22 @@ export function Header() {
                         )}
                       </div>
                       <hr className="border-border my-1" />
+                      <Link
+                        href="/quick-watch"
+                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Quick Watch
+                      </Link>
+                      <Link
+                        href="/create"
+                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors text-foreground"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Create Course
+                      </Link>
                       <Link
                         href="/my-courses"
                         className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"

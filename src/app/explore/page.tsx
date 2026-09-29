@@ -34,56 +34,46 @@ export default function ExplorePage() {
   const [searchTerms, setSearchTerms] = useState<string[]>([]);
   const [courses, setCourses] = useState<CourseDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const COURSES_PER_PAGE = 12;
   const [fetchError, setFetchError] = useState("");
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Fetch courses ────────────────────────────────────────────────────────
 
-  const fetchCourses = useCallback(
-    async (reset = true) => {
-      setFetchError("");
-      if (reset) {
-        setLoading(true);
-        setHasMore(false);
-      } else {
-        setLoadingMore(true);
-      }
+  const fetchCourses = useCallback(async () => {
+    setFetchError("");
+    setLoading(true);
 
-      try {
-        const q = buildQuery(selectedCategory, searchTerms);
-        const snap = await getDocs(q);
-        const fetched = snap.docs.map((d) => ({
-          ...(d.data() as CourseDoc),
-          id: d.id,
-        }));
+    try {
+      const q = buildQuery(selectedCategory, searchTerms);
+      const snap = await getDocs(q);
+      const fetched = snap.docs.map((d) => ({
+        ...(d.data() as CourseDoc),
+        id: d.id,
+      }));
 
-        // Sort by newest published or created date
-        fetched.sort((a, b) => {
-          const timeA = a.publishedAt?.toMillis?.() ?? a.createdAt?.toMillis?.() ?? 0;
-          const timeB = b.publishedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
-          return timeB - timeA;
-        });
+      // Sort by newest published or created date
+      fetched.sort((a, b) => {
+        const timeA = a.publishedAt?.toMillis?.() ?? a.createdAt?.toMillis?.() ?? 0;
+        const timeB = b.publishedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
+        return timeB - timeA;
+      });
 
-        const ranked = searchTerms.length > 0 ? rankByRelevance(fetched, searchTerms) : fetched;
+      const ranked = searchTerms.length > 0 ? rankByRelevance(fetched, searchTerms) : fetched;
 
-        setCourses(ranked);
-        setHasMore(false);
-      } catch {
-        setFetchError(
-          "Unable to load courses right now. Please check your internet connection and try again."
-        );
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [selectedCategory, searchTerms]
-  );
+      setCourses(ranked);
+    } catch {
+      setFetchError(
+        "Unable to load courses right now. Please check your internet connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategory, searchTerms]);
 
   useEffect(() => {
-    fetchCourses(true);
+    fetchCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, searchTerms]);
 
@@ -95,9 +85,21 @@ export default function ExplorePage() {
     }, 300);
   };
 
+  const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
+  const paginatedCourses = courses.slice(
+    (currentPage - 1) * COURSES_PER_PAGE,
+    currentPage * COURSES_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const el = document.getElementById("explore-heading");
+    el?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="container-page py-10 w-full overflow-x-hidden">
-      <div className="mb-8">
+      <div className="mb-8" id="explore-heading">
         <h1 className="font-heading font-extrabold text-3xl sm:text-4xl text-foreground mb-2">
           Explore Courses
         </h1>
@@ -154,7 +156,10 @@ export default function ExplorePage() {
             key={cat}
             role="tab"
             aria-selected={selectedCategory === cat}
-            onClick={() => setSelectedCategory(cat as Category | "All")}
+            onClick={() => {
+              setSelectedCategory(cat as Category | "All");
+              setCurrentPage(1);
+            }}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-xs sm:text-sm font-heading font-semibold transition-all cursor-pointer ${
               selectedCategory === cat
                 ? "bg-primary-500 text-white shadow-sm"
@@ -175,7 +180,7 @@ export default function ExplorePage() {
           <p className="text-destructive font-body text-sm mb-4">{fetchError}</p>
           <button
             type="button"
-            onClick={() => fetchCourses(true)}
+            onClick={() => fetchCourses()}
             className="btn-primary text-xs px-4 py-2"
           >
             Retry Connection
@@ -219,6 +224,7 @@ export default function ExplorePage() {
               setSearchInput("");
               setSearchTerms([]);
               setSelectedCategory("All");
+              setCurrentPage(1);
             }}
             className="btn-ghost text-xs px-4 py-2"
             type="button"
@@ -234,47 +240,66 @@ export default function ExplorePage() {
                 ? `Showing results for "${searchInput}"`
                 : `${selectedCategory === "All" ? "All" : selectedCategory} courses (${courses.length})`}
             </p>
+            {totalPages > 1 && (
+              <span className="text-xs text-muted-foreground font-heading font-semibold">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
+            {paginatedCourses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
 
-          {/* Load more */}
-          {hasMore && (
-            <div className="text-center mt-12">
-              <button
-                onClick={() => fetchCourses(false)}
-                disabled={loadingMore}
-                className="btn-ghost px-8 py-3 text-sm inline-flex items-center gap-2"
-                type="button"
-              >
-                {loadingMore ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    <span>Loading courses…</span>
-                  </>
-                ) : (
-                  <span>Load more courses</span>
-                )}
-              </button>
+          {/* Numbered Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border">
+              <p className="text-xs text-muted-foreground font-body">
+                Showing {(currentPage - 1) * COURSES_PER_PAGE + 1}–
+                {Math.min(currentPage * COURSES_PER_PAGE, courses.length)} of {courses.length}{" "}
+                courses
+              </p>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3.5 py-1.5 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                  aria-label="Previous page"
+                >
+                  ← Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-8 h-8 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
+                      currentPage === pageNum
+                        ? "bg-primary-600 text-white shadow-sm"
+                        : "border border-border text-foreground hover:bg-muted"
+                    }`}
+                    aria-label={`Page ${pageNum}`}
+                    aria-current={currentPage === pageNum ? "page" : undefined}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3.5 py-1.5 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                  aria-label="Next page"
+                >
+                  Next →
+                </button>
+              </div>
             </div>
           )}
         </>

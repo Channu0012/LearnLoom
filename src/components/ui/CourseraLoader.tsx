@@ -20,7 +20,7 @@ export function CourseraLoader({
       <div className="relative mb-6">
         {/* Outer glowing pulsing ring */}
         <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-3 border-teal-500/20 border-t-teal-600 dark:border-t-teal-400 animate-spin" />
-        
+
         {/* Inner centered brand logo */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 shadow-inner">
@@ -65,7 +65,7 @@ export function CourseraLoader({
         <span className="text-border">·</span>
         <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">
           <span>✓</span>
-          <span>Free Certificate</span>
+          <span>Habit Streaks</span>
         </span>
         <span className="text-border">·</span>
         <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">

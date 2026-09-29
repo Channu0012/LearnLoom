@@ -7,9 +7,8 @@ coverage/
 emulator-data/
 *.log
 .env
-.env.local
-.env*.local
-.env.production
+.env.*
+!.env.example
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
@@ -17,4 +16,5 @@ playwright-report/
 test-results/
 .agents/
 tsconfig.tsbuildinfo
-
+.DS_Store
+Thumbs.db

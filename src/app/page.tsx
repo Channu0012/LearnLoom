@@ -1,85 +1,4 @@
 import Link from "next/link";
-import { CourseCard } from "@/components/courses/CourseCard";
-import { getPublishedCourses } from "@/lib/firestore";
-
-export const dynamic = "force-dynamic";
-
-// This is a Server Component — fetches the latest published courses at request time
-async function LatestCourses() {
-  try {
-    const courses = await getPublishedCourses([], 6);
-    if (courses.length === 0) {
-      return (
-        <div className="clay-card p-10 text-center max-w-lg mx-auto my-6 border-2 border-border bg-card">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-          </div>
-          <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-            No courses published yet
-          </h3>
-          <p className="text-muted-foreground font-body text-sm mb-6 leading-relaxed max-w-sm mx-auto">
-            Be the very first learner to weave YouTube lessons into a free, distraction-free course.
-          </p>
-          <Link
-            href="/create"
-            className="btn-accent text-sm px-6 py-2.5 inline-flex items-center gap-2"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>Create the first course</span>
-          </Link>
-        </div>
-      );
-    }
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
-      </div>
-    );
-  } catch {
-    // Firestore may not be configured during static builds — show clean empty state
-    return (
-      <div className="clay-card p-10 text-center max-w-lg mx-auto my-6 border-2 border-border bg-card">
-        <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-          Explore our collection
-        </h3>
-        <p className="text-muted-foreground font-body text-sm mb-6">
-          Find and learn from community-built YouTube courses.
-        </p>
-        <Link href="/explore" className="btn-primary text-sm px-6 py-2.5">
-          Browse all courses
-        </Link>
-      </div>
-    );
-  }
-}
 
 export default function HomePage() {
   return (
@@ -122,10 +41,12 @@ export default function HomePage() {
             id="hero-heading"
             className="font-heading font-extrabold text-4xl sm:text-5xl lg:text-6xl text-foreground mb-6 leading-tight tracking-tight animate-slide-up"
           >
-            Weave <span className="text-primary-600 dark:text-primary-400">YouTube videos</span> into
+            Weave <span className="text-primary-600 dark:text-primary-400">YouTube videos</span>{" "}
+            into
             <br className="hidden sm:block" />
             <span className="bg-gradient-to-r from-teal-600 via-primary-500 to-amber-600 bg-clip-text text-transparent animate-gradient font-black">
-              {" "}structured courses
+              {" "}
+              structured courses
             </span>
           </h1>
 
@@ -137,30 +58,9 @@ export default function HomePage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up">
             <Link
-              href="/create"
-              id="cta-create"
-              className="btn-accent text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Create a course</span>
-            </Link>
-            <Link
               href="/explore"
               id="cta-explore"
-              className="btn-ghost text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+              className="btn-primary text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all"
             >
               <svg
                 width="20"
@@ -178,6 +78,26 @@ export default function HomePage() {
               </svg>
               <span>Explore courses</span>
             </Link>
+            <Link
+              href="/quick-watch"
+              id="cta-quick-watch"
+              className="btn-ghost text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-border hover:border-primary-500 shadow-sm"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>Quick Watch (Paste & Play)</span>
+            </Link>
           </div>
 
           {/* Transparent verified metrics */}
@@ -190,7 +110,9 @@ export default function HomePage() {
             </div>
             <div className="hidden sm:block w-px h-6 bg-border" aria-hidden="true" />
             <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl font-heading font-bold text-primary-600">9</span>
+              <span className="text-xl sm:text-2xl font-heading font-bold text-primary-600">
+                10
+              </span>
               <span>curated categories</span>
             </div>
             <div className="hidden sm:block w-px h-6 bg-border" aria-hidden="true" />
@@ -299,39 +221,361 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Latest courses ─────────────────────────────────────────────────── */}
-      <section className="py-16" aria-labelledby="latest-heading">
+      {/* ── Why LearnLoom ──────────────────────────────────────────────────── */}
+      <section className="py-16" aria-labelledby="why-heading">
         <div className="container-page">
-          <div className="flex items-center justify-between mb-8">
-            <h2
-              id="latest-heading"
-              className="font-heading font-bold text-2xl sm:text-3xl text-foreground"
-            >
-              Community Courses
-            </h2>
-            <Link
-              href="/explore"
-              className="btn-ghost text-sm px-4 py-2 inline-flex items-center gap-1.5"
-              aria-label="Browse all courses"
-            >
-              <span>See all</span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+          <h2
+            id="why-heading"
+            className="font-heading font-bold text-2xl sm:text-3xl text-center mb-4 text-foreground"
+          >
+            Why LearnLoom?
+          </h2>
+          <p className="text-center text-muted-foreground font-body text-sm sm:text-base max-w-xl mx-auto mb-12 leading-relaxed">
+            Everything you need to turn scattered YouTube tutorials into a powerful, focused
+            learning experience.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {[
+              {
+                icon: (
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0F766E"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                ),
+                title: "Distraction-Free Player",
+                desc: "Watch lessons without ads, comments, or algorithm-driven rabbit holes. Just pure, focused learning.",
+                accent:
+                  "bg-teal-50 dark:bg-teal-950/40 group-hover:bg-teal-100 dark:group-hover:bg-teal-950/60",
+              },
+              {
+                icon: (
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C2410C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                ),
+                title: "Track Your Progress",
+                desc: "Mark lessons complete, pick up where you left off, and see how far you've come across every course.",
+                accent:
+                  "bg-orange-50 dark:bg-orange-950/40 group-hover:bg-orange-100 dark:group-hover:bg-orange-950/60",
+              },
+              {
+                icon: (
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C2410C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                ),
+                title: "Community Curated",
+                desc: "Discover courses built by learners who already found the best videos — so you don't have to search again.",
+                accent:
+                  "bg-orange-50 dark:bg-orange-950/40 group-hover:bg-orange-100 dark:group-hover:bg-orange-950/60",
+              },
+              {
+                icon: (
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0F766E"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                ),
+                title: "Free & Private Forever",
+                desc: "No subscription, no tracking, no login walls. Your learning journey stays yours — open and unrestricted.",
+                accent:
+                  "bg-teal-50 dark:bg-teal-950/40 group-hover:bg-teal-100 dark:group-hover:bg-teal-950/60",
+              },
+            ].map(({ icon, title, desc, accent }) => (
+              <div
+                key={title}
+                className="clay-card p-6 bg-card hover:border-primary-400 hover:-translate-y-1 transition-all duration-300 group shadow-sm hover:shadow-md flex gap-5 items-start"
               >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </Link>
+                <div
+                  className={`w-14 h-14 rounded-2xl ${accent} flex-shrink-0 flex items-center justify-center transition-all duration-300 group-hover:scale-110`}
+                >
+                  {icon}
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-foreground mb-1.5 group-hover:text-primary-600 transition-colors">
+                    {title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-body leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Platform Showcase ─────────────────────────────────────────── */}
+      <section className="py-16 bg-card border-y border-border" aria-labelledby="platform-heading">
+        <div className="container-page">
+          <div className="text-center mb-12">
+            <h2
+              id="platform-heading"
+              className="font-heading font-extrabold text-2xl sm:text-3xl text-foreground mb-4"
+            >
+              Built for Serious Learners
+            </h2>
+            <p className="font-body text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              LearnLoom isn&apos;t just another playlist manager. It&apos;s a full-featured learning
+              platform designed to help you master new skills — with the polish of apps you already
+              love.
+            </p>
           </div>
 
-          <LatestCourses />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {[
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0F766E"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                ),
+                title: "Theatre-Mode Player",
+                desc: "Immersive video player with autoplay, fullscreen, and zero distractions — no ads, no comments, no sidebar.",
+                gradient: "from-teal-500/10 to-teal-500/5",
+              },
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C2410C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                ),
+                title: "Structured Curriculum",
+                desc: "Every course has a clear syllabus with chapters, progress tracking, and a visual completion bar.",
+                gradient: "from-orange-500/10 to-orange-500/5",
+              },
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0F766E"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                ),
+                title: "10 Curated Categories",
+                desc: "From Programming to Movies, Science to Music — find or create courses in the category that matches your passion.",
+                gradient: "from-teal-500/10 to-teal-500/5",
+              },
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C2410C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                ),
+                title: "Daily Learning Streaks",
+                desc: "Build permanent learning habits with daily streak tracking and XP rewards for every lesson completed.",
+                gradient: "from-orange-500/10 to-orange-500/5",
+              },
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0F766E"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                ),
+                title: "Private & Secure",
+                desc: "No tracking, no data selling, no login walls for watching. Your learning stays completely private.",
+                gradient: "from-teal-500/10 to-teal-500/5",
+              },
+              {
+                icon: (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C2410C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                ),
+                title: "Creator-First Platform",
+                desc: "Every view counts for the original YouTube creator. We never download, re-host, or monetise their work.",
+                gradient: "from-orange-500/10 to-orange-500/5",
+              },
+            ].map(({ icon, title, desc, gradient }) => (
+              <div
+                key={title}
+                className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} border border-border/50 hover:border-primary-300 hover:-translate-y-0.5 transition-all duration-300 group`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-card border border-border flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                  {icon}
+                </div>
+                <h3 className="font-heading font-bold text-sm text-foreground mb-1 group-hover:text-primary-600 transition-colors">
+                  {title}
+                </h3>
+                <p className="text-xs text-muted-foreground font-body leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-12">
+            <p className="text-xs text-muted-foreground font-body mb-4">
+              Join thousands of learners building their skills the distraction-free way.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/explore"
+                className="btn-primary text-sm px-8 py-3 inline-flex items-center gap-2 shadow-md"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                Browse All Courses
+              </Link>
+              <Link
+                href="/quick-watch"
+                className="btn-ghost text-sm px-8 py-3 inline-flex items-center gap-2 border border-border"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Quick Watch
+              </Link>
+              <Link
+                href="/create"
+                className="btn-ghost text-sm px-8 py-3 inline-flex items-center gap-2"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Your Own
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

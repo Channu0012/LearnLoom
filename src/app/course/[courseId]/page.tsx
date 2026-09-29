@@ -44,11 +44,10 @@ export async function generateMetadata({
   return {
     title: course.title,
     description:
-      course.description ||
-      `Learn ${course.title} — a free course by ${course.creatorName} on LearnLoom.`,
+      course.description || `Learn ${course.title} — a free curated course on LearnLoom.`,
     openGraph: {
       title: course.title,
-      description: course.description || `${course.lessonCount} lessons by ${course.creatorName}`,
+      description: course.description || `${course.lessonCount} video lessons free on LearnLoom`,
       images: thumb ? [{ url: thumb, width: 480, height: 360 }] : [],
       type: "website",
     },
@@ -79,8 +78,8 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           sameAs: "https://learnloom.app",
         },
         instructor: {
-          "@type": "Person",
-          name: data.course.creatorName,
+          "@type": "Organization",
+          name: "LearnLoom Community",
         },
         hasCourseInstance: {
           "@type": "CourseInstance",

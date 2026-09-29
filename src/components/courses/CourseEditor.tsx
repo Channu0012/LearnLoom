@@ -12,6 +12,7 @@ import {
   CATEGORIES,
   LIMITS,
   extractYouTubeId,
+  extractYouTubePlaylistId,
   youtubeThumbnail,
   type Category,
 } from "@/lib/constants";
@@ -164,8 +165,15 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   const [fetchingVideo, setFetchingVideo] = useState(false);
   const [urlError, setUrlError] = useState("");
 
-  // Bulk import state
-  const [bulkMode, setBulkMode] = useState(false);
+  // Import mode state: 'single' | 'playlist' | 'batch'
+  const [importMode, setImportMode] = useState<"single" | "playlist" | "batch">("playlist");
+
+  // Playlist import state
+  const [playlistInput, setPlaylistInput] = useState("");
+  const [playlistImporting, setPlaylistImporting] = useState(false);
+  const [playlistSuccessMsg, setPlaylistSuccessMsg] = useState("");
+
+  // Bulk URL import state
   const [bulkInput, setBulkInput] = useState("");
   const [bulkImporting, setBulkImporting] = useState(false);
   const [bulkProgress, setBulkProgress] = useState("");
@@ -255,6 +263,69 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     }
   }, [urlInput]);
 
+  // ── 1-Click Import Full YouTube Playlist ────────────────────────────────
+  const handleImportPlaylist = useCallback(async () => {
+    setUrlError("");
+    setPlaylistSuccessMsg("");
+    const trimmed = playlistInput.trim();
+    if (!trimmed) {
+      setUrlError("Please paste a YouTube playlist link or playlist ID.");
+      return;
+    }
+
+    const playlistId = extractYouTubePlaylistId(trimmed);
+    if (!playlistId) {
+      setUrlError(
+        "Invalid YouTube playlist link. Make sure the URL contains 'list=...' or is a valid playlist ID."
+      );
+      return;
+    }
+
+    setPlaylistImporting(true);
+    try {
+      const res = await fetch(`/api/youtube/playlist?url=${encodeURIComponent(trimmed)}`);
+      const data = (await res.json()) as {
+        title?: string;
+        videos?: { videoId: string; title: string; thumbnailUrl: string }[];
+        error?: string;
+      };
+
+      if (!res.ok || data.error) {
+        setUrlError(data.error || "Failed to load playlist. Please ensure it is public.");
+        return;
+      }
+
+      if (!data.videos || data.videos.length === 0) {
+        setUrlError("No videos found in this playlist.");
+        return;
+      }
+
+      // Auto-populate course title if empty
+      if (!title.trim() && data.title) {
+        setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
+      }
+
+      const newLessons: LessonInput[] = data.videos.map((v, index) => ({
+        tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+        youtubeId: v.videoId,
+        title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
+        thumbnailUrl: v.thumbnailUrl || youtubeThumbnail(v.videoId),
+      }));
+
+      setLessons((prev) => [...prev, ...newLessons]);
+      setPlaylistSuccessMsg(
+        `🎉 Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
+      );
+      setPlaylistInput("");
+    } catch {
+      setUrlError(
+        "Connection error while importing playlist. Please check your network and try again."
+      );
+    } finally {
+      setPlaylistImporting(false);
+    }
+  }, [playlistInput, title]);
+
   // ── Bulk Add Videos from Multiple URLs ───────────────────────────────────
 
   const handleAddBulkVideos = useCallback(async () => {
@@ -310,7 +381,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       } else {
         setLessons((prev) => [...prev, ...validLessons]);
         setBulkInput("");
-        setBulkMode(false);
+        setImportMode("single");
         setBulkProgress("");
       }
     } catch {
@@ -655,9 +726,23 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             <div className="inline-flex p-1 bg-muted rounded-xl text-xs font-heading font-bold">
               <button
                 type="button"
-                onClick={() => setBulkMode(false)}
+                onClick={() => setImportMode("playlist")}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                  importMode === "playlist"
+                    ? "bg-primary-600 text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>⚡ 1-Click Playlist</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-accent-500 text-foreground font-extrabold uppercase">
+                  Fast
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportMode("single")}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
-                  !bulkMode
+                  importMode === "single"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
@@ -666,19 +751,119 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
               </button>
               <button
                 type="button"
-                onClick={() => setBulkMode(true)}
+                onClick={() => setImportMode("batch")}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
-                  bulkMode
+                  importMode === "batch"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Batch Import (Multi-Video)
+                Batch URLs
               </button>
             </div>
           </div>
 
-          {!bulkMode ? (
+          {/* Mode 1: 1-Click Playlist Importer */}
+          {importMode === "playlist" && (
+            <div>
+              <p className="text-xs text-muted-foreground font-body mb-3">
+                Paste any public YouTube playlist link. LearnLoom will instantly import all lessons
+                in sequence with titles and thumbnails, and auto-name your course in seconds!
+              </p>
+              <div className="flex gap-2">
+                <input
+                  id="youtube-playlist-input"
+                  type="url"
+                  value={playlistInput}
+                  onChange={(e) => {
+                    setPlaylistInput(e.target.value);
+                    setUrlError("");
+                    setPlaylistSuccessMsg("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleImportPlaylist();
+                    }
+                  }}
+                  className={`input flex-1 ${urlError ? "error" : ""}`}
+                  placeholder="Paste YouTube playlist URL (e.g. https://www.youtube.com/playlist?list=PL...)"
+                  aria-label="YouTube playlist URL"
+                />
+                <button
+                  onClick={handleImportPlaylist}
+                  disabled={playlistImporting || !playlistInput.trim()}
+                  className="btn-accent px-5 py-2.5 whitespace-nowrap flex-shrink-0 inline-flex items-center gap-2 font-heading font-bold"
+                  type="button"
+                >
+                  {playlistImporting ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8H4z"
+                        />
+                      </svg>
+                      <span>Importing Playlist…</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                      <span>Import Playlist</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {playlistSuccessMsg && (
+                <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <span className="font-semibold">{playlistSuccessMsg}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mode 2: Single Video Add */}
+          {importMode === "single" && (
             <div>
               <div className="flex gap-2">
                 <input
@@ -751,10 +936,13 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Supports standard YouTube videos, playlists, shorts, and youtu.be links.
+                Supports standard YouTube videos, shorts, and youtu.be links.
               </p>
             </div>
-          ) : (
+          )}
+
+          {/* Mode 3: Batch URLs */}
+          {importMode === "batch" && (
             <div>
               <p className="text-xs text-muted-foreground font-body mb-2">
                 Paste multiple YouTube links (one per line). We&apos;ll automatically extract titles

@@ -12,6 +12,7 @@ export const CATEGORIES = [
   "Science and maths",
   "Music and arts",
   "Health and fitness",
+  "Movies",
   "Other",
 ] as const;
 
@@ -77,6 +78,18 @@ export function extractYouTubeId(url: string): string | null {
     const match = trimmed.match(pattern);
     if (match?.[1]) return match[1];
   }
+  return null;
+}
+
+/** Extract YouTube Playlist ID from URL or raw ID */
+export function extractYouTubePlaylistId(url: string): string | null {
+  const trimmed = url.trim();
+  // Direct playlist ID format (e.g. PL..., UU..., FL..., RD...)
+  if (/^[a-zA-Z0-9_-]{10,64}$/.test(trimmed) && !trimmed.includes(".")) {
+    return trimmed;
+  }
+  const match = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+  if (match?.[1]) return match[1];
   return null;
 }
 
