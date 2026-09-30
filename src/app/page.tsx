@@ -231,12 +231,12 @@ export default function HomePage() {
       {/* ── Category Tags Quick Navigation ──────────────────────────────── */}
       <section className="py-14 sm:py-16" aria-labelledby="disciplines-title">
         <div className="container-page max-w-5xl mx-auto text-center">
-          <h3
+          <h2
             id="disciplines-title"
             className="font-heading font-bold text-xs uppercase tracking-widest text-muted-foreground mb-6"
           >
             Explore Curated Disciplines
-          </h3>
+          </h2>
 
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             {topCategories.map((cat) => (

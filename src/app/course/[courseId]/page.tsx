@@ -44,10 +44,16 @@ export async function generateMetadata({
   return {
     title: course.title,
     description: course.description || `Learn ${course.title} — a free curated course on Vidcura.`,
+    alternates: {
+      canonical: `/course/${courseId}`,
+    },
     openGraph: {
       title: course.title,
       description: course.description || `${course.lessonCount} video lessons free on Vidcura`,
-      images: thumb ? [{ url: thumb, width: 480, height: 360 }] : [],
+      url: `https://vidcura.app/course/${courseId}`,
+      images: thumb
+        ? [{ url: thumb, width: 480, height: 360, alt: `${course.title} course preview` }]
+        : [],
       type: "website",
     },
     twitter: {

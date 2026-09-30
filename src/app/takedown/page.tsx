@@ -4,7 +4,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Takedown Request",
   description:
-    "Request removal of your content from Vidcura. We respect all YouTube creators and process takedowns within 48 hours.",
+    "Request removal of your content from Vidcura. We respect all original creators and process takedowns within 48 hours.",
+  alternates: {
+    canonical: "/takedown",
+  },
 };
 
 export default function TakedownPage() {
@@ -12,7 +15,7 @@ export default function TakedownPage() {
     <div className="container-page py-12 max-w-3xl">
       <h1 className="font-heading font-extrabold text-3xl mb-2">Takedown &amp; Content Removal</h1>
       <p className="text-muted-foreground font-body text-sm mb-8">
-        For copyright holders, YouTube creators, and content removal requests
+        For copyright holders, original content creators, and content removal requests
       </p>
 
       {/* ── Creator Respect Banner ─────────────────────────────── */}

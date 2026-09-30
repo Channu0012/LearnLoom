@@ -4,7 +4,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Vidcura Terms of Service — your rights, responsibilities, YouTube creator protections, and content policies.",
+    "Vidcura Terms of Service — your rights, responsibilities, original creator protections, and content policies.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

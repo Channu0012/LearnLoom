@@ -1192,7 +1192,11 @@ function CoursePlayerContent({
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={thumbUrl}
-                            alt=""
+                            alt={
+                              lesson.title
+                                ? `${lesson.title} thumbnail`
+                                : `Lesson ${idx + 1} thumbnail`
+                            }
                             className={`w-full h-full object-cover transition-all duration-300 ${isActive ? "brightness-75" : "group-hover:brightness-90"}`}
                             loading="lazy"
                           />

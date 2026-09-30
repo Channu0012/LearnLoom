@@ -59,7 +59,7 @@ function LessonRow({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={lesson.thumbnailUrl}
-          alt=""
+          alt={lesson.title ? `${lesson.title} preview` : `Lesson ${index + 1} thumbnail`}
           className="w-16 h-10 sm:w-20 sm:h-12 object-cover rounded-lg flex-shrink-0 bg-muted border border-border/60"
         />
 

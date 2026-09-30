@@ -4,7 +4,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Vidcura Privacy Policy — how we collect, use, protect your data, and respect YouTube creators.",
+    "Vidcura Privacy Policy — how we collect, use, protect your data, and protect creator content.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {
