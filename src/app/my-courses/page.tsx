@@ -165,7 +165,7 @@ export default function MyCoursesPage() {
 
         <Link
           href="/create"
-          className="btn-accent px-5 py-3 text-sm inline-flex items-center gap-2 self-start sm:self-auto shadow-md hover:shadow-lg transition-all"
+          className="btn-accent px-5 py-3 text-sm inline-flex items-center gap-2 self-start sm:self-auto shadow-md hover:shadow-lg transition-all min-h-[44px]"
         >
           <svg
             width="18"
@@ -184,7 +184,7 @@ export default function MyCoursesPage() {
 
       {/* Analytics Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="clay-card p-5 bg-card border border-border">
+        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Total Courses
           </p>
@@ -194,7 +194,7 @@ export default function MyCoursesPage() {
           <p className="font-body text-[11px] text-muted-foreground mt-1">In your studio</p>
         </div>
 
-        <div className="clay-card p-5 bg-card border border-border">
+        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Published Live
           </p>
@@ -206,7 +206,7 @@ export default function MyCoursesPage() {
           </p>
         </div>
 
-        <div className="clay-card p-5 bg-card border border-border">
+        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Total Lessons
           </p>
@@ -216,7 +216,7 @@ export default function MyCoursesPage() {
           <p className="font-body text-[11px] text-muted-foreground mt-1">Video modules created</p>
         </div>
 
-        <div className="clay-card p-5 bg-card border border-border">
+        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Est. Content Hours
           </p>
@@ -233,11 +233,11 @@ export default function MyCoursesPage() {
       {courses.length > 0 && (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
           {/* Filter Tabs */}
-          <div className="inline-flex p-1 bg-muted rounded-xl self-start">
+          <div className="inline-flex p-1 bg-muted rounded-xl self-start max-w-full overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-lg font-heading font-bold text-xs transition-all ${
+              className={`px-4 py-2 min-h-[44px] inline-flex items-center justify-center rounded-lg font-heading font-bold text-xs transition-all ${
                 filter === "all"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -248,7 +248,7 @@ export default function MyCoursesPage() {
             <button
               type="button"
               onClick={() => setFilter("published")}
-              className={`px-4 py-2 rounded-lg font-heading font-bold text-xs transition-all ${
+              className={`px-4 py-2 min-h-[44px] inline-flex items-center justify-center rounded-lg font-heading font-bold text-xs transition-all ${
                 filter === "published"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -259,7 +259,7 @@ export default function MyCoursesPage() {
             <button
               type="button"
               onClick={() => setFilter("draft")}
-              className={`px-4 py-2 rounded-lg font-heading font-bold text-xs transition-all ${
+              className={`px-4 py-2 min-h-[44px] inline-flex items-center justify-center rounded-lg font-heading font-bold text-xs transition-all ${
                 filter === "draft"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -288,7 +288,7 @@ export default function MyCoursesPage() {
               placeholder="Search your courses…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-border bg-card text-foreground font-body text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-foreground font-body text-base sm:text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function MyCoursesPage() {
           </p>
           <Link
             href="/create"
-            className="btn-accent px-6 py-3 text-sm inline-flex items-center gap-2"
+            className="btn-accent px-6 py-3 text-sm inline-flex items-center gap-2 min-h-[48px]"
           >
             <svg
               width="18"
@@ -430,7 +430,7 @@ export default function MyCoursesPage() {
                 {course.status === "published" && (
                   <Link
                     href={`/course/${course.id}`}
-                    className="btn-primary text-xs px-3.5 py-2 inline-flex items-center gap-1.5"
+                    className="btn-primary text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[44px]"
                     aria-label={`View live ${course.title}`}
                   >
                     <svg
@@ -450,7 +450,7 @@ export default function MyCoursesPage() {
 
                 <Link
                   href={`/edit/${course.id}`}
-                  className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center gap-1.5"
+                  className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[44px]"
                   aria-label={`Edit ${course.title}`}
                 >
                   <svg
@@ -471,7 +471,7 @@ export default function MyCoursesPage() {
                   <button
                     type="button"
                     onClick={() => handleCopyLink(course.id)}
-                    className="btn-ghost text-xs px-3 py-2 text-muted-foreground hover:text-foreground"
+                    className="btn-ghost text-xs px-3 py-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                     title="Copy direct share link"
                     aria-label="Copy course link"
                   >
@@ -496,7 +496,7 @@ export default function MyCoursesPage() {
                 <button
                   type="button"
                   onClick={() => setCourseToDelete(course)}
-                  className="btn-destructive text-xs px-3 py-2 inline-flex items-center gap-1.5 ml-auto sm:ml-0"
+                  className="btn-destructive text-xs px-3 py-2 inline-flex items-center gap-1.5 ml-auto sm:ml-0 min-h-[44px]"
                   aria-label={`Delete ${course.title}`}
                 >
                   <svg
@@ -526,7 +526,7 @@ export default function MyCoursesPage() {
           aria-modal="true"
           aria-labelledby="delete-dialog-title"
         >
-          <div className="w-full max-w-md bg-card border-2 border-destructive/40 rounded-2xl p-6 sm:p-8 shadow-2xl animate-scale-in">
+          <div className="w-full max-w-md bg-card border-2 border-destructive/40 rounded-2xl p-6 sm:p-8 shadow-2xl animate-scale-in max-h-[90dvh] overflow-y-auto">
             <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4">
               <svg
                 width="24"
@@ -572,7 +572,7 @@ export default function MyCoursesPage() {
                 type="button"
                 onClick={() => setCourseToDelete(null)}
                 disabled={isDeleting}
-                className="btn-ghost flex-1 py-2.5 text-sm"
+                className="btn-ghost flex-1 py-2.5 text-sm min-h-[44px] flex items-center justify-center"
               >
                 Keep Course
               </button>
@@ -580,7 +580,7 @@ export default function MyCoursesPage() {
                 type="button"
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className="btn-destructive flex-1 py-2.5 text-sm inline-flex items-center justify-center gap-2"
+                className="btn-destructive flex-1 py-2.5 text-sm min-h-[44px] inline-flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <>

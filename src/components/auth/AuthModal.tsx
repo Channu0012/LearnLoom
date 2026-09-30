@@ -82,12 +82,12 @@ export function AuthModal() {
         if (e.target === e.currentTarget) closeAuthModal();
       }}
     >
-      <div className="relative w-full max-w-md bg-card border-2 border-border rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-8 animate-scale-in">
+      <div className="relative w-full max-w-md bg-card border-2 border-border rounded-2xl shadow-2xl overflow-y-auto max-h-[90dvh] p-6 sm:p-8 animate-scale-in">
         {/* Close Button */}
         <button
           type="button"
           onClick={closeAuthModal}
-          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted transition-colors"
+          className="absolute top-3 right-3 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted transition-colors"
           aria-label="Close modal"
         >
           <svg
@@ -144,7 +144,7 @@ export function AuthModal() {
           <button
             type="button"
             onClick={() => openAuthModal("signin")}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-lg transition-all ${
               authModalMode === "signin"
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -155,7 +155,7 @@ export function AuthModal() {
           <button
             type="button"
             onClick={() => openAuthModal("signup")}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-lg transition-all ${
               authModalMode === "signup"
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -194,7 +194,7 @@ export function AuthModal() {
           type="button"
           onClick={signIn}
           disabled={isSigningIn}
-          className="w-full btn-ghost py-3 text-sm flex items-center justify-center gap-3 mb-4 border-2 hover:bg-muted font-heading font-bold transition-transform active:scale-[0.99]"
+          className="w-full btn-ghost py-3 min-h-[48px] text-sm flex items-center justify-center gap-3 mb-4 border-2 hover:bg-muted font-heading font-bold transition-transform active:scale-[0.99]"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -244,7 +244,7 @@ export function AuthModal() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={60}
-                className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground font-body text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
             </div>
           )}
@@ -264,7 +264,7 @@ export function AuthModal() {
               placeholder="you@domain.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground font-body text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -291,12 +291,12 @@ export function AuthModal() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-border bg-background text-foreground font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-border bg-background text-foreground font-body text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] flex items-center justify-center text-muted-foreground hover:text-foreground"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -331,7 +331,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={isSigningIn}
-            className="w-full btn-primary py-3 text-sm mt-2 flex items-center justify-center gap-2"
+            className="w-full btn-primary py-3 min-h-[48px] text-sm mt-2 flex items-center justify-center gap-2"
           >
             {isSigningIn ? (
               <>

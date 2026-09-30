@@ -582,7 +582,7 @@ function CoursePlayerContent({
 
       {/* Coursera-style Top Breadcrumb & Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-border">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <Link
               href="/explore"
@@ -595,10 +595,10 @@ function CoursePlayerContent({
               {course.category}
             </span>
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-foreground truncate">
+          <h1 className="font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl text-foreground break-words line-clamp-2 sm:line-clamp-none">
             {course.title}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground font-body mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1">
             {lessons.length} video lessons · Curated Curriculum
             {isLowInternet && (
               <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
@@ -608,11 +608,11 @@ function CoursePlayerContent({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto flex-shrink-0">
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap flex-shrink-0">
           <button
             type="button"
             onClick={handleShare}
-            className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center gap-1.5"
+            className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
             aria-label="Share course"
           >
             <svg
@@ -635,7 +635,7 @@ function CoursePlayerContent({
           {isOwner && (
             <Link
               href={`/edit/${courseId}`}
-              className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center gap-1.5"
+              className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <svg
                 width="14"
@@ -656,7 +656,7 @@ function CoursePlayerContent({
             <button
               type="button"
               onClick={() => openAuthModal("signin")}
-              className="btn-primary text-xs px-3.5 py-2"
+              className="btn-primary text-xs px-3.5 py-2 min-h-[44px] inline-flex items-center cursor-pointer active:scale-95"
             >
               Sign In to Track Progress
             </button>
@@ -672,7 +672,7 @@ function CoursePlayerContent({
           {activeLesson ? (
             <div
               id="theatre-player"
-              className="relative aspect-video rounded-3xl overflow-hidden bg-black mb-4 shadow-2xl border border-border/80"
+              className="relative aspect-video rounded-2xl sm:rounded-3xl overflow-hidden bg-black mb-4 shadow-2xl border border-border/80"
             >
               {/* Top Streaming Buffer Bar */}
               {isVideoLoading && (
@@ -794,17 +794,17 @@ function CoursePlayerContent({
                     </span>
                   )}
                 </div>
-                <h2 className="font-heading font-bold text-lg sm:text-xl text-foreground line-clamp-1">
+                <h2 className="font-heading font-bold text-base sm:text-xl text-foreground line-clamp-1">
                   {activeLesson.title}
                 </h2>
               </div>
 
-              <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
                 {/* Big Screen / Fullscreen Option */}
                 <button
                   type="button"
                   onClick={handleToggleFullscreen}
-                  className="btn-ghost text-xs px-3 py-2 active:scale-95 transition-all inline-flex items-center gap-1.5"
+                  className="btn-ghost text-xs px-3 py-2 min-h-[44px] active:scale-95 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                   title="Watch on Big Screen"
                   aria-label="Watch on Big Screen"
                 >
@@ -818,82 +818,82 @@ function CoursePlayerContent({
                   >
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                   </svg>
-                  <span>Big Screen</span>
+                  <span className="hidden xs:inline sm:inline">Big Screen</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={goToPrev}
-                  disabled={activeIdx === 0 || isVideoLoading}
-                  className="btn-ghost text-xs px-3 py-2 disabled:opacity-40 active:scale-95 transition-all"
-                  aria-label="Previous lesson"
-                >
-                  ← Prev
-                </button>
+                <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+                  <button
+                    type="button"
+                    onClick={goToPrev}
+                    disabled={activeIdx === 0 || isVideoLoading}
+                    className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] disabled:opacity-40 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
+                    aria-label="Previous lesson"
+                  >
+                    ← Prev
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleMarkComplete}
-                  disabled={isMarkingComplete}
-                  className={`text-xs px-4 py-2 font-heading font-bold rounded-xl transition-all inline-flex items-center gap-1.5 active:scale-95 ${
-                    completedIds.has(activeLesson.id)
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "btn-primary"
-                  }`}
-                >
-                  {isMarkingComplete ? (
-                    <>
-                      <svg
-                        className="animate-spin w-3.5 h-3.5 text-white"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
+                  <button
+                    type="button"
+                    onClick={handleMarkComplete}
+                    disabled={isMarkingComplete}
+                    className={`text-xs px-4 py-2 min-h-[44px] font-heading font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer ${
+                      completedIds.has(activeLesson.id)
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "btn-primary"
+                    }`}
+                  >
+                    {isMarkingComplete ? (
+                      <>
+                        <svg
+                          className="animate-spin w-3.5 h-3.5 text-white"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                          />
+                        </svg>
+                        <span>Saving…</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
                           stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        />
-                      </svg>
-                      <span>Saving…</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <span>
-                        {completedIds.has(activeLesson.id)
-                          ? "Completed (Next →)"
-                          : "Mark Complete & Next"}
-                      </span>
-                    </>
-                  )}
-                </button>
+                          strokeWidth="3"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>
+                          {completedIds.has(activeLesson.id) ? "Next →" : "Complete & Next"}
+                        </span>
+                      </>
+                    )}
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={goToNext}
-                  disabled={activeIdx === lessons.length - 1 || isVideoLoading}
-                  className="btn-ghost text-xs px-3 py-2 disabled:opacity-40 active:scale-95 transition-all"
-                  aria-label="Next lesson"
-                >
-                  Next →
-                </button>
+                  <button
+                    type="button"
+                    onClick={goToNext}
+                    disabled={activeIdx === lessons.length - 1 || isVideoLoading}
+                    className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] disabled:opacity-40 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
+                    aria-label="Next lesson"
+                  >
+                    Next →
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -903,7 +903,7 @@ function CoursePlayerContent({
             <button
               type="button"
               onClick={() => handleTabChange("overview")}
-              className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "overview"
                   ? "border-primary-500 text-primary-600 dark:text-primary-400"
                   : "border-transparent text-muted-foreground hover:text-foreground active:bg-muted/50"
@@ -917,7 +917,7 @@ function CoursePlayerContent({
             <button
               type="button"
               onClick={() => handleTabChange("notes")}
-              className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "notes"
                   ? "border-primary-500 text-primary-600 dark:text-primary-400"
                   : "border-transparent text-muted-foreground hover:text-foreground active:bg-muted/50"
@@ -943,7 +943,7 @@ function CoursePlayerContent({
             <button
               type="button"
               onClick={() => handleTabChange("report")}
-              className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap text-muted-foreground hover:text-destructive active:bg-muted/50 ${
+              className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap text-muted-foreground hover:text-destructive active:bg-muted/50 cursor-pointer ${
                 activeTab === "report"
                   ? "border-destructive text-destructive"
                   : "border-transparent"
@@ -1052,8 +1052,11 @@ function CoursePlayerContent({
           )}
         </div>
 
-        {/* Right Column: Sticky Coursera Curriculum Syllabus */}
-        <aside className="w-full lg:w-96 flex-shrink-0 sticky top-20" aria-label="Course syllabus">
+        {/* Right Column: Sticky Coursera Curriculum Syllabus on desktop, natural scroll on mobile */}
+        <aside
+          className="w-full lg:w-96 flex-shrink-0 static lg:sticky lg:top-20"
+          aria-label="Course syllabus"
+        >
           <div className="clay-card bg-card border-2 border-border rounded-3xl overflow-hidden shadow-lg">
             {/* Syllabus Header with Progress or Get Started button */}
             <div className="p-5 border-b-2 border-border bg-muted/40">

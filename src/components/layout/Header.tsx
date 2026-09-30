@@ -152,10 +152,10 @@ export function Header() {
         </nav>
 
         {/* Auth controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           <Link
             href="/quick-watch"
-            className="md:hidden p-2 rounded-xl text-foreground/80 hover:bg-muted"
+            className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-foreground/80 hover:bg-muted active:scale-95 transition-all"
             title="Quick Watch"
             aria-label="Quick Watch"
           >
@@ -177,7 +177,7 @@ export function Header() {
                   <button
                     id="user-menu-btn"
                     onClick={() => setMenuOpen((o) => !o)}
-                    className="flex items-center gap-2 rounded-full cursor-pointer hover:opacity-80 transition-opacity p-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-80 transition-opacity p-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     aria-label="User menu"
                     aria-expanded={menuOpen}
                     aria-haspopup="true"
@@ -200,7 +200,7 @@ export function Header() {
                   {/* Dropdown menu */}
                   {menuOpen && (
                     <div
-                      className="absolute top-12 right-0 clay-card p-2 min-w-[200px] z-50 bg-card border border-border shadow-xl rounded-2xl animate-scale-in"
+                      className="absolute top-12 right-0 clay-card p-2 min-w-[210px] z-50 bg-card border border-border shadow-xl rounded-2xl animate-scale-in"
                       role="menu"
                       aria-labelledby="user-menu-btn"
                     >
@@ -217,7 +217,7 @@ export function Header() {
                       <hr className="border-border my-1" />
                       <Link
                         href="/quick-watch"
-                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -225,7 +225,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/create"
-                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors text-foreground"
+                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -233,7 +233,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/my-courses"
-                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -241,7 +241,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/my-learning"
-                        className="block px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -250,7 +250,7 @@ export function Header() {
                       {userDoc?.isAdmin && (
                         <Link
                           href="/admin"
-                          className="block px-3 py-2 rounded-lg text-sm font-body text-accent-500 hover:bg-muted transition-colors"
+                          className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body text-accent-500 hover:bg-muted transition-colors"
                           role="menuitem"
                           onClick={() => setMenuOpen(false)}
                         >
@@ -264,7 +264,7 @@ export function Header() {
                           signOut();
                           setMenuOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2 rounded-lg text-sm font-body text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2"
+                        className="w-full text-left min-h-[44px] px-3 py-2 rounded-lg text-sm font-body text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2"
                         role="menuitem"
                       >
                         <svg
@@ -292,7 +292,7 @@ export function Header() {
                   type="button"
                   onClick={() => openAuthModal("signin")}
                   disabled={isSigningIn}
-                  className="btn-primary text-sm px-4 py-2 inline-flex items-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 min-h-[44px] inline-flex items-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSigningIn ? (
                     <svg

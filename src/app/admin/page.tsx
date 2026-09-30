@@ -143,13 +143,13 @@ export default function AdminPage() {
               </blockquote>
 
               {report.status === "open" && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => handleUnpublish(report)}
                     disabled={
                       actionId === report.id || !report.course || report.course.status === "draft"
                     }
-                    className="btn-ghost text-sm px-3 py-1.5"
+                    className="btn-ghost text-sm px-3.5 py-2 min-h-[44px] inline-flex items-center justify-center"
                     type="button"
                   >
                     Unpublish course
@@ -157,7 +157,7 @@ export default function AdminPage() {
                   <button
                     onClick={() => handleDeleteCourse(report)}
                     disabled={actionId === report.id}
-                    className="btn-destructive text-sm px-3 py-1.5"
+                    className="btn-destructive text-sm px-3.5 py-2 min-h-[44px] inline-flex items-center justify-center"
                     type="button"
                   >
                     {actionId === report.id ? "Working…" : "Delete course"}

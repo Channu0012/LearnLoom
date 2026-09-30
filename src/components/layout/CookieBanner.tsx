@@ -34,9 +34,9 @@ export function CookieBanner() {
     <aside
       role="region"
       aria-label="Cookie consent banner"
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 animate-slide-up"
+      className="fixed bottom-20 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-md z-50 animate-slide-up"
     >
-      <div className="clay-card p-5 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl">
+      <div className="clay-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0 text-primary-600">
             <svg
@@ -69,14 +69,14 @@ export function CookieBanner() {
               <button
                 type="button"
                 onClick={() => handleChoice("accepted")}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-heading font-bold text-white bg-primary-500 hover:bg-primary-600 transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-heading font-bold text-white bg-primary-500 hover:bg-primary-600 transition-colors cursor-pointer"
               >
                 Accept All
               </button>
               <button
                 type="button"
                 onClick={() => handleChoice("essential")}
-                className="px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-muted-foreground bg-muted hover:bg-muted/80 transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-heading font-semibold text-muted-foreground bg-muted hover:bg-muted/80 transition-colors cursor-pointer"
               >
                 Essential Only
               </button>

@@ -1,13 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { CookieBanner } from "@/components/layout/CookieBanner";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { NetworkIndicator } from "@/components/layout/NetworkIndicator";
 import { AuthModal } from "@/components/auth/AuthModal";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#0F766E",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://learnloom.app"),
@@ -61,12 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="overflow-x-hidden w-full" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        {/* Theme colour for browser chrome */}
-        <meta name="theme-color" content="#0F766E" />
       </head>
       <body className="overflow-x-hidden w-full max-w-full bg-background text-foreground antialiased selection:bg-primary-500 selection:text-white">
         <AuthProvider>
@@ -76,10 +82,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
           <div className="flex flex-col min-h-dvh overflow-x-hidden w-full">
             <Header />
-            <main id="main-content" className="flex-1 overflow-x-hidden w-full">
+            <main id="main-content" className="flex-1 overflow-x-hidden w-full pb-20 md:pb-0">
               {children}
             </main>
             <Footer />
+            <MobileBottomNav />
             <CookieBanner />
             <NetworkIndicator />
           </div>

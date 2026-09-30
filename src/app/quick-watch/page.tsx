@@ -155,14 +155,14 @@ export default function QuickWatchPage() {
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=... or youtu.be/...)"
-                className="w-full bg-transparent pl-10 pr-10 py-2.5 text-xs sm:text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none"
+                className="w-full bg-transparent pl-10 pr-10 py-3 text-base sm:text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[44px]"
                 aria-label="YouTube video URL"
               />
               {urlInput && (
                 <button
                   type="button"
                   onClick={() => setUrlInput("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground p-1"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                   aria-label="Clear input"
                 >
                   ✕
@@ -174,7 +174,7 @@ export default function QuickWatchPage() {
               <button
                 type="button"
                 onClick={handlePasteClipboard}
-                className="btn-ghost text-xs px-3 py-2.5 flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5"
+                className="btn-ghost text-xs px-4 py-2.5 min-h-[44px] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5"
                 title="Paste from clipboard"
               >
                 <svg
@@ -193,7 +193,7 @@ export default function QuickWatchPage() {
 
               <button
                 type="submit"
-                className="btn-primary text-xs px-5 py-2.5 flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                className="btn-primary text-xs px-5 py-2.5 min-h-[44px] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 shadow-md active:scale-95"
               >
                 <span>Watch Now</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -214,9 +214,9 @@ export default function QuickWatchPage() {
         {activeVideoId ? (
           <div className="space-y-6">
             {/* Control Bar above Player */}
-            <div className="flex items-center justify-between gap-4 flex-wrap pb-2 border-b border-border/60">
+            <div className="flex items-center justify-between gap-3 flex-wrap pb-2 border-b border-border/60">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                 <span className="text-xs font-heading font-bold text-foreground">
                   Distraction-Free Mode Active
                 </span>
@@ -225,12 +225,12 @@ export default function QuickWatchPage() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {/* Cinema Mode Toggle */}
                 <button
                   type="button"
                   onClick={() => setCinemaMode((c) => !c)}
-                  className={`text-xs px-3 py-1.5 rounded-xl border transition-all inline-flex items-center gap-1.5 ${
+                  className={`text-xs px-3.5 py-2 min-h-[44px] rounded-xl border transition-all inline-flex items-center gap-1.5 cursor-pointer active:scale-95 ${
                     cinemaMode ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : "btn-ghost"
                   }`}
                   title="Dim background lights"
@@ -259,7 +259,7 @@ export default function QuickWatchPage() {
                 <button
                   type="button"
                   onClick={handleShareLink}
-                  className="btn-ghost text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
+                  className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Copy video link"
                 >
                   <svg
@@ -279,7 +279,7 @@ export default function QuickWatchPage() {
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="btn-ghost text-xs px-3 py-1.5"
+                  className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] cursor-pointer active:scale-95"
                   title="Close current video and paste another"
                 >
                   Close & New

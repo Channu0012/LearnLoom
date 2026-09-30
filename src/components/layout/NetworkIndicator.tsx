@@ -51,7 +51,11 @@ export function NetworkIndicator() {
   if (!isOffline && !isSlow) return null;
 
   return (
-    <div role="status" aria-live="polite" className="fixed bottom-4 left-4 z-40 animate-slide-up">
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-20 left-4 md:bottom-4 z-40 animate-slide-up"
+    >
       <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card/95 border border-border shadow-lg backdrop-blur-sm text-xs font-body text-foreground">
         <span className="relative flex h-2.5 w-2.5">
           <span

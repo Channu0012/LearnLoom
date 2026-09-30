@@ -149,7 +149,7 @@ export default function MyLearningPage() {
           <button
             type="button"
             onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer ${
               filter === "all"
                 ? "bg-primary-600 text-white shadow-sm"
                 : "bg-card border border-border text-foreground hover:bg-muted"
@@ -160,7 +160,7 @@ export default function MyLearningPage() {
           <button
             type="button"
             onClick={() => setFilter("in_progress")}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer ${
               filter === "in_progress"
                 ? "bg-primary-600 text-white shadow-sm"
                 : "bg-card border border-border text-foreground hover:bg-muted"
@@ -171,7 +171,7 @@ export default function MyLearningPage() {
           <button
             type="button"
             onClick={() => setFilter("completed")}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+            className={`px-4 py-2 min-h-[44px] rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
               filter === "completed"
                 ? "bg-emerald-600 text-white shadow-sm"
                 : "bg-card border border-border text-foreground hover:bg-muted"
@@ -207,7 +207,7 @@ export default function MyLearningPage() {
           </p>
           <Link
             href="/explore"
-            className="btn-primary px-6 py-3 text-sm inline-flex items-center gap-2"
+            className="btn-primary px-6 py-3 text-sm inline-flex items-center gap-2 min-h-[48px]"
           >
             <span>Explore Courses →</span>
           </Link>

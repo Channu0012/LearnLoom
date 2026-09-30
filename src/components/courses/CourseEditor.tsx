@@ -48,98 +48,109 @@ function LessonRow({
   onTitleChange: (_id: string, _title: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 clay-card bg-muted/40 group">
-      {/* Order number */}
-      <span className="text-xs font-heading font-bold text-muted-foreground w-5 text-center flex-shrink-0">
-        {index + 1}
-      </span>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 clay-card bg-muted/40 group">
+      <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+        {/* Order number */}
+        <span className="text-xs font-heading font-bold text-muted-foreground w-5 text-center flex-shrink-0">
+          {index + 1}
+        </span>
 
-      {/* Thumbnail */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={lesson.thumbnailUrl}
-        alt=""
-        className="w-20 h-12 object-cover rounded-lg flex-shrink-0 bg-muted border border-border/60"
-      />
+        {/* Thumbnail */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={lesson.thumbnailUrl}
+          alt=""
+          className="w-16 h-10 sm:w-20 sm:h-12 object-cover rounded-lg flex-shrink-0 bg-muted border border-border/60"
+        />
 
-      {/* Title */}
-      <input
-        type="text"
-        value={lesson.title}
-        onChange={(e) => onTitleChange(lesson.tempId, e.target.value)}
-        className="input flex-1 text-sm py-1.5"
-        maxLength={LIMITS.LESSON_TITLE}
-        aria-label={`Lesson ${index + 1} title`}
-      />
-
-      {/* Move buttons */}
-      <div className="flex flex-col gap-0.5 flex-shrink-0">
-        <button
-          onClick={() => onMoveUp(lesson.tempId)}
-          disabled={index === 0}
-          className="text-muted-foreground hover:text-primary-500 disabled:opacity-30 p-1 transition-colors cursor-pointer disabled:cursor-not-allowed"
-          aria-label={`Move lesson ${index + 1} up`}
-          type="button"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="18 15 12 9 6 15" />
-          </svg>
-        </button>
-        <button
-          onClick={() => onMoveDown(lesson.tempId)}
-          disabled={index === total - 1}
-          className="text-muted-foreground hover:text-primary-500 disabled:opacity-30 p-1 transition-colors cursor-pointer disabled:cursor-not-allowed"
-          aria-label={`Move lesson ${index + 1} down`}
-          type="button"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+        {/* Title */}
+        <input
+          type="text"
+          value={lesson.title}
+          onChange={(e) => onTitleChange(lesson.tempId, e.target.value)}
+          className="input flex-1 text-base sm:text-sm py-2 min-h-[44px]"
+          maxLength={LIMITS.LESSON_TITLE}
+          aria-label={`Lesson ${index + 1} title`}
+        />
       </div>
 
-      {/* Remove button */}
-      <button
-        onClick={() => onRemove(lesson.tempId)}
-        className="btn-destructive px-2 py-1.5 text-xs opacity-75 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-        aria-label={`Remove lesson ${index + 1}`}
-        type="button"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      {/* Action buttons (Move & Remove) */}
+      <div className="flex items-center justify-between sm:justify-end gap-1.5 self-end sm:self-auto flex-shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto">
+        <span className="text-[11px] font-body text-muted-foreground sm:hidden">
+          Lesson #{index + 1} controls
+        </span>
+
+        <div className="flex items-center gap-1">
+          <div className="flex items-center sm:flex-col gap-1">
+            <button
+              onClick={() => onMoveUp(lesson.tempId)}
+              disabled={index === 0}
+              className="min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center text-muted-foreground hover:text-primary-500 disabled:opacity-30 p-2 sm:p-1 transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-muted"
+              aria-label={`Move lesson ${index + 1} up`}
+              type="button"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+            </button>
+            <button
+              onClick={() => onMoveDown(lesson.tempId)}
+              disabled={index === total - 1}
+              className="min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center text-muted-foreground hover:text-primary-500 disabled:opacity-30 p-2 sm:p-1 transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-muted"
+              aria-label={`Move lesson ${index + 1} down`}
+              type="button"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Remove button */}
+          <button
+            onClick={() => onRemove(lesson.tempId)}
+            className="btn-destructive min-h-[44px] sm:min-h-0 px-3 py-1.5 text-xs opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 inline-flex items-center gap-1 cursor-pointer"
+            aria-label={`Remove lesson ${index + 1}`}
+            type="button"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="18" x2="18" y2="18" />
+            </svg>
+            <span className="sm:hidden text-xs">Remove</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -723,25 +734,25 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             </div>
 
             {/* Mode switch */}
-            <div className="inline-flex p-1 bg-muted rounded-xl text-xs font-heading font-bold">
+            <div className="flex flex-wrap sm:inline-flex p-1 bg-muted rounded-xl text-xs font-heading font-bold gap-1 sm:gap-0 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setImportMode("playlist")}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 flex-1 sm:flex-initial cursor-pointer ${
                   importMode === "playlist"
                     ? "bg-primary-600 text-white shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span>⚡ 1-Click Playlist</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-accent-500 text-foreground font-extrabold uppercase">
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-accent-500 text-white font-extrabold uppercase">
                   Fast
                 </span>
               </button>
               <button
                 type="button"
                 onClick={() => setImportMode("single")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-all flex-1 sm:flex-initial inline-flex items-center justify-center cursor-pointer ${
                   importMode === "single"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -752,7 +763,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
               <button
                 type="button"
                 onClick={() => setImportMode("batch")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-all flex-1 sm:flex-initial inline-flex items-center justify-center cursor-pointer ${
                   importMode === "batch"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -770,7 +781,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                 Paste any public YouTube playlist link. LearnLoom will instantly import all lessons
                 in sequence with titles and thumbnails, and auto-name your course in seconds!
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   id="youtube-playlist-input"
                   type="url"
@@ -786,14 +797,14 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                       handleImportPlaylist();
                     }
                   }}
-                  className={`input flex-1 ${urlError ? "error" : ""}`}
+                  className={`input flex-1 min-h-[48px] ${urlError ? "error" : ""}`}
                   placeholder="Paste YouTube playlist URL (e.g. https://www.youtube.com/playlist?list=PL...)"
                   aria-label="YouTube playlist URL"
                 />
                 <button
                   onClick={handleImportPlaylist}
                   disabled={playlistImporting || !playlistInput.trim()}
-                  className="btn-accent px-5 py-2.5 whitespace-nowrap flex-shrink-0 inline-flex items-center gap-2 font-heading font-bold"
+                  className="btn-accent px-5 py-3 min-h-[48px] whitespace-nowrap flex-shrink-0 inline-flex items-center justify-center gap-2 font-heading font-bold cursor-pointer active:scale-95"
                   type="button"
                 >
                   {playlistImporting ? (
@@ -865,7 +876,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           {/* Mode 2: Single Video Add */}
           {importMode === "single" && (
             <div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   id="youtube-url-input"
                   type="url"
@@ -880,7 +891,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                       handleAddVideo();
                     }
                   }}
-                  className={`input flex-1 ${urlError ? "error" : ""}`}
+                  className={`input flex-1 min-h-[48px] ${urlError ? "error" : ""}`}
                   placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=...)"
                   aria-label="YouTube video URL"
                   aria-describedby={urlError ? "url-error" : undefined}
@@ -888,7 +899,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                 <button
                   onClick={handleAddVideo}
                   disabled={fetchingVideo || !urlInput.trim()}
-                  className="btn-primary px-5 py-2.5 whitespace-nowrap flex-shrink-0 inline-flex items-center gap-1.5"
+                  className="btn-primary px-5 py-3 min-h-[48px] whitespace-nowrap flex-shrink-0 inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                   type="button"
                 >
                   {fetchingVideo ? (
@@ -1081,7 +1092,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           <button
             onClick={() => saveCourse("draft")}
             disabled={saving}
-            className="btn-ghost flex-1 py-3 text-sm"
+            className="btn-ghost flex-1 py-3.5 min-h-[48px] text-sm cursor-pointer"
             type="button"
           >
             {saving ? "Saving…" : "Save as draft"}
@@ -1089,7 +1100,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           <button
             onClick={() => saveCourse("published")}
             disabled={saving}
-            className="btn-accent flex-1 py-3 text-sm inline-flex items-center justify-center gap-2"
+            className="btn-accent flex-1 py-3.5 min-h-[48px] text-sm inline-flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             type="button"
           >
             {saving ? (

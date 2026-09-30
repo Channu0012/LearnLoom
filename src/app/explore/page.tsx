@@ -130,17 +130,17 @@ export default function ExplorePage() {
           value={searchInput}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search by title, topic, or keyword (e.g. Next.js, Python, Guitar)…"
-          className="input pl-11 text-sm sm:text-base py-3 w-full"
+          className="input pl-11 text-base sm:text-base py-3 w-full min-h-[48px]"
           aria-label="Search courses"
         />
         {searchInput && (
           <button
             type="button"
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground p-1"
+            className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-xs text-muted-foreground hover:text-foreground cursor-pointer"
             aria-label="Clear search input"
           >
-            Clear
+            ✕
           </button>
         )}
       </div>
@@ -160,10 +160,10 @@ export default function ExplorePage() {
               setSelectedCategory(cat as Category | "All");
               setCurrentPage(1);
             }}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-xs sm:text-sm font-heading font-semibold transition-all cursor-pointer ${
+            className={`flex-shrink-0 min-h-[44px] px-4 py-2.5 rounded-full text-xs sm:text-sm font-heading font-semibold transition-all cursor-pointer inline-flex items-center justify-center ${
               selectedCategory === cat
                 ? "bg-primary-500 text-white shadow-sm"
-                : "bg-card border border-border text-foreground/80 hover:border-primary-400 hover:text-foreground"
+                : "bg-card border border-border text-foreground/80 hover:border-primary-400 hover:text-foreground active:bg-muted"
             }`}
           >
             {cat}
@@ -262,12 +262,12 @@ export default function ExplorePage() {
                 courses
               </p>
 
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
                 <button
                   type="button"
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-3.5 py-1.5 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                  className="min-h-[44px] px-4 py-2 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all inline-flex items-center justify-center active:scale-95"
                   aria-label="Previous page"
                 >
                   ← Prev
@@ -278,7 +278,7 @@ export default function ExplorePage() {
                     key={pageNum}
                     type="button"
                     onClick={() => handlePageChange(pageNum)}
-                    className={`w-8 h-8 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
+                    className={`w-10 h-10 sm:w-8 sm:h-8 min-h-[44px] sm:min-h-0 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer flex items-center justify-center active:scale-95 ${
                       currentPage === pageNum
                         ? "bg-primary-600 text-white shadow-sm"
                         : "border border-border text-foreground hover:bg-muted"
@@ -294,7 +294,7 @@ export default function ExplorePage() {
                   type="button"
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3.5 py-1.5 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                  className="min-h-[44px] px-4 py-2 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all inline-flex items-center justify-center active:scale-95"
                   aria-label="Next page"
                 >
                   Next →

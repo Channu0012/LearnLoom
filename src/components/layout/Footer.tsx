@@ -3,7 +3,7 @@ import Link from "next/link";
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border bg-card mt-16 w-full overflow-x-hidden">
+    <footer className="border-t border-border bg-card mt-16 w-full overflow-x-hidden pb-20 md:pb-0">
       <div className="container-page py-12">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {/* Brand */}

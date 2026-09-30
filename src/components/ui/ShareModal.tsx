@@ -124,7 +124,7 @@ export function ShareModal({ isOpen, onClose, title, url }: ShareModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-md bg-card border-2 border-border rounded-3xl shadow-2xl overflow-hidden animate-scale-up"
+        className="w-full max-w-md bg-card border-2 border-border rounded-3xl shadow-2xl overflow-y-auto max-h-[90dvh] animate-scale-up"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"
@@ -158,7 +158,7 @@ export function ShareModal({ isOpen, onClose, title, url }: ShareModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             aria-label="Close share dialog"
           >
             <svg
@@ -220,7 +220,7 @@ export function ShareModal({ isOpen, onClose, title, url }: ShareModalProps) {
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+                className={`px-4 py-2 min-h-[44px] rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
                   copied ? "bg-emerald-600 text-white" : "btn-primary"
                 }`}
               >

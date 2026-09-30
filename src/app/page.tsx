@@ -19,8 +19,8 @@ export default function HomePage() {
 
         <div className="container-page relative z-10 text-center">
           {/* Eyebrow badge with gentle float animation */}
-          <div className="inline-flex items-center gap-2 badge-primary mb-6 text-sm px-4 py-1.5 shadow-sm animate-float">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
+          <div className="inline-flex items-center gap-2 badge-primary mb-6 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 shadow-sm animate-float max-w-full">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping flex-shrink-0" />
             <svg
               width="15"
               height="15"
@@ -30,16 +30,17 @@ export default function HomePage() {
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="flex-shrink-0"
               aria-hidden="true"
             >
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
-            <span>100% Free · No Ads · No Login Required to Watch</span>
+            <span className="truncate">100% Free · No Ads · No Login Required to Watch</span>
           </div>
 
           <h1
             id="hero-heading"
-            className="font-heading font-extrabold text-4xl sm:text-5xl lg:text-6xl text-foreground mb-6 leading-tight tracking-tight animate-slide-up"
+            className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl text-foreground mb-6 leading-tight tracking-tight animate-slide-up"
           >
             Weave <span className="text-primary-600 dark:text-primary-400">YouTube videos</span>{" "}
             into
@@ -60,7 +61,7 @@ export default function HomePage() {
             <Link
               href="/explore"
               id="cta-explore"
-              className="btn-primary text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all"
+              className="btn-primary text-base px-8 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all"
             >
               <svg
                 width="20"
@@ -81,7 +82,7 @@ export default function HomePage() {
             <Link
               href="/quick-watch"
               id="cta-quick-watch"
-              className="btn-ghost text-base px-8 py-3.5 w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-border hover:border-primary-500 shadow-sm"
+              className="btn-ghost text-base px-8 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-border hover:border-primary-500 shadow-sm"
             >
               <svg
                 width="20"
@@ -514,10 +515,10 @@ export default function HomePage() {
             <p className="text-xs text-muted-foreground font-body mb-4">
               Join thousands of learners building their skills the distraction-free way.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md sm:max-w-none mx-auto">
               <Link
                 href="/explore"
-                className="btn-primary text-sm px-8 py-3 inline-flex items-center gap-2 shadow-md"
+                className="btn-primary text-sm px-6 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 shadow-md"
               >
                 <svg
                   width="16"
@@ -533,11 +534,11 @@ export default function HomePage() {
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                Browse All Courses
+                <span>Browse All Courses</span>
               </Link>
               <Link
                 href="/quick-watch"
-                className="btn-ghost text-sm px-8 py-3 inline-flex items-center gap-2 border border-border"
+                className="btn-ghost text-sm px-6 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-border"
               >
                 <svg
                   width="16"
@@ -552,11 +553,12 @@ export default function HomePage() {
                 >
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                Quick Watch
+                <span>Quick Watch</span>
               </Link>
               <Link
                 href="/create"
-                className="btn-ghost text-sm px-8 py-3 inline-flex items-center gap-2"
+                id="cta-create"
+                className="btn-ghost text-sm px-6 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2"
               >
                 <svg
                   width="16"
@@ -572,7 +574,7 @@ export default function HomePage() {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Create Your Own
+                <span>Create Your Own</span>
               </Link>
             </div>
           </div>
