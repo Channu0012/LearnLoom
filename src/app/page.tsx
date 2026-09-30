@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
 
 export default function HomePage() {
   return (
@@ -221,6 +222,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Video Guide: How to Copy & Paste Any Playlist ──────────────── */}
+      <PlaylistGuideVideo />
 
       {/* ── Why LearnLoom ──────────────────────────────────────────────────── */}
       <section className="py-16" aria-labelledby="why-heading">
