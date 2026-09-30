@@ -28,7 +28,7 @@ export function ShareModal({ isOpen, onClose, title, url }: ShareModalProps) {
 
   if (!isOpen) return null;
 
-  const shareText = `Learn ${title} with structured, distraction-free video lessons on LearnLoom!`;
+  const shareText = `Learn ${title} with structured, distraction-free video lessons on Vidcura!`;
 
   const handleCopy = async () => {
     try {

@@ -9,16 +9,17 @@ interface CourseNotesProps {
 }
 
 export function CourseNotes({ courseId, courseTitle, activeLessonTitle }: CourseNotesProps) {
-  const storageKey = `learnloom_notes_${courseId}`;
+  const storageKey = `vidcura_notes_${courseId}`;
+  const legacyKey = `learnloom_notes_${courseId}`;
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(storageKey);
+      const stored = localStorage.getItem(storageKey) || localStorage.getItem(legacyKey);
       if (stored) setNotes(stored);
     }
-  }, [storageKey]);
+  }, [storageKey, legacyKey]);
 
   const handleChange = (val: string) => {
     setNotes(val);

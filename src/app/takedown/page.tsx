@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Takedown Request",
   description:
-    "Request removal of your content from LearnLoom. We respect all YouTube creators and process takedowns within 48 hours.",
+    "Request removal of your content from Vidcura. We respect all YouTube creators and process takedowns within 48 hours.",
 };
 
 export default function TakedownPage() {
@@ -34,7 +34,7 @@ export default function TakedownPage() {
           We Respect YouTube Creators
         </h2>
         <p className="text-sm font-body text-foreground/80 leading-relaxed mb-3">
-          LearnLoom is built to support and promote YouTube creators — not to exploit them. We
+          Vidcura is built to support and promote YouTube creators — not to exploit them. We
           understand that your content is your livelihood and your intellectual property.
         </p>
         <ul className="text-sm font-body text-foreground/80 space-y-2">
@@ -47,7 +47,7 @@ export default function TakedownPage() {
           <li className="flex items-start gap-2">
             <span className="text-teal-600 font-bold mt-0.5">✓</span>
             <span>
-              All views through LearnLoom count towards{" "}
+              All views through Vidcura count towards{" "}
               <strong>your YouTube analytics and monetisation</strong>
             </span>
           </li>
@@ -95,8 +95,8 @@ export default function TakedownPage() {
           Important: Videos Are Hosted by YouTube
         </h2>
         <p className="text-sm font-body text-foreground/80 leading-relaxed">
-          LearnLoom does <strong>not</strong> host any video content. All videos embedded in our
-          courses are hosted by YouTube. LearnLoom only links to existing YouTube videos — we do not
+          Vidcura does <strong>not</strong> host any video content. All videos embedded in our
+          courses are hosted by YouTube. Vidcura only links to existing YouTube videos — we do not
           upload, store, cache, or distribute video files.
         </p>
         <p className="text-sm font-body text-foreground/80 leading-relaxed mt-3">
@@ -118,14 +118,14 @@ export default function TakedownPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">For YouTube Creators</h2>
           <p className="text-muted-foreground leading-relaxed">
-            If you are a YouTube creator and want your videos removed from any LearnLoom course, we
+            If you are a YouTube creator and want your videos removed from any Vidcura course, we
             will honour your request immediately —{" "}
             <strong className="text-foreground">no proof of ownership required</strong> beyond being
             the channel owner. Simply email us with:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
             <li>Your YouTube channel name and link</li>
-            <li>The URL(s) of the LearnLoom course(s) containing your content (if known)</li>
+            <li>The URL(s) of the Vidcura course(s) containing your content (if known)</li>
             <li>
               Whether you want specific videos removed or{" "}
               <strong className="text-foreground">all</strong> of your content removed from the
@@ -144,12 +144,12 @@ export default function TakedownPage() {
           <h2 className="font-heading font-bold text-xl mb-3">For Copyright Holders (DMCA)</h2>
           <p className="text-muted-foreground leading-relaxed">
             If you are a copyright owner (or authorised to act on behalf of one) and believe that
-            content in a LearnLoom course infringes your rights, please provide the following
+            content in a Vidcura course infringes your rights, please provide the following
             information:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
             <li>Your full legal name and contact information</li>
-            <li>The URL of the LearnLoom course or lesson you want removed</li>
+            <li>The URL of the Vidcura course or lesson you want removed</li>
             <li>The original copyrighted work being infringed (with URL if possible)</li>
             <li>
               A statement that you are the rights holder or are authorised to act on their behalf
@@ -165,7 +165,7 @@ export default function TakedownPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">For Content Abuse Reports</h2>
           <p className="text-muted-foreground leading-relaxed">
-            If you find a course on LearnLoom that contains harmful, misleading, abusive, or
+            If you find a course on Vidcura that contains harmful, misleading, abusive, or
             inappropriate content, you can report it through:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
@@ -176,10 +176,10 @@ export default function TakedownPage() {
             <li>
               <strong className="text-foreground">Email</strong> — Send details to{" "}
               <a
-                href="mailto:takedown@learnloom.app"
+                href="mailto:takedown@vidcura.app"
                 className="text-primary-500 underline hover:no-underline font-semibold"
               >
-                takedown@learnloom.app
+                takedown@vidcura.app
               </a>
             </li>
           </ul>
@@ -196,10 +196,10 @@ export default function TakedownPage() {
             Send all takedown and content removal requests to:
           </p>
           <a
-            href="mailto:takedown@learnloom.app"
+            href="mailto:takedown@vidcura.app"
             className="text-primary-500 underline hover:no-underline font-heading font-bold text-lg"
           >
-            takedown@learnloom.app
+            takedown@vidcura.app
           </a>
           <p className="text-muted-foreground leading-relaxed mt-4">
             We aim to respond within <strong className="text-foreground">48 hours</strong> for all

@@ -10,25 +10,25 @@ export function Footer() {
           <div className="space-y-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2.5 hover:opacity-90 transition-opacity"
-              aria-label="Learnloom home"
+              className="inline-flex items-center gap-2.5 hover:opacity-95 transition-opacity"
+              aria-label="Vidcura home"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/icon.svg"
-                alt=""
+                src="/icon.png"
+                alt="Vidcura Logo"
                 width={28}
                 height={28}
                 className="w-7 h-7 object-contain rounded-lg"
               />
               <span className="font-heading font-extrabold text-lg tracking-tight">
-                <span className="text-foreground">Learn</span>
-                <span className="text-primary-500">loom</span>
+                <span className="text-foreground">vid</span>
+                <span className="text-[#FE5A50]">cura</span>
               </span>
             </Link>
             <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-xs">
-              Weave online video playlists into structured, distraction-free courses. Free community
-              learning with zero ads or invasive algorithms.
+              Curate online video playlists into structured, distraction-free courses. Free
+              community learning with zero ads or invasive algorithms.
             </p>
           </div>
 
@@ -84,9 +84,9 @@ export function Footer() {
         <hr className="border-border my-8" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-body">
-          <p>© {year} LearnLoom. All rights reserved.</p>
+          <p>© {year} Vidcura. All rights reserved.</p>
           <p className="text-muted-foreground/80 text-[11px]">
-            LearnLoom is an independent educational client. All video content belongs to its
+            Vidcura is an independent educational client. All video content belongs to its
             respective original creators.
           </p>
         </div>

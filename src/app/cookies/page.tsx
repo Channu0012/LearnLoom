@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Cookie Policy",
-  description: "LearnLoom Cookie Policy — understanding how we handle cookies and local storage.",
+  description: "Vidcura Cookie Policy — understanding how we handle cookies and local storage.",
 };
 
 export default function CookiesPage() {
@@ -18,7 +18,7 @@ export default function CookiesPage() {
             Summary: Privacy First
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            LearnLoom operates on a strict minimal-data philosophy. We do <strong>not</strong> use
+            Vidcura operates on a strict minimal-data philosophy. We do <strong>not</strong> use
             tracking cookies, third-party advertising cookies, or behavioral surveillance. We only
             utilize strictly necessary storage for authentication sessions and your theme/cookie
             preferences.
@@ -37,7 +37,7 @@ export default function CookiesPage() {
         </section>
 
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">2. How LearnLoom Uses Storage</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">2. How Vidcura Uses Storage</h2>
           <div className="overflow-x-auto my-4">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
@@ -63,7 +63,7 @@ export default function CookiesPage() {
                 </tr>
                 <tr>
                   <td className="py-2.5 px-3 font-mono text-xs text-foreground">
-                    learnloom_cookie_consent
+                    vidcura_cookie_consent
                   </td>
                   <td className="py-2.5 px-3">Local Storage</td>
                   <td className="py-2.5 px-3">Remembers your cookie banner acknowledgment</td>
@@ -75,14 +75,11 @@ export default function CookiesPage() {
         </section>
 
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">3. Third-Party Services (YouTube)</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">3. Third-Party Video Embeds</h2>
           <p className="text-muted-foreground leading-relaxed">
-            When watching course videos, playback is rendered through YouTube&apos;s
-            privacy-enhanced domain (
-            <code className="bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">
-              youtube-nocookie.com
-            </code>
-            ). According to YouTube, this mode does not set tracking cookies unless you click play.
+            When watching course videos, playback is rendered through privacy-enhanced embedded
+            players. According to the video platform, privacy-enhanced mode does not set tracking
+            cookies unless you click play.
           </p>
         </section>
 
@@ -96,10 +93,10 @@ export default function CookiesPage() {
             </Link>{" "}
             or contact us at{" "}
             <a
-              href="mailto:privacy@learnloom.app"
+              href="mailto:privacy@vidcura.app"
               className="text-primary-500 underline hover:no-underline"
             >
-              privacy@learnloom.app
+              privacy@vidcura.app
             </a>
             .
           </p>

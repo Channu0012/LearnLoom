@@ -3,14 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const STORAGE_KEY = "learnloom_cookie_consent";
+const STORAGE_KEY = "vidcura_cookie_consent";
+const LEGACY_KEY = "learnloom_cookie_consent";
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     try {
-      const consent = localStorage.getItem(STORAGE_KEY);
+      const consent = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
       if (!consent) {
         // Small delay so it smoothly animates in
         const timer = setTimeout(() => setIsVisible(true), 800);

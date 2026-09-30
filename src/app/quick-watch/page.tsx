@@ -32,7 +32,9 @@ export default function QuickWatchPage() {
   useEffect(() => {
     if (!activeVideoId) return;
     try {
-      const saved = localStorage.getItem(`learnloom_quick_notes_${activeVideoId}`);
+      const saved =
+        localStorage.getItem(`vidcura_quick_notes_${activeVideoId}`) ||
+        localStorage.getItem(`learnloom_quick_notes_${activeVideoId}`);
       if (saved) {
         setNotes(saved);
       } else {
@@ -48,7 +50,7 @@ export default function QuickWatchPage() {
     setNotes(text);
     if (!activeVideoId) return;
     try {
-      localStorage.setItem(`learnloom_quick_notes_${activeVideoId}`, text);
+      localStorage.setItem(`vidcura_quick_notes_${activeVideoId}`, text);
     } catch {
       // LocalStorage fallback
     }
@@ -355,7 +357,7 @@ export default function QuickWatchPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Like LearnLoom?</span>
+                  <span className="text-[11px] text-muted-foreground">Like Vidcura?</span>
                   <Link
                     href="/explore"
                     className="text-xs font-heading font-bold text-primary-600 dark:text-primary-400 hover:underline"

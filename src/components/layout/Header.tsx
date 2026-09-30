@@ -63,24 +63,24 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-3 hover:opacity-90 transition-opacity select-none group flex-shrink-0"
-          aria-label="Learnloom home"
+          className="flex items-center gap-2.5 hover:opacity-95 transition-opacity select-none group flex-shrink-0"
+          aria-label="Vidcura home"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/icon.svg"
-            alt=""
+            src="/icon.png"
+            alt="Vidcura Logo"
             width={34}
             height={34}
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
           <div className="flex flex-col leading-none">
             <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight">
-              <span className="text-foreground">Learn</span>
-              <span className="text-primary-500">loom</span>
+              <span className="text-foreground">vid</span>
+              <span className="text-[#FE5A50]">cura</span>
             </span>
             <span className="text-[10px] font-body font-medium text-muted-foreground hidden sm:block tracking-wide mt-0.5">
-              Weave videos into courses
+              Turn playlists into courses
             </span>
           </div>
         </Link>

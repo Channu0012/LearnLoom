@@ -1,14 +1,14 @@
-# LearnLoom
+# Vidcura
 
 > **Weave YouTube videos into distraction-free, structured courses.**
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-learnloom--zeta.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://learnloom-zeta.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-vidcura--zeta.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://vidcura-zeta.vercel.app)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-🌐 **Live Application**: [https://learnloom-zeta.vercel.app](https://learnloom-zeta.vercel.app)
+🌐 **Live Application**: [https://vidcura-zeta.vercel.app](https://vit.vercel.app)
 
-LearnLoom is a modern, open learning platform that organizes scattered YouTube videos and playlists into focused, distraction-free courses. Learn at your own pace without algorithmic rabbit holes, intrusive sidebar recommendations, or comment distractions.
+Vidcura is a modern, open learning platform that organizes scattered YouTube videos and playlists into focused, distraction-free courses. Learn at your own pace without algorithmic rabbit holes, intrusive sidebar recommendations, or comment distractions.
 
 ---
 
@@ -72,8 +72,8 @@ LearnLoom is a modern, open learning platform that organizes scattered YouTube v
 ### 1. Installation
 
 ```bash
-git clone https://github.com/Channu0012/LearnLoom.git
-cd LearnLoom
+git clone https://github.com/Channu0012/Vidcura.git
+cd Vidcura
 npm install
 ```
 

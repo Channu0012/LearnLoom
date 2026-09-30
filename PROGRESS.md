@@ -1,4 +1,4 @@
-# LearnLoom – Build Progress
+# Vidcura – Build Progress
 
 ## Status Legend
 

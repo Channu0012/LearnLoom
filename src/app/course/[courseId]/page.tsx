@@ -34,7 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { courseId } = await params;
   const data = await getCourseData(courseId);
-  if (!data) return { title: "Course | LearnLoom" };
+  if (!data) return { title: "Course | Vidcura" };
 
   const { course } = data;
   const thumb = course.coverVideoId
@@ -43,18 +43,17 @@ export async function generateMetadata({
 
   return {
     title: course.title,
-    description:
-      course.description || `Learn ${course.title} — a free curated course on LearnLoom.`,
+    description: course.description || `Learn ${course.title} — a free curated course on Vidcura.`,
     openGraph: {
       title: course.title,
-      description: course.description || `${course.lessonCount} video lessons free on LearnLoom`,
+      description: course.description || `${course.lessonCount} video lessons free on Vidcura`,
       images: thumb ? [{ url: thumb, width: 480, height: 360 }] : [],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title: course.title,
-      description: `${course.lessonCount} lessons — free on LearnLoom`,
+      description: `${course.lessonCount} lessons — free on Vidcura`,
       images: thumb ? [thumb] : [],
     },
   };
@@ -74,12 +73,12 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         description: data.course.description || `Learn ${data.course.title} online for free.`,
         provider: {
           "@type": "Organization",
-          name: "LearnLoom",
-          sameAs: "https://learnloom.app",
+          name: "Vidcura",
+          sameAs: "https://vidcura.app",
         },
         instructor: {
           "@type": "Organization",
-          name: "LearnLoom Community",
+          name: "Vidcura Community",
         },
         hasCourseInstance: {
           "@type": "CourseInstance",

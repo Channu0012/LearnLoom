@@ -778,8 +778,8 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           {importMode === "playlist" && (
             <div>
               <p className="text-xs text-muted-foreground font-body mb-3">
-                Paste any public YouTube playlist link. LearnLoom will instantly import all lessons
-                in sequence with titles and thumbnails, and auto-name your course in seconds!
+                Paste any public video playlist link. Vidcura will instantly import all lessons in
+                sequence with titles and thumbnails, and auto-name your course in seconds!
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input

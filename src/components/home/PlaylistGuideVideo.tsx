@@ -44,7 +44,7 @@ export function PlaylistGuideVideo() {
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
                   </div>
                   <div className="px-3 py-0.5 rounded-md bg-white/5 text-[11px] text-neutral-400 font-mono tracking-tight">
-                    learnloom.app/quick-watch
+                    vidcura.app/quick-watch
                   </div>
                   <div className="text-[10px] font-heading font-medium text-neutral-400 uppercase tracking-wider">
                     Demo
@@ -184,7 +184,7 @@ export function PlaylistGuideVideo() {
                   </div>
                   <div>
                     <h3 className="font-heading font-bold text-sm text-foreground">
-                      Paste into LearnLoom
+                      Paste into Vidcura
                     </h3>
                     <p className="text-xs text-muted-foreground font-body mt-0.5 leading-relaxed">
                       Drop the link into Quick Watch or Course Studio. Modules load instantly.

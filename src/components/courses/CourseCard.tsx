@@ -15,7 +15,7 @@ export function CourseCard({ course }: CourseCardProps) {
     <Link
       href={`/course/${course.id}?start=true`}
       className="clay-card block overflow-hidden group cursor-pointer bg-card active:scale-[0.98] transition-all duration-150"
-      aria-label={`${course.title} — ${course.lessonCount} lesson${course.lessonCount !== 1 ? "s" : ""}, free course on LearnLoom`}
+      aria-label={`${course.title} — ${course.lessonCount} lesson${course.lessonCount !== 1 ? "s" : ""}, free course on Vidcura`}
     >
       {/* Thumbnail Container */}
       <div className="relative aspect-video overflow-hidden rounded-t-xl bg-muted">
@@ -93,7 +93,7 @@ export function CourseCard({ course }: CourseCardProps) {
         {/* Course Info & CTA */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[11px] text-muted-foreground font-body">LearnLoom Course</span>
+            <span className="text-[11px] text-muted-foreground font-body">Vidcura Course</span>
           </div>
 
           <span className="text-[11px] font-heading font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1 group-hover:text-primary-700 transition-colors">

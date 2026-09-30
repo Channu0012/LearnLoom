@@ -11,7 +11,8 @@ export interface StreakData {
   todayLessonsCompleted: number;
 }
 
-const STORAGE_KEY = "learnloom_streak_data_v1";
+const STORAGE_KEY = "vidcura_streak_data_v1";
+const LEGACY_STORAGE_KEY = "learnloom_streak_data_v1";
 
 const DEFAULT_STREAK: StreakData = {
   currentStreak: 0,
@@ -37,7 +38,7 @@ function getYesterdayDateString(): string {
 export function getStreakData(): StreakData {
   if (typeof window === "undefined") return DEFAULT_STREAK;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return DEFAULT_STREAK;
     const parsed = JSON.parse(raw) as StreakData;
 
@@ -126,7 +127,7 @@ export function recordStudyActivity(xpEarned = 25): ActivityResult {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     // Dispatch event so all components update reactively
-    window.dispatchEvent(new CustomEvent("learnloom:streak-updated", { detail: updated }));
+    window.dispatchEvent(new CustomEvent("vidcura:streak-updated", { detail: updated }));
   } catch {
     // Storage quota or restricted environment
   }

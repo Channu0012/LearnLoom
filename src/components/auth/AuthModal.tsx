@@ -128,9 +128,7 @@ export function AuthModal() {
             id="auth-modal-title"
             className="font-heading font-extrabold text-2xl text-foreground"
           >
-            {authModalMode === "signin"
-              ? "Welcome back to LearnLoom"
-              : "Start Learning on LearnLoom"}
+            {authModalMode === "signin" ? "Welcome back to Vidcura" : "Start Learning on Vidcura"}
           </h2>
           <p className="font-body text-xs sm:text-sm text-muted-foreground mt-1">
             {authModalMode === "signin"

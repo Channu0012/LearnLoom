@@ -22,8 +22,12 @@ export function StreakWidget() {
       }
     };
 
+    window.addEventListener("vidcura:streak-updated", handleUpdate);
     window.addEventListener("learnloom:streak-updated", handleUpdate);
-    return () => window.removeEventListener("learnloom:streak-updated", handleUpdate);
+    return () => {
+      window.removeEventListener("vidcura:streak-updated", handleUpdate);
+      window.removeEventListener("learnloom:streak-updated", handleUpdate);
+    };
   }, []);
 
   // Close popup when clicking outside

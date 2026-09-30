@@ -15,29 +15,30 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#0F766E",
+  themeColor: "#101729",
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://learnloom.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://vidcura.app"),
   title: {
-    default: "LearnLoom — Build and Share Courses from YouTube",
-    template: "%s | LearnLoom",
+    default: "Vidcura — Turn Playlists into Structured Courses",
+    template: "%s | Vidcura",
   },
   description:
-    "Weave YouTube videos into clean, distraction-free courses. Share your knowledge with the world, free forever — no login required to watch.",
+    "Curate video playlists into clean, distraction-free courses. Share your knowledge with the world, free forever — no login required to watch.",
   keywords: [
     "online learning",
-    "YouTube courses",
+    "playlist to course",
+    "video courses",
     "free courses",
     "education",
     "distraction free video player",
   ],
-  authors: [{ name: "LearnLoom" }],
-  creator: "LearnLoom",
+  authors: [{ name: "Vidcura" }],
+  creator: "Vidcura",
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "64x64", type: "image/png" },
+      { url: "/favicon.png", sizes: "48x48", type: "image/png" },
       { url: "/icon.png", sizes: "512x512", type: "image/png" },
       { url: "/favicon.ico" },
     ],
@@ -47,16 +48,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://learnloom.app",
-    siteName: "LearnLoom",
-    title: "LearnLoom — Weave Videos into Courses",
-    description: "Create free courses from YouTube videos and share your knowledge with the world.",
-    images: [{ url: "/logo.png", width: 920, height: 240, alt: "LearnLoom Logo" }],
+    url: "https://vidcura.app",
+    siteName: "Vidcura",
+    title: "Vidcura — Turn Playlists into Structured Courses",
+    description:
+      "Create free courses from video playlists and share your knowledge with the world.",
+    images: [{ url: "/logo.png", width: 798, height: 220, alt: "Vidcura Logo" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LearnLoom — Weave Videos into Courses",
-    description: "Create free courses from YouTube videos.",
+    title: "Vidcura — Turn Playlists into Structured Courses",
+    description: "Create free courses from video playlists.",
     images: ["/logo.png"],
   },
   robots: {

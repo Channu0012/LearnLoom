@@ -1,6 +1,6 @@
 rules_version = '2';
 // ============================================================================
-// LearnLoom Firestore Security Rules
+// Vidcura Firestore Security Rules
 // ============================================================================
 // Security is treated as a feature. Every rule is backed by a test.
 // Key principles:
