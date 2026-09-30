@@ -27,8 +27,8 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-xs">
-              Weave YouTube videos into structured, distraction-free courses. Free community
-              learning without tracking or intrusive ads.
+              Weave online video playlists into structured, distraction-free courses. Free community
+              learning with zero ads or invasive algorithms.
             </p>
           </div>
 
@@ -84,10 +84,10 @@ export function Footer() {
         <hr className="border-border my-8" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-body">
-          <p>© {year} Learnloom. All rights reserved.</p>
+          <p>© {year} LearnLoom. All rights reserved.</p>
           <p className="text-muted-foreground/80 text-[11px]">
-            YouTube is a trademark of Google LLC. Learnloom is not affiliated with or endorsed by
-            YouTube.
+            LearnLoom is an independent educational client. All video content belongs to its
+            respective original creators.
           </p>
         </div>
       </div>
