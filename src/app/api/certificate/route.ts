@@ -35,7 +35,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Strict Input Parsing & Sanitization (XSS / SQL / Injection safe)
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
+    }
     const rawUserName = body?.userName;
     const rawCourseTitle = body?.courseTitle;
     const lessonCount = Number(body?.lessonCount) || 0;
