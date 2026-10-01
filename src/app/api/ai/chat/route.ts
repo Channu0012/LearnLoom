@@ -1,42 +1,68 @@
 // ---------------------------------------------------------------------------
 // API Route: POST /api/ai/chat
-// AI Study Companion — answers student questions about lesson content
+// AI Study Companion — answers student questions with rate-limiting & anti-abuse guards
 // ---------------------------------------------------------------------------
 import { NextRequest, NextResponse } from "next/server";
 import { askStudyCompanion } from "@/lib/gemini";
+import { checkRateLimit, sanitizeInput } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "127.0.0.1";
+
+    // Rate limiting: Max 20 queries per minute per IP
+    const rate = checkRateLimit(ip, "ai-chat", 20, 60_000);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        {
+          error: `Rate limit reached. Please wait ${rate.resetInSeconds} seconds before sending another question.`,
+        },
+        { status: 429, headers: { "Retry-After": String(rate.resetInSeconds) } }
+      );
+    }
+
     const body = await request.json();
-    const { question, videoTitle, courseTitle, courseCategory, chatHistory } = body;
+    const rawQuestion = body?.question;
+    const rawVideoTitle = body?.videoTitle;
+    const rawCourseTitle = body?.courseTitle;
+    const rawCategory = body?.courseCategory;
+    const rawChatHistory = Array.isArray(body?.chatHistory) ? body.chatHistory : [];
+
+    const question = sanitizeInput(rawQuestion, 1000);
+    const videoTitle = sanitizeInput(rawVideoTitle, 200);
+    const courseTitle = sanitizeInput(rawCourseTitle, 200);
+    const courseCategory = sanitizeInput(rawCategory, 100) || "General";
 
     if (!question || !videoTitle || !courseTitle) {
       return NextResponse.json(
-        { error: "Missing required fields: question, videoTitle, courseTitle" },
+        { error: "Missing required parameters: question, videoTitle, courseTitle" },
         { status: 400 }
       );
     }
 
-    if (question.length > 1000) {
-      return NextResponse.json(
-        { error: "Question too long. Maximum 1000 characters." },
-        { status: 400 }
-      );
-    }
+    const safeHistory = rawChatHistory
+      .slice(-6)
+      .map((m: { role?: unknown; content?: unknown }) => ({
+        role: m?.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: sanitizeInput(m?.content, 1000),
+      }));
 
     const answer = await askStudyCompanion(
       question,
       videoTitle,
       courseTitle,
-      courseCategory || "General",
-      chatHistory || []
+      courseCategory,
+      safeHistory
     );
 
     return NextResponse.json({ answer }, { status: 200 });
   } catch (error) {
     console.error("[API] Study companion error:", error);
     return NextResponse.json(
-      { error: "Failed to get an answer. Please try again." },
+      { error: "An unexpected error occurred while processing your question." },
       { status: 500 }
     );
   }

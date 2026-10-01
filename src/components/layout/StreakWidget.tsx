@@ -65,7 +65,15 @@ export function StreakWidget() {
         aria-label={`Learning streak: ${streak.currentStreak} days, ${streak.totalXp} XP`}
         title="Click to view your Daily Learning Streak and XP"
       >
-        <span className={isTodayComplete ? "animate-bounce" : "opacity-75"}>🔥</span>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className={isTodayComplete ? "text-amber-500 animate-pulse" : "text-muted-foreground"}
+        >
+          <path d="M12 2c-1.5 3-4 5.5-4 9a6 6 0 0012 0c0-3.5-2.5-6-4-9-1 2-2 3-4 0z" />
+        </svg>
         <span>{streak.currentStreak}</span>
         <span className="hidden sm:inline font-semibold text-[11px] opacity-80">
           {streak.currentStreak === 1 ? "day" : "days"}
@@ -77,18 +85,22 @@ export function StreakWidget() {
         <div className="absolute right-0 mt-2 w-72 sm:w-80 p-4 rounded-2xl bg-card border-2 border-border/80 shadow-2xl z-50 animate-fade-in text-left">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2c-1.5 3-4 5.5-4 9a6 6 0 0012 0c0-3.5-2.5-6-4-9-1 2-2 3-4 0z" />
+                </svg>
+              </div>
               <div>
                 <p className="font-heading font-extrabold text-sm text-foreground">
                   {streak.currentStreak > 0
-                    ? `${streak.currentStreak}-Day Streak!`
-                    : "Start Your Streak!"}
+                    ? `${streak.currentStreak}-Day Streak`
+                    : "Start Daily Streak"}
                 </p>
                 <p className="font-body text-[11px] text-muted-foreground">
                   {isTodayComplete
-                    ? "Completed for today! Awesome habit."
-                    : "Complete 1 lesson today to keep it active."}
+                    ? "Completed today. 10 Points awarded."
+                    : "Complete 1 lesson today to advance."}
                 </p>
               </div>
             </div>
@@ -97,19 +109,36 @@ export function StreakWidget() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-2 my-3">
             <div className="p-2.5 rounded-xl bg-muted/50 border border-border/50 text-center">
-              <span className="text-[10px] uppercase font-heading font-bold text-muted-foreground block">
-                Total XP
+              <span className="text-[10px] uppercase font-mono font-bold text-muted-foreground block">
+                Total Points
               </span>
-              <span className="text-lg font-heading font-black text-primary-600 dark:text-primary-400">
-                ⚡ {streak.totalXp}
+              <span className="text-lg font-heading font-black text-primary-600 dark:text-primary-400 inline-flex items-center justify-center gap-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                {streak.totalXp}
               </span>
             </div>
             <div className="p-2.5 rounded-xl bg-muted/50 border border-border/50 text-center">
-              <span className="text-[10px] uppercase font-heading font-bold text-muted-foreground block">
+              <span className="text-[10px] uppercase font-mono font-bold text-muted-foreground block">
                 Best Streak
               </span>
-              <span className="text-lg font-heading font-black text-foreground">
-                🏆 {streak.bestStreak}d
+              <span className="text-lg font-heading font-black text-foreground inline-flex items-center justify-center gap-1">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34" />
+                  <path d="M18 4H6v7a6 6 0 0 0 12 0V4z" />
+                </svg>
+                {streak.bestStreak}d
               </span>
             </div>
           </div>

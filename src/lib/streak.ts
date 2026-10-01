@@ -80,7 +80,7 @@ export interface ActivityResult {
   isFirstToday: boolean;
 }
 
-export function recordStudyActivity(xpEarned = 25): ActivityResult {
+export function recordStudyActivity(xpEarned = 10): ActivityResult {
   if (typeof window === "undefined") {
     return {
       streak: 1,

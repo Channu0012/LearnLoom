@@ -461,7 +461,7 @@ function CoursePlayerContent({
             }
             setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
 
-            const activity = recordStudyActivity(25);
+            const activity = recordStudyActivity(10);
             setXpToast({
               xp: activity.xpGained,
               streak: activity.streak,
@@ -469,10 +469,8 @@ function CoursePlayerContent({
             });
             setTimeout(() => setXpToast(null), 4500);
 
-            // Auto-advance if next lesson exists in playlist
-            if (activeIdx < lessons.length - 1) {
-              triggerAutoAdvance(lessons[activeIdx + 1]!);
-            }
+            // Coursera / Google flow: Immediately trigger knowledge assessment
+            setIsQuizOpen(true);
           }
         }
       } catch {
@@ -501,8 +499,8 @@ function CoursePlayerContent({
       setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
       setIsEnrolled(true);
 
-      // Record daily streak and XP rewards
-      const activity = recordStudyActivity(25);
+      // Record daily streak and XP rewards (+10 points per completed module)
+      const activity = recordStudyActivity(10);
       setXpToast({
         xp: activity.xpGained,
         streak: activity.streak,
@@ -510,14 +508,12 @@ function CoursePlayerContent({
       });
       setTimeout(() => setXpToast(null), 4500);
 
-      // Auto-advance with 3-second countdown if there's a next lesson
-      if (activeIdx < lessons.length - 1) {
-        triggerAutoAdvance(lessons[activeIdx + 1]!);
-      }
+      // Coursera / Google standard: Prompt module assessment immediately
+      setIsQuizOpen(true);
     } finally {
       setIsMarkingComplete(false);
     }
-  }, [user, courseId, activeLesson, activeIdx, lessons, openAuthModal, triggerAutoAdvance]);
+  }, [user, courseId, activeLesson, openAuthModal]);
 
   // Next & Previous lesson
   const goToNext = () => {
@@ -964,7 +960,19 @@ function CoursePlayerContent({
               {tabTransitioning === "notes" ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-ping" />
               ) : (
-                <span>🤖</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
               )}
               <span>AI Notes</span>
             </button>
@@ -980,9 +988,19 @@ function CoursePlayerContent({
               {tabTransitioning === "quiz" ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
               ) : (
-                <span>🧠</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
               )}
-              <span>AI Quiz</span>
+              <span>Assessments</span>
             </button>
             <button
               type="button"
@@ -1042,31 +1060,98 @@ function CoursePlayerContent({
               {/* Sponsored Banner */}
               <CourseAdBanner category={course.category} />
 
-              {/* Course Completion Celebration */}
+              {/* Course Completion & Coursera-Grade Credential Unlock */}
               {isCompleted && (
-                <div className="clay-card p-6 bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-emerald-950/30 dark:to-amber-950/30 border-2 border-emerald-500/30 rounded-2xl text-center space-y-3 animate-fade-in">
-                  <div className="text-4xl">🎉</div>
-                  <h3 className="font-heading font-black text-lg text-foreground">
-                    Course Completed!
-                  </h3>
-                  <p className="text-sm text-muted-foreground font-body">
-                    You&apos;ve completed all {lessons.length} lessons. Claim your certificate!
-                  </p>
-                  <div className="flex items-center justify-center gap-3 pt-1">
+                <div className="clay-card p-6 bg-muted/40 border-2 border-primary-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/30 flex items-center justify-center">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      <polyline points="9 12 11 14 15 10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="inline-block px-3 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                      Curriculum Complete · {lessons.length} Modules
+                    </span>
+                    <h3 className="font-heading font-black text-lg text-foreground">
+                      Course Curriculum Finished
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
+                      {totalQuizTotal > 0 &&
+                      Math.round((totalQuizScore / totalQuizTotal) * 100) < 70
+                        ? `Google & Coursera certification standard: Minimum 70% passing grade required. Your current average is ${Math.round((totalQuizScore / totalQuizTotal) * 100)}%. Retake assessments to unlock your certificate.`
+                        : `You have completed all video modules with verified competence. Claim your official verified credential.`}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 pt-1 flex-wrap">
                     <button
                       type="button"
                       onClick={() => setIsQuizOpen(true)}
-                      className="btn-ghost text-xs px-4 py-2.5 inline-flex items-center gap-1.5"
+                      className="btn-ghost text-xs px-4 py-2.5 font-heading font-bold inline-flex items-center gap-2"
                     >
-                      🧠 Take Final Quiz
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <polyline points="23 4 23 10 17 10" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                      </svg>
+                      <span>Take Module Assessment</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsCertificateOpen(true)}
-                      className="btn-primary text-xs px-5 py-2.5 inline-flex items-center gap-1.5 shadow-lg"
-                    >
-                      🎓 Get Certificate
-                    </button>
+
+                    {totalQuizTotal > 0 &&
+                    Math.round((totalQuizScore / totalQuizTotal) * 100) < 70 ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="btn-primary text-xs px-5 py-2.5 opacity-50 cursor-not-allowed font-heading font-bold inline-flex items-center gap-2"
+                        title="Attain at least 70% assessment score to unlock certificate"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>Certificate Locked (Need 70%)</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setIsCertificateOpen(true)}
+                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <polyline points="9 12 11 14 15 10" />
+                        </svg>
+                        <span>Claim Verified Certificate</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -1083,36 +1168,55 @@ function CoursePlayerContent({
             />
           )}
 
-          {/* Tab 3: AI Quiz */}
+          {/* Tab 3: Module Assessment */}
           {activeTab === "quiz" && (
             <div className="space-y-5">
-              {/* Quick Quiz Launch */}
+              {/* Quick Assessment Launch */}
               <div className="clay-card p-6 bg-card border border-border rounded-2xl text-center space-y-4">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                  <span className="text-3xl">🧠</span>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                  <svg
+                    width="26"
+                    height="26"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>
                 </div>
                 <div>
-                  <h3 className="font-heading font-bold text-lg text-foreground">
-                    AI-Powered Quiz
+                  <h3 className="font-heading font-bold text-base text-foreground">
+                    Module Knowledge Assessment
                   </h3>
-                  <p className="text-sm text-muted-foreground font-body mt-1">
-                    Test your understanding of &ldquo;{activeLesson?.title}&rdquo; with AI-generated
-                    questions
+                  <p className="text-xs text-muted-foreground font-body mt-1 max-w-md mx-auto">
+                    Evaluate your comprehension of &ldquo;{activeLesson?.title}&rdquo;. Google &amp;
+                    Coursera standard: 70% passing threshold required for certificate qualification.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsQuizOpen(true)}
-                  className="btn-primary text-sm px-6 py-3 inline-flex items-center gap-2 shadow-lg"
+                  className="btn-primary text-xs px-6 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg"
                 >
-                  <span>🧠</span>
-                  <span>Start Quiz</span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>Launch Assessment (5 Questions)</span>
                 </button>
 
-                {/* Show previous quiz score if exists */}
+                {/* Show previous assessment score if exists */}
                 {activeLesson && quizScores.has(activeLesson.id) && (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-xs font-heading font-bold text-emerald-600 dark:text-emerald-400">
+                  <div className="p-3 rounded-xl bg-muted/60 border border-border max-w-sm mx-auto">
+                    <p className="text-xs font-mono font-bold text-foreground">
                       Previous Score: {quizScores.get(activeLesson.id)!.score}/
                       {quizScores.get(activeLesson.id)!.total} (
                       {Math.round(
@@ -1121,34 +1225,57 @@ function CoursePlayerContent({
                           100
                       )}
                       %)
+                      {Math.round(
+                        (quizScores.get(activeLesson.id)!.score /
+                          quizScores.get(activeLesson.id)!.total) *
+                          100
+                      ) >= 70 ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 ml-2">
+                          ✓ Passed
+                        </span>
+                      ) : (
+                        <span className="text-amber-600 dark:text-amber-400 ml-2">Needs 70%</span>
+                      )}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Quiz Stats Summary */}
+              {/* Assessment Stats Summary */}
               {quizScores.size > 0 && (
                 <div className="clay-card p-5 bg-card border border-border rounded-2xl">
-                  <h4 className="font-heading font-bold text-sm text-foreground mb-3">
-                    📊 Quiz Performance
+                  <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                    <span>Curriculum Assessment Analytics</span>
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="text-center p-2 rounded-lg bg-muted">
+                    <div className="text-center p-2 rounded-lg bg-muted/60 border border-border/50">
                       <p className="font-heading font-black text-lg text-foreground">
                         {quizScores.size}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-bold">Quizzes Taken</p>
+                      <p className="text-[10px] text-muted-foreground font-bold">Assessments</p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-muted">
+                    <div className="text-center p-2 rounded-lg bg-muted/60 border border-border/50">
                       <p className="font-heading font-black text-lg text-foreground">
                         {totalQuizTotal > 0
                           ? Math.round((totalQuizScore / totalQuizTotal) * 100)
                           : 0}
                         %
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-bold">Avg Score</p>
+                      <p className="text-[10px] text-muted-foreground font-bold">Average Grade</p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-muted">
+                    <div className="text-center p-2 rounded-lg bg-muted/60 border border-border/50">
                       <p className="font-heading font-black text-lg text-foreground">
                         {totalQuizScore}/{totalQuizTotal}
                       </p>
@@ -1560,15 +1687,17 @@ function CoursePlayerContent({
           role="status"
           aria-live="polite"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center text-xl flex-shrink-0">
-            🔥
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2c-1.5 3-4 5.5-4 9a6 6 0 0012 0c0-3.5-2.5-6-4-9-1 2-2 3-4 0z" />
+            </svg>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-heading font-black text-sm text-foreground">
-                +{xpToast.xp} XP Earned!
+                +{xpToast.xp} Points Earned!
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold font-mono">
                 {xpToast.streak} Day Streak
               </span>
             </div>

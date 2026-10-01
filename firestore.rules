@@ -83,17 +83,26 @@ service cloud.firestore {
 
       // ── quizResults sub-collection: users/{uid}/quizResults/{resultId} ────
       match /quizResults/{resultId} {
-        // Only the owning user can read or write their quiz results
-        allow read, write: if isUser(uid);
+        // Only the owning user can read or write their quiz results with type & bounds safety
+        allow read: if isUser(uid);
+        allow create, update: if isUser(uid)
+          && inData().score is int && inData().score >= 0 && inData().score <= 100
+          && inData().total is int && inData().total >= 1 && inData().total <= 50
+          && validStr("courseId", 100)
+          && validStr("lessonId", 100);
+        allow delete: if isUser(uid);
       }
 
       // ── certificates sub-collection: users/{uid}/certificates/{certId} ───
       match /certificates/{certId} {
         // Anyone can read certificates (for public verification)
         allow read: if true;
-        // Only the owning user can create certificates
-        allow create: if isUser(uid);
-        // No updates or deletes (certificates are immutable)
+        // Only the owning user can create certificates with validated fields
+        allow create: if isUser(uid)
+          && validStr("courseTitle", 200)
+          && inData().lessonCount is int && inData().lessonCount >= 0
+          && inData().id is string && inData().id.size() <= 30;
+        // No updates or deletes (certificates are permanent, immutable credentials)
         allow update, delete: if false;
       }
     }

@@ -84,7 +84,7 @@ export function CourseNotes({
 
       // Append AI notes to existing notes
       const separator = notes ? `\n\n${"─".repeat(40)}\n` : "";
-      const formatted = `${separator}## 🤖 AI Notes: ${activeLessonTitle}\n\n${aiNotes}`;
+      const formatted = `${separator}## AI Study Notes: ${activeLessonTitle}\n\n${aiNotes}`;
       handleChange(notes + formatted);
       setAiGenerated(true);
       setTimeout(() => setAiGenerated(false), 3000);
@@ -102,19 +102,19 @@ export function CourseNotes({
           <h3 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
             <span>Study Notes</span>
             {aiGenerated && (
-              <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-fade-in">
-                ✓ AI Notes Added
+              <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-fade-in">
+                Verified Notes Added
               </span>
             )}
           </h3>
           <p className="font-body text-xs text-muted-foreground">
-            Your notes are saved to your browser. Use AI to auto-generate summaries.
+            Structured personal notes saved locally with AI technical summarization.
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           {saved && (
-            <span className="text-[11px] font-heading font-bold text-emerald-600 animate-fade-in">
+            <span className="text-[11px] font-mono font-bold text-emerald-600 animate-fade-in">
               Saved
             </span>
           )}
@@ -124,7 +124,7 @@ export function CourseNotes({
             type="button"
             onClick={handleGenerateAINotes}
             disabled={aiLoading}
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-500 to-emerald-500 text-white font-heading font-bold hover:shadow-md disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-heading font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-sm"
           >
             {aiLoading ? (
               <>
@@ -139,12 +139,21 @@ export function CourseNotes({
                   />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <span>Generating…</span>
+                <span>Synthesizing…</span>
               </>
             ) : (
               <>
-                <span>🤖</span>
-                <span>AI Generate Notes</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+                <span>AI Technical Summary</span>
               </>
             )}
           </button>
@@ -152,12 +161,16 @@ export function CourseNotes({
           <button
             type="button"
             onClick={handleAddTimestampTag}
-            className="btn-ghost text-xs px-3 py-1.5"
+            className="btn-ghost text-xs px-3 py-1.5 font-heading font-bold"
           >
             + Add Section
           </button>
           {notes && (
-            <button type="button" onClick={handleExport} className="btn-ghost text-xs px-3 py-1.5">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="btn-ghost text-xs px-3 py-1.5 font-heading font-bold"
+            >
               Export (.txt)
             </button>
           )}
@@ -168,8 +181,8 @@ export function CourseNotes({
         value={notes}
         onChange={(e) => handleChange(e.target.value)}
         rows={10}
-        placeholder={`Jot down key takeaways, code snippets, or ideas while watching…\n\nTip: Click "🤖 AI Generate Notes" to auto-generate a summary for this lesson!\n\nExample:\n- Lesson key insight\n- Important reference link`}
-        className="w-full p-4 rounded-xl border border-border bg-background text-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 leading-relaxed"
+        placeholder={`Jot down architectural takeaways, code snippets, or formulas while watching…\n\nTip: Click "AI Technical Summary" to synthesize a structured brief for this lesson.\n\nExample:\n- Core architectural invariant\n- Edge cases and error handling`}
+        className="w-full p-4 rounded-xl border border-border bg-background text-foreground font-body text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed font-mono"
       />
     </div>
   );

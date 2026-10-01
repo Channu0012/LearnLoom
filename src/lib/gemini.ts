@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
 // Gemini AI Client — Server-side only
 // Powers: Quiz Generation, AI Notes, Study Companion Chat
+// Strict Corporate & Executive Standard: 100% Emoji-Free, Academic Rigor
 // ---------------------------------------------------------------------------
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -12,12 +13,12 @@ if (!apiKey) {
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-// Use Gemini 2.0 Flash for speed and cost efficiency
+// Use Gemini 2.0 Flash for low latency and high quality
 const MODEL_NAME = "gemini-2.0-flash";
 
 /**
  * Generate MCQ quiz questions from a video title and course context.
- * Returns structured JSON for client-side rendering.
+ * Strict standard: Coursera/Google Career Certificates style. No emojis.
  */
 export async function generateQuiz(
   videoTitle: string,
@@ -30,48 +31,51 @@ export async function generateQuiz(
 
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-  const prompt = `You are an expert educator creating a quiz for an online learning platform called Vidcura.
+  const prompt = `You are a curriculum designer creating an academic assessment for Vidcura, modeled after Google and Coursera certification standards.
 
 Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
-- Current Lesson: "${videoTitle}" (Lesson ${lessonIndex + 1} of ${totalLessons})
+- Current Module: "${videoTitle}" (Lesson ${lessonIndex + 1} of ${totalLessons})
 
-Generate exactly 5 multiple-choice questions based on the topic "${videoTitle}" that would test a student's understanding after watching this video lesson.
+Generate exactly 5 multiple-choice questions based on the topic "${videoTitle}" to assess student retention, conceptual mastery, and practical competence.
 
-Rules:
-1. Questions should test conceptual understanding, not trivial details
-2. Each question must have exactly 4 options (A, B, C, D)
-3. Only one option should be correct
-4. Include a brief explanation for the correct answer
-5. Questions should progressively increase in difficulty
-6. Make questions practical and application-oriented
+Strict Assessment Standards:
+1. Questions must evaluate depth of understanding, architectural principles, and real-world application.
+2. Each question must have exactly 4 choices (A, B, C, D).
+3. Exactly one choice must be objectively correct.
+4. Include an analytical, educational explanation for the correct answer.
+5. Questions must progressively escalate from core principles to applied problem-solving.
+6. ABSOLUTE REQUIREMENT: Do NOT include any emojis or unicode pictograms anywhere in questions, options, or explanations. Keep all language formal, crisp, and professional.
 
-Return ONLY a valid JSON array with this exact structure (no markdown, no code blocks):
+Return ONLY a valid JSON array with this exact structure (no markdown fences, no code blocks):
 [
   {
-    "question": "What is...",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "question": "What is the primary architectural purpose of...",
+    "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
     "correctIndex": 0,
-    "explanation": "Brief explanation of why this is correct"
+    "explanation": "Clear analytical explanation of why this answer is correct."
   }
 ]`;
 
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    // Extract JSON from response (handle markdown code blocks)
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) return getFallbackQuiz(videoTitle);
 
     const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
-    // Validate structure
     if (!Array.isArray(parsed) || parsed.length === 0) return getFallbackQuiz(videoTitle);
 
     return parsed.slice(0, 5).map((q) => ({
-      question: String(q.question || ""),
-      options: Array.isArray(q.options) ? q.options.map(String).slice(0, 4) : [],
-      correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-      explanation: String(q.explanation || ""),
+      question: stripEmojis(String(q.question || "")),
+      options: Array.isArray(q.options)
+        ? q.options.map((opt) => stripEmojis(String(opt))).slice(0, 4)
+        : [],
+      correctIndex:
+        typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4
+          ? q.correctIndex
+          : 0,
+      explanation: stripEmojis(String(q.explanation || "")),
     }));
   } catch (error) {
     console.error("[Gemini] Quiz generation failed:", error);
@@ -80,7 +84,8 @@ Return ONLY a valid JSON array with this exact structure (no markdown, no code b
 }
 
 /**
- * Generate AI-powered study notes/summary from a video title.
+ * Generate comprehensive study notes/summary from a video title.
+ * Formatted like Coursera executive summaries. No emojis.
  */
 export async function generateNotes(
   videoTitle: string,
@@ -91,31 +96,35 @@ export async function generateNotes(
 
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-  const prompt = `You are an expert study-note generator for the learning platform Vidcura.
+  const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform Vidcura.
 
-Generate comprehensive study notes for a video lesson titled "${videoTitle}" from the course "${courseTitle}" (Category: ${courseCategory}).
+Context:
+- Course: "${courseTitle}" (Category: ${courseCategory})
+- Lesson: "${videoTitle}"
 
-Structure the notes as follows:
-## 📝 Key Takeaways
-- 3-5 bullet points of the most important concepts
+Generate an authoritative, rigorous study summary for this lesson.
 
-## 📖 Detailed Summary
-A 2-3 paragraph summary of what this lesson likely covers based on the title
+Structure the guide strictly as follows:
+## Key Takeaways
+- 3 to 5 bullet points summarizing core principles and mechanisms
 
-## 💡 Important Concepts
-- List 3-5 key terms or concepts with brief definitions
+## Technical Overview
+A 2-3 paragraph breakdown explaining the theory, architecture, and practical execution of the concepts covered in this module.
 
-## 🔗 How This Connects
-- How this lesson connects to the broader course topic
+## Core Concepts & Definitions
+- 3 to 5 critical terms with concise, professional definitions
 
-## ✅ Self-Check Questions
-- 3 questions students should be able to answer after this lesson
+## Curriculum Context
+- How this knowledge integrates with the broader syllabus and downstream applications
 
-Keep the language clear, concise, and student-friendly. Use markdown formatting.`;
+## Knowledge Check
+- 3 targeted questions that a practitioner should be able to answer after mastering this module
+
+STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere in the text. Maintain a refined, academic, and publication-ready standard.`;
 
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text();
+    return stripEmojis(result.response.text());
   } catch (error) {
     console.error("[Gemini] Notes generation failed:", error);
     return getFallbackNotes(videoTitle);
@@ -123,7 +132,8 @@ Keep the language clear, concise, and student-friendly. Use markdown formatting.
 }
 
 /**
- * AI Study Companion — answer questions about the video content.
+ * AI Study Companion — answers questions and clears student doubts like a senior engineer/mentor.
+ * Strict standard: No emojis, crystal-clear, structured answers with practical insights.
  */
 export async function askStudyCompanion(
   question: string,
@@ -132,40 +142,39 @@ export async function askStudyCompanion(
   courseCategory: string,
   chatHistory: { role: "user" | "assistant"; content: string }[] = []
 ): Promise<string> {
-  if (!genAI) return "AI Study Companion is currently unavailable. Please try again later.";
+  if (!genAI) return "The AI Study Companion is temporarily offline. Please verify connectivity.";
 
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
   const historyContext = chatHistory
-    .slice(-6) // Keep last 6 messages for context
-    .map((m) => `${m.role === "user" ? "Student" : "AI Tutor"}: ${m.content}`)
+    .slice(-6)
+    .map((m) => `${m.role === "user" ? "Student" : "Instructor"}: ${m.content}`)
     .join("\n");
 
-  const prompt = `You are an expert AI Study Companion tutor on the learning platform Vidcura.
+  const prompt = `You are a distinguished technical tutor and subject matter expert for Vidcura, mentoring students in a professional capacity.
 
 Context:
-- Course: "${courseTitle}" (Category: ${courseCategory})
-- Current Lesson: "${videoTitle}"
+- Curriculum: "${courseTitle}" (Discipline: ${courseCategory})
+- Active Lesson: "${videoTitle}"
 
-${historyContext ? `Previous conversation:\n${historyContext}\n` : ""}
+${historyContext ? `Previous Discussion:\n${historyContext}\n` : ""}
 
-Student's question: "${question}"
+Student Query: "${question}"
 
-Rules:
-1. Answer clearly and concisely, as if explaining to a student
-2. If the question is about a concept from the video topic, give a thorough explanation
-3. Use examples and analogies when helpful
-4. If you're unsure about specifics of the video (since you can't watch it), be honest but still provide helpful context about the topic
-5. Keep answers focused and under 300 words
-6. Use markdown formatting for clarity (bold, lists, code blocks if needed)
-7. Be encouraging and supportive — you're a tutor, not a textbook`;
+Pedagogical Directives:
+1. Provide a direct, authoritative, and lucid explanation. Resolve the student's exact doubt.
+2. Use precise terminology, concrete examples, analogies, or code blocks where applicable.
+3. If clarification on scope is required, explain the general industry consensus.
+4. Keep explanations structured, impactful, and under 300 words.
+5. Use clean markdown formatting (bold headers, bullet points, code blocks).
+6. ABSOLUTE RULE: DO NOT USE ANY EMOJIS OR UNICODE PICTOGRAMS UNDER ANY CIRCUMSTANCES. Keep the tone dignified, professional, and clear.`;
 
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text();
+    return stripEmojis(result.response.text());
   } catch (error) {
     console.error("[Gemini] Study companion failed:", error);
-    return "I'm having trouble right now. Please try asking your question again in a moment.";
+    return "An error occurred while generating the explanation. Please try submitting your question again.";
   }
 }
 
@@ -178,59 +187,77 @@ export interface QuizQuestion {
   explanation: string;
 }
 
-// ── Fallbacks ──────────────────────────────────────────────────────────────
+// ── Utility to Guarantee Emoji-Free Output ─────────────────────────────────
+
+function stripEmojis(text: string): string {
+  // Regex removing common and extended Unicode emojis / symbols
+  return text
+    .replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+      ""
+    )
+    .trim();
+}
+
+// ── Fallbacks (Strictly Emoji-Free) ────────────────────────────────────────
 
 function getFallbackQuiz(videoTitle: string): QuizQuestion[] {
   return [
     {
-      question: `What is the main topic covered in "${videoTitle}"?`,
+      question: `What is the primary focus of "${videoTitle}"?`,
       options: [
-        "Core concepts and fundamentals",
-        "Advanced optimisation techniques",
-        "Historical background and context",
-        "Troubleshooting common issues",
+        "Core foundational principles and practical methodology",
+        "Peripheral historical background without current utility",
+        "Unverified experimental features not recommended in production",
+        "Legacy system decommissioning procedures",
       ],
       correctIndex: 0,
-      explanation: "This lesson primarily covers the core concepts and fundamentals of the topic.",
+      explanation:
+        "This module prioritizes core foundational concepts and established architectural methodologies.",
     },
     {
-      question: "Why is understanding this topic important?",
+      question: "Why is mastering this specific concept critical for practical implementation?",
       options: [
-        "It has no practical application",
-        "It builds a foundation for more advanced concepts",
-        "It is only useful for examinations",
-        "It is outdated and rarely used",
+        "It provides prerequisite architectural patterns required for advanced topics",
+        "It has no bearing on actual development workflows",
+        "It is merely theoretical with no production relevance",
+        "It is strictly used for multiple choice examinations",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Mastery of these concepts establishes the architectural patterns required for scalable implementation.",
+    },
+    {
+      question: "What is the recommended approach to validate comprehension of this material?",
+      options: [
+        "Passive listening without taking notes",
+        "Hands-on execution with practical exercises and assessment review",
+        "Memorizing syntactical definitions verbatim",
+        "Proceeding immediately without evaluating core takeaways",
       ],
       correctIndex: 1,
       explanation:
-        "Understanding foundational concepts is crucial as they build the basis for more advanced learning.",
-    },
-    {
-      question: "What is the best approach to master this lesson's content?",
-      options: [
-        "Read it once and move on",
-        "Practice with real examples and revisit key concepts",
-        "Memorize everything word for word",
-        "Skip ahead to more interesting topics",
-      ],
-      correctIndex: 1,
-      explanation:
-        "Active practice with real examples and revisiting key concepts leads to deeper understanding.",
+        "Active hands-on application and rigorous assessment validation ensure durable knowledge retention.",
     },
   ];
 }
 
 function getFallbackNotes(videoTitle: string): string {
-  return `## 📝 Key Takeaways
-- This lesson covers the fundamentals of "${videoTitle}"
-- Pay attention to core concepts and terminology
-- Practice exercises will reinforce your understanding
+  return `## Key Takeaways
+- Comprehensive analysis of principles underlying "${videoTitle}"
+- Critical terminology, operational parameters, and architectural fundamentals
+- Implementation recommendations and verified best practices
 
-## 📖 Summary
-This lesson introduces key concepts related to ${videoTitle}. Review the video content and take notes on the main points discussed.
+## Technical Overview
+This module explores the foundational theories and practical mechanisms associated with ${videoTitle}. Learners should review the accompanying codebase and verify their understanding of each sub-component.
 
-## ✅ Self-Check
-- Can you explain the main concept in your own words?
-- What are the practical applications of what you learned?
-- How does this connect to previous lessons?`;
+## Core Concepts & Definitions
+- Module Scope: Defining the operational boundary of this topic
+- Standard Patterns: Industry-standard approaches and recurring design templates
+- Quality Criteria: Metrics to assess correct and efficient implementation
+
+## Knowledge Check
+- Can you articulate the core operational mechanism in your own words?
+- What are the critical edge cases to account for in production environments?
+- How does this pattern interface with adjacent modules in the syllabus?`;
 }

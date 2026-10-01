@@ -45,12 +45,18 @@ export function StreakDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
-          <span className="text-lg">🔥</span>
-          <span>Your Progress</span>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="text-amber-500"
+          >
+            <path d="M12 2c-1.5 3-4 5.5-4 9a6 6 0 0012 0c0-3.5-2.5-6-4-9-1 2-2 3-4 0z" />
+          </svg>
+          <span>Curriculum Mastery Analytics</span>
         </h3>
-        <span
-          className={`text-xs font-heading font-extrabold px-2.5 py-1 rounded-full bg-muted ${color}`}
-        >
+        <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-muted ${color}`}>
           {rank}
         </span>
       </div>
@@ -70,7 +76,7 @@ export function StreakDashboard() {
           <p className="font-heading font-black text-2xl text-primary-600 dark:text-primary-400">
             {streak.totalXp}
           </p>
-          <p className="text-[10px] text-muted-foreground font-bold uppercase">Total XP</p>
+          <p className="text-[10px] text-muted-foreground font-bold uppercase">Total Points</p>
         </div>
 
         {/* Best Streak */}
@@ -85,7 +91,7 @@ export function StreakDashboard() {
       {/* Weekly Activity Calendar */}
       <div>
         <p className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground mb-2">
-          This Week
+          Weekly Study Frequency
         </p>
         <div className="flex items-center justify-between gap-1">
           {last7Days.map((day) => (
@@ -110,8 +116,21 @@ export function StreakDashboard() {
       {/* Today's Progress */}
       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border">
         <div className="flex items-center gap-2">
-          <span className="text-sm">📚</span>
-          <span className="text-xs font-body text-muted-foreground">Today&apos;s lessons</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-muted-foreground"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+          <span className="text-xs font-body text-muted-foreground">
+            Today&apos;s completed lessons
+          </span>
         </div>
         <span className="font-heading font-bold text-sm text-foreground">
           {streak.todayLessonsCompleted}
