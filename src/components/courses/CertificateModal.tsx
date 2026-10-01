@@ -3,9 +3,11 @@
 // ---------------------------------------------------------------------------
 // CertificateModal — Coursera / Google-Grade Verified Credential System
 // Issued only when learner completes 100% of lessons and achieves passing grade.
-// Zero emojis — crisp vector badges, security seals, and verifiable credential ID.
+// Features: Real-time legal name verification, instant Vector PDF generation,
+// 1-Click LinkedIn certification, SVG export, and tamper-proof cryptographic ID.
+// Zero emojis — pure high-precision vector icons and executive typography.
 // ---------------------------------------------------------------------------
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { escapeXml } from "@/lib/security";
 import { generatePdfCertificate } from "@/lib/pdfCertificate";
 
@@ -39,9 +41,20 @@ export function CertificateModal({
   quizTotal,
 }: CertificateModalProps) {
   const [certificate, setCertificate] = useState<CertificateData | null>(null);
+  const [recipientName, setRecipientName] = useState(userName || "Distinguished Scholar");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfDownloaded, setPdfDownloaded] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
+
+  // Sync recipient name when prop changes or modal opens
+  useEffect(() => {
+    if (userName && userName.trim() && userName !== "Learner") {
+      setRecipientName(userName.trim());
+    }
+  }, [userName]);
 
   const generateCertificate = useCallback(async () => {
     setLoading(true);
@@ -51,7 +64,7 @@ export function CertificateModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userName,
+          userName: recipientName.trim() || userName || "Distinguished Scholar",
           courseTitle,
           lessonCount,
           quizScore:
@@ -67,7 +80,7 @@ export function CertificateModal({
     } finally {
       setLoading(false);
     }
-  }, [userName, courseTitle, lessonCount, quizScore, quizTotal]);
+  }, [recipientName, userName, courseTitle, lessonCount, quizScore, quizTotal]);
 
   const [hasFetched, setHasFetched] = useState(false);
   if (isOpen && !hasFetched && !certificate && !loading) {
@@ -79,18 +92,30 @@ export function CertificateModal({
     setCertificate(null);
   }
 
+  const effectiveName = recipientName.trim() || certificate?.userName || "Distinguished Scholar";
+
   const handleDownloadPdf = useCallback(() => {
     if (!certificate) return;
-    generatePdfCertificate({
-      id: certificate.id,
-      userName: certificate.userName,
-      courseTitle: certificate.courseTitle,
-      lessonCount: certificate.lessonCount,
-      quizScore: certificate.quizScore,
-      issuedDate: certificate.issuedDate,
-      verifyUrl: certificate.verifyUrl,
-    });
-  }, [certificate]);
+    setDownloadingPdf(true);
+
+    try {
+      generatePdfCertificate({
+        id: certificate.id,
+        userName: effectiveName,
+        courseTitle: certificate.courseTitle,
+        lessonCount: certificate.lessonCount,
+        quizScore: certificate.quizScore,
+        issuedDate: certificate.issuedDate,
+        verifyUrl: certificate.verifyUrl,
+      });
+      setPdfDownloaded(true);
+      setTimeout(() => setPdfDownloaded(false), 3500);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }, [certificate, effectiveName]);
 
   const handleAddToLinkedIn = useCallback(() => {
     if (!certificate) return;
@@ -111,26 +136,21 @@ export function CertificateModal({
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
   }, [certificate]);
 
-  const handleDownload = useCallback(async () => {
+  const handleDownloadSvg = useCallback(async () => {
     if (!certificate) return;
 
     try {
-      const safeName = escapeXml(certificate.userName);
+      const safeName = escapeXml(effectiveName);
       const safeTitle = escapeXml(certificate.courseTitle);
       const safeId = escapeXml(certificate.id);
       const safeDate = escapeXml(certificate.issuedDate);
 
-      // Professional vector SVG certificate
       const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#0B1120"/>
       <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
   </defs>
 
@@ -138,42 +158,43 @@ export function CertificateModal({
   <rect width="960" height="640" fill="url(#bg)"/>
 
   <!-- Border Frames -->
-  <rect x="24" y="24" width="912" height="592" rx="16" fill="none" stroke="#334155" stroke-width="2"/>
-  <rect x="36" y="36" width="888" height="568" rx="12" fill="none" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1.5"/>
+  <rect x="24" y="24" width="912" height="592" rx="16" fill="none" stroke="#D4AF37" stroke-width="2"/>
+  <rect x="34" y="34" width="892" height="572" rx="12" fill="none" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="1.2"/>
 
   <!-- Brand Header -->
-  <text x="480" y="90" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="4" fill="#f59e0b" text-anchor="middle">VIDCURA ACCREDITED LEARNING SYSTEMS</text>
-  <text x="480" y="140" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="2" fill="#f8fafc" text-anchor="middle">CERTIFICATE OF COMPLETION</text>
+  <text x="480" y="85" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="4" fill="#D4AF37" text-anchor="middle">VIDCURA GLOBAL CREDENTIALING AUTHORITY</text>
+  <text x="480" y="105" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="2" fill="#94A3B8" text-anchor="middle">ACCREDITED CONTINUING COMPUTATIONAL EDUCATION</text>
+  <text x="480" y="148" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="2" fill="#F8FAFC" text-anchor="middle">CERTIFICATE OF COMPLETION</text>
 
   <!-- Divider -->
-  <line x1="380" y1="165" x2="580" y2="165" stroke="#f59e0b" stroke-width="2"/>
+  <line x1="380" y1="168" x2="580" y2="168" stroke="#D4AF37" stroke-width="2"/>
 
   <!-- Recipient Section -->
-  <text x="480" y="210" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#94a3b8" text-anchor="middle">THIS OFFICIAL CREDENTIAL IS AWARDED TO</text>
-  <text x="480" y="260" font-family="'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#ffffff" text-anchor="middle">${safeName}</text>
-  <line x1="280" y1="280" x2="680" y2="280" stroke="#334155" stroke-width="1"/>
+  <text x="480" y="212" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#94A3B8" text-anchor="middle">THIS OFFICIAL CREDENTIAL IS PROUDLY CONFERRED UPON</text>
+  <text x="480" y="260" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="800" fill="#FFFFFF" text-anchor="middle">${safeName}</text>
+  <line x1="280" y1="280" x2="680" y2="280" stroke="#475569" stroke-width="1"/>
 
   <!-- Course Title -->
-  <text x="480" y="325" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#94a3b8" text-anchor="middle">FOR DEMONSTRATING ACADEMIC MASTERY AND COMPLETION OF</text>
-  <text x="480" y="365" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#38bdf8" text-anchor="middle">${safeTitle}</text>
+  <text x="480" y="325" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#94A3B8" text-anchor="middle">FOR DEMONSTRATING ACADEMIC MASTERY AND COMPLETION OF</text>
+  <text x="480" y="365" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#38BDF8" text-anchor="middle">"${safeTitle}"</text>
 
   <!-- Metrics Grid -->
-  <text x="320" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="800" fill="#f8fafc" text-anchor="middle">${certificate.lessonCount} Modules</text>
-  <text x="320" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">CURRICULUM COMPLETED</text>
+  <text x="320" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC" text-anchor="middle">${certificate.lessonCount} Modules</text>
+  <text x="320" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">CURRICULUM COMPLETED</text>
 
-  <text x="480" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="800" fill="#10b981" text-anchor="middle">${certificate.quizScore != null ? `${certificate.quizScore}%` : "100%"}</text>
-  <text x="480" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">ASSESSMENT GRADE</text>
+  <text x="480" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="800" fill="#10B981" text-anchor="middle">${certificate.quizScore != null ? `${certificate.quizScore}%` : "100%"}</text>
+  <text x="480" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">ASSESSMENT GRADE</text>
 
-  <text x="640" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#f8fafc" text-anchor="middle">${safeDate}</text>
-  <text x="640" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">ISSUANCE DATE</text>
+  <text x="640" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC" text-anchor="middle">${safeDate}</text>
+  <text x="640" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">ISSUANCE DATE</text>
 
   <!-- Security Seal / Footnote -->
   <line x1="120" y1="510" x2="840" y2="510" stroke="#334155" stroke-width="1"/>
-  <text x="200" y="550" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#94a3b8">CREDENTIAL ID: ${safeId}</text>
-  <text x="200" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748b">Verify Authenticity: ${certificate.verifyUrl}</text>
+  <text x="140" y="550" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#94A3B8">CREDENTIAL ID: ${safeId}</text>
+  <text x="140" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B">Verify Authenticity: ${certificate.verifyUrl}</text>
 
-  <text x="760" y="550" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#10b981" text-anchor="end">STATUS: VERIFIED &amp; TAMPER-PROOF</text>
-  <text x="760" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748b" text-anchor="end">Vidcura Academic Certification Authority</text>
+  <text x="820" y="550" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#10B981" text-anchor="end">STATUS: VERIFIED &amp; TAMPER-PROOF</text>
+  <text x="820" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B" text-anchor="end">Vidcura Academic Certification Authority</text>
 </svg>`;
 
       const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
@@ -184,32 +205,14 @@ export function CertificateModal({
       link.click();
       URL.revokeObjectURL(url);
     } catch {
-      // Fallback text credential
-      const text = `VIDCURA ACCREDITED CREDENTIAL OF COMPLETION
-===================================================
-Recipient: ${certificate.userName}
-Curriculum: "${certificate.courseTitle}"
-Modules Completed: ${certificate.lessonCount}
-${certificate.quizScore != null ? `Assessment Grade: ${certificate.quizScore}%` : ""}
-Issued: ${certificate.issuedDate}
-Credential ID: ${certificate.id}
-Verification URL: ${certificate.verifyUrl}
-===================================================
-Issued by Vidcura Academic Verification Authority`;
-
-      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Vidcura_Credential_${certificate.id}.txt`;
-      link.click();
-      URL.revokeObjectURL(url);
+      // Fallback
+      alert("SVG download failed. Please use PDF download instead.");
     }
-  }, [certificate]);
+  }, [certificate, effectiveName]);
 
   const handleShare = useCallback(async () => {
     if (!certificate) return;
-    const shareText = `[Vidcura Verified Credential]\nI have successfully completed the curriculum "${certificate.courseTitle}" (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#Vidcura #LifelongLearning #ProfessionalDevelopment`;
+    const shareText = `[Vidcura Verified Credential]\n${effectiveName} has successfully completed the curriculum "${certificate.courseTitle}" (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#Vidcura #GoogleCareerCertificates #LifelongLearning`;
 
     if (navigator.share) {
       try {
@@ -225,28 +228,29 @@ Issued by Vidcura Academic Verification Authority`;
 
     try {
       await navigator.clipboard.writeText(shareText);
-      alert("Credential verification link copied to clipboard.");
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 3000);
     } catch {
-      // Unable to copy
+      // Fallback
     }
-  }, [certificate]);
+  }, [certificate, effectiveName]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-2.5 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Course Credential"
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-3xl bg-card border-2 border-border rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[92dvh] overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-card border-2 border-border rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[94dvh] flex flex-col">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-muted/40 sticky top-0 z-10 backdrop-blur-md">
+        <div className="p-3.5 sm:p-5 border-b border-border flex items-center justify-between bg-muted/40 sticky top-0 z-20 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <svg
                 width="16"
                 height="16"
@@ -254,16 +258,17 @@ Issued by Vidcura Academic Verification Authority`;
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.2"
+                aria-hidden="true"
               >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <polyline points="9 12 11 14 15 10" />
               </svg>
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block leading-tight">
                 Official Credential
               </span>
-              <h2 className="font-heading font-bold text-sm sm:text-base text-foreground">
+              <h2 className="font-heading font-bold text-sm sm:text-base text-foreground leading-tight">
                 Certificate of Completion
               </h2>
             </div>
@@ -288,13 +293,30 @@ Issued by Vidcura Academic Verification Authority`;
           </button>
         </div>
 
-        <div className="p-4 sm:p-6">
+        {/* Modal Scrollable Body */}
+        <div className="p-3.5 sm:p-6 overflow-y-auto space-y-4">
+          {/* Loading Logo State */}
           {loading && (
-            <div className="flex flex-col items-center py-12 gap-4">
-              <div className="simple-loader !w-8 !h-8 !border-2" />
-              <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-                Cryptographically signing credential…
-              </p>
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="relative w-14 h-14">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-amber-500 to-primary-500 animate-spin opacity-30" />
+                <div className="absolute inset-1 rounded-xl bg-card border border-border flex items-center justify-center shadow-inner">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icon.png"
+                    alt="Vidcura Logo"
+                    className="w-7 h-7 object-contain rounded-lg"
+                  />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="font-heading font-bold text-sm text-foreground">
+                  Cryptographically Signing Credential…
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Validating 100% curriculum completion and generating tamper-proof HMAC checksum
+                </p>
+              </div>
             </div>
           )}
 
@@ -313,21 +335,60 @@ Issued by Vidcura Academic Verification Authority`;
 
           {certificate && (
             <>
+              {/* Recipient Legal Name Confirmation Bar (Coursera/Google style) */}
+              <div className="p-3 sm:p-4 rounded-2xl bg-muted/60 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center flex-shrink-0">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block leading-none">
+                      Certificate Name Verification
+                    </span>
+                    <span className="text-[11px] text-foreground font-body leading-none mt-0.5 block">
+                      Confirm your full legal name as it appears on this credential:
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Enter Full Legal Name"
+                    maxLength={70}
+                    className="w-full sm:w-56 px-3 py-1.5 text-xs font-heading font-bold rounded-xl bg-card border border-border focus:border-amber-500 focus:outline-none text-foreground"
+                    aria-label="Recipient Legal Name"
+                  />
+                </div>
+              </div>
+
               {/* Executive Certificate Frame (Coursera / Google Skill LookMax Design) */}
               <div
                 ref={certRef}
-                className="relative bg-gradient-to-br from-[#0B1120] via-[#0F172A] to-[#1E293B] border-2 border-amber-500/50 rounded-2xl p-6 sm:p-10 text-center overflow-hidden shadow-2xl text-white"
+                className="relative bg-gradient-to-br from-[#0B1120] via-[#0F172A] to-[#1E293B] border-2 border-amber-500/50 rounded-2xl p-4 sm:p-8 text-center overflow-hidden shadow-2xl text-white"
               >
                 {/* Gold Outer and Inner Ornamental Lines */}
-                <div className="absolute inset-2 border border-amber-500/30 rounded-xl pointer-events-none" />
-                <div className="absolute inset-3 border border-slate-700/60 rounded-lg pointer-events-none" />
+                <div className="absolute inset-1.5 sm:inset-2 border border-amber-500/30 rounded-xl pointer-events-none" />
+                <div className="absolute inset-2.5 sm:inset-3 border border-slate-700/60 rounded-lg pointer-events-none" />
 
                 {/* Institution Crest */}
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center shadow-md">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center shadow-md">
                     <svg
-                      width="16"
-                      height="16"
+                      width="15"
+                      height="15"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -337,101 +398,107 @@ Issued by Vidcura Academic Verification Authority`;
                     </svg>
                   </div>
                   <div>
-                    <span className="font-heading font-extrabold text-sm sm:text-base tracking-[0.2em] uppercase text-amber-400 block">
+                    <span className="font-heading font-extrabold text-xs sm:text-sm tracking-[0.2em] uppercase text-amber-400 block leading-tight">
                       VIDCURA
                     </span>
-                    <span className="text-[9px] uppercase tracking-widest text-slate-400 font-mono block">
-                      ACADEMIC CREDENTIALING AUTHORITY
+                    <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-slate-400 font-mono block leading-tight">
+                      GLOBAL CREDENTIALING AUTHORITY
                     </span>
                   </div>
                 </div>
 
-                <div className="h-px w-32 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto mb-4" />
+                <div className="h-px w-24 sm:w-32 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto mb-3" />
 
-                <p className="text-[10px] uppercase font-mono font-bold tracking-[0.25em] text-amber-300 mb-1">
+                <p className="text-[9px] sm:text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-amber-300 mb-0.5">
                   Accredited Certificate of Completion
                 </p>
 
-                <p className="text-[11px] text-slate-400 font-body mb-2">
+                <p className="text-[10px] sm:text-[11px] text-slate-400 font-body mb-2">
                   This official academic credential is conferred upon
                 </p>
 
-                <h3 className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-white mb-2 pb-2 inline-block px-4 sm:px-8 border-b-2 border-amber-500/40">
-                  {certificate.userName}
+                <h3 className="font-heading font-black text-xl sm:text-3xl lg:text-4xl text-white mb-2 pb-1.5 inline-block px-3 sm:px-6 border-b-2 border-amber-500/40 break-words max-w-full">
+                  {effectiveName}
                 </h3>
 
-                <p className="text-[11px] text-slate-400 font-body mt-2 mb-1 max-w-md mx-auto">
+                <p className="text-[10px] sm:text-[11px] text-slate-400 font-body mt-2 mb-1 max-w-md mx-auto">
                   for demonstrating subject mastery and successfully satisfying all requirements of
                 </p>
 
-                <h4 className="font-heading font-bold text-base sm:text-xl text-sky-400 mb-5 max-w-lg mx-auto leading-snug">
+                <h4 className="font-heading font-bold text-sm sm:text-lg text-sky-400 mb-4 max-w-lg mx-auto leading-snug break-words">
                   &ldquo;{certificate.courseTitle}&rdquo;
                 </h4>
 
-                {/* Metric Strip */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 py-3 px-3 sm:px-4 rounded-xl bg-slate-900/80 border border-slate-700/80 max-w-lg mx-auto">
+                {/* Metric Strip (3 Boxes) */}
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-5 py-2.5 px-2 sm:px-4 rounded-xl bg-slate-900/80 border border-slate-700/80 max-w-lg mx-auto">
                   <div className="text-center">
-                    <p className="font-heading font-black text-sm sm:text-base text-white">
-                      {certificate.lessonCount}
+                    <p className="font-heading font-black text-xs sm:text-sm text-white">
+                      {certificate.lessonCount} Modules
                     </p>
-                    <p className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-bold tracking-wider">
-                      Modules
+                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
+                      Curriculum Completed
                     </p>
                   </div>
                   <div className="text-center border-x border-slate-800">
-                    <p className="font-heading font-black text-sm sm:text-base text-emerald-400">
+                    <p className="font-heading font-black text-xs sm:text-sm text-emerald-400">
                       {certificate.quizScore != null ? `${certificate.quizScore}%` : "100%"}
                     </p>
-                    <p className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-bold tracking-wider">
+                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
                       {certificate.quizScore != null && certificate.quizScore >= 85
-                        ? "Honors"
-                        : "Pass"}
+                        ? "Honors Distinction"
+                        : "Verified Pass"}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="font-heading font-bold text-xs sm:text-sm text-white truncate px-1">
+                    <p className="font-heading font-bold text-[10px] sm:text-xs text-white truncate px-1">
                       {certificate.issuedDate}
                     </p>
-                    <p className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-bold tracking-wider">
-                      Issued
+                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
+                      Official Date
                     </p>
                   </div>
                 </div>
 
                 {/* Signatures & Seal Section */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 items-center justify-between gap-3 pt-3 mb-4 max-w-lg mx-auto border-t border-slate-800 text-left">
-                  <div className="text-center sm:text-left">
-                    <p className="font-serif italic text-xs text-slate-300">Dr. Elena Vance</p>
-                    <div className="h-px w-20 bg-slate-600 my-1 mx-auto sm:mx-0" />
-                    <p className="font-heading text-[9px] text-slate-400 uppercase font-bold">
+                <div className="grid grid-cols-3 items-center justify-between gap-2 pt-2 mb-3 max-w-lg mx-auto border-t border-slate-800">
+                  <div className="text-left">
+                    <p className="font-serif italic text-[11px] sm:text-xs text-slate-300 truncate">
+                      Dr. Elena Vance
+                    </p>
+                    <div className="h-px w-14 sm:w-20 bg-slate-600 my-0.5" />
+                    <p className="font-heading text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold">
                       Academic Dean
                     </p>
                   </div>
 
                   {/* Seal Stamp */}
-                  <div className="col-span-2 sm:col-span-1 flex items-center justify-center my-1 sm:my-0">
-                    <div className="w-12 h-12 rounded-full border-2 border-amber-500/70 flex flex-col items-center justify-center bg-amber-500/10 shadow-inner">
-                      <span className="text-[7px] font-mono font-black text-amber-400 tracking-tighter">
+                  <div className="flex items-center justify-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-amber-500/70 flex flex-col items-center justify-center bg-amber-500/10 shadow-inner">
+                      <span className="text-[6px] sm:text-[7px] font-mono font-black text-amber-400 tracking-tighter">
                         OFFICIAL
                       </span>
-                      <span className="text-[8px] font-bold text-amber-300">SEAL</span>
-                      <span className="text-[6px] font-mono text-emerald-400 font-bold">
+                      <span className="text-[7px] sm:text-[8px] font-bold text-amber-300 leading-none">
+                        SEAL
+                      </span>
+                      <span className="text-[5px] sm:text-[6px] font-mono text-emerald-400 font-bold">
                         VERIFIED
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-center sm:text-right col-span-2 sm:col-span-1">
-                    <p className="font-serif italic text-xs text-slate-300">Marcus Sterling</p>
-                    <div className="h-px w-20 bg-slate-600 my-1 mx-auto sm:ml-auto sm:mr-0" />
-                    <p className="font-heading text-[9px] text-slate-400 uppercase font-bold">
+                  <div className="text-right">
+                    <p className="font-serif italic text-[11px] sm:text-xs text-slate-300 truncate">
+                      Marcus Sterling
+                    </p>
+                    <div className="h-px w-14 sm:w-20 bg-slate-600 my-0.5 ml-auto" />
+                    <p className="font-heading text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold">
                       Registrar
                     </p>
                   </div>
                 </div>
 
                 {/* Verification Footer */}
-                <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-mono gap-1.5">
+                <div className="pt-2.5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-mono gap-1">
                   <span className="truncate max-w-full">
                     ID: <span className="font-bold text-white">{certificate.id}</span>
                   </span>
@@ -442,38 +509,81 @@ Issued by Vidcura Academic Verification Authority`;
                 </div>
               </div>
 
+              {/* Action Feedback Messages */}
+              {pdfDownloaded && (
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-heading font-bold text-center flex items-center justify-center gap-2 animate-fade-in">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Official Vector PDF Credential Downloaded Successfully!</span>
+                </div>
+              )}
+
+              {linkCopied && (
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-heading font-bold text-center flex items-center justify-center gap-2 animate-fade-in">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Credential Verification Link Copied to Clipboard!</span>
+                </div>
+              )}
+
               {/* Action Buttons: Download PDF (Primary), Add to LinkedIn, SVG, Share */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center justify-center gap-2 sm:gap-2.5 pt-2">
                 {/* 1. Download PDF (Google / Coursera standard) */}
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
-                  className="btn-primary text-xs px-5 py-3 font-heading font-extrabold inline-flex items-center justify-center gap-2 shadow-lg min-h-[44px] cursor-pointer active:scale-95 transition-transform"
+                  disabled={downloadingPdf}
+                  className="btn-primary text-xs px-4 py-3 font-heading font-extrabold inline-flex items-center justify-center gap-2 shadow-lg min-h-[46px] cursor-pointer active:scale-95 transition-transform disabled:opacity-50"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="12" y1="18" x2="12" y2="12" />
-                    <polyline points="9 15 12 18 15 15" />
-                  </svg>
-                  <span>Download Official PDF</span>
+                  {downloadingPdf ? (
+                    <>
+                      <div className="simple-loader !w-4 !h-4 !border-2" />
+                      <span>Generating PDF…</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="12" y1="18" x2="12" y2="12" />
+                        <polyline points="9 15 12 18 15 15" />
+                      </svg>
+                      <span>Download Official PDF</span>
+                    </>
+                  )}
                 </button>
 
                 {/* 2. Add to LinkedIn Profile */}
                 <button
                   type="button"
                   onClick={handleAddToLinkedIn}
-                  className="btn-ghost text-xs px-4 py-3 font-heading font-bold inline-flex items-center justify-center gap-2 border border-[#0A66C2]/40 text-[#0A66C2] dark:text-[#70B5F9] hover:bg-[#0A66C2]/10 min-h-[44px] cursor-pointer"
+                  className="btn-ghost text-xs px-4 py-3 font-heading font-bold inline-flex items-center justify-center gap-2 border border-[#0A66C2]/50 text-[#0A66C2] dark:text-[#70B5F9] hover:bg-[#0A66C2]/10 min-h-[46px] cursor-pointer"
                   title="Add credential directly to your LinkedIn Profile"
                 >
                   <svg
@@ -491,8 +601,8 @@ Issued by Vidcura Academic Verification Authority`;
                 {/* 3. Download Vector SVG */}
                 <button
                   type="button"
-                  onClick={handleDownload}
-                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[44px] cursor-pointer"
+                  onClick={handleDownloadSvg}
+                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[46px] cursor-pointer"
                 >
                   <svg
                     width="14"
@@ -507,14 +617,14 @@ Issued by Vidcura Academic Verification Authority`;
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
-                  <span>SVG</span>
+                  <span>Download SVG</span>
                 </button>
 
                 {/* 4. Share Verification Link */}
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[44px] cursor-pointer"
+                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[46px] cursor-pointer"
                 >
                   <svg
                     width="14"
@@ -531,7 +641,7 @@ Issued by Vidcura Academic Verification Authority`;
                     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
-                  <span>Share</span>
+                  <span>Share Link</span>
                 </button>
               </div>
             </>

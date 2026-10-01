@@ -122,13 +122,13 @@ export function StudyCompanion({
       <button
         type="button"
         onClick={onToggle}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-border group"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-border group"
         aria-label="Open AI Study Assistant"
         title="Consult AI Study Assistant"
       >
         <svg
-          width="22"
-          height="22"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -150,7 +150,7 @@ export function StudyCompanion({
 
   return (
     <div
-      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] h-[78vh] sm:h-[540px] bg-card border-2 border-border sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
+      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] h-[85vh] sm:h-[540px] bg-card border-t-2 sm:border-2 border-border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
       role="complementary"
       aria-label="AI Study Assistant"
     >

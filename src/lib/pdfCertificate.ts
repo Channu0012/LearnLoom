@@ -15,7 +15,7 @@ export interface CertificatePdfOptions {
   verifyUrl: string;
 }
 
-export function generatePdfCertificate(options: CertificatePdfOptions): void {
+export function createPdfCertificateDoc(options: CertificatePdfOptions): jsPDF {
   const { id, userName, courseTitle, lessonCount, quizScore, issuedDate, verifyUrl } = options;
 
   // A4 Landscape: 297mm width x 210mm height
@@ -46,33 +46,37 @@ export function generatePdfCertificate(options: CertificatePdfOptions): void {
   doc.setLineWidth(0.4);
   doc.rect(15, 15, pageWidth - 30, pageHeight - 30, "S");
 
-  // Corner Accents (Corner L-brackets)
-  const cSize = 6;
+  // Corner Accents (Corner L-brackets with gold pips)
+  const cSize = 7;
   doc.setLineWidth(1.4);
   doc.setDrawColor(245, 158, 11);
   // Top-left
   doc.line(13, 13 + cSize, 13, 13);
   doc.line(13, 13, 13 + cSize, 13);
+  doc.circle(13, 13, 0.8, "F");
   // Top-right
   doc.line(pageWidth - 13 - cSize, 13, pageWidth - 13, 13);
   doc.line(pageWidth - 13, 13, pageWidth - 13, 13 + cSize);
+  doc.circle(pageWidth - 13, 13, 0.8, "F");
   // Bottom-left
   doc.line(13, pageHeight - 13 - cSize, 13, pageHeight - 13);
   doc.line(13, pageHeight - 13, 13 + cSize, pageHeight - 13);
+  doc.circle(13, pageHeight - 13, 0.8, "F");
   // Bottom-right
   doc.line(pageWidth - 13 - cSize, pageHeight - 13, pageWidth - 13, pageHeight - 13);
   doc.line(pageWidth - 13, pageHeight - 13 - cSize, pageWidth - 13, pageHeight - 13);
+  doc.circle(pageWidth - 13, pageHeight - 13, 0.8, "F");
 
   // 3. Institution Crest / Brand Header
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(10.5);
   doc.setTextColor(212, 175, 55);
-  doc.text("VIDCURA ACADEMIC CREDENTIALING AUTHORITY", pageWidth / 2, 28, { align: "center" });
+  doc.text("VIDCURA GLOBAL CREDENTIALING AUTHORITY", pageWidth / 2, 27, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184);
-  doc.text("GLOBAL DISTANCE LEARNING STANDARDS ACCREDITATION", pageWidth / 2, 33, {
+  doc.text("ACCREDITED STANDARDS BOARD FOR CONTINUING COMPUTATIONAL EDUCATION", pageWidth / 2, 32, {
     align: "center",
   });
 
@@ -85,42 +89,55 @@ export function generatePdfCertificate(options: CertificatePdfOptions): void {
   // Center Gold Accent Bar
   doc.setDrawColor(212, 175, 55);
   doc.setLineWidth(0.8);
-  doc.line(pageWidth / 2 - 40, 48, pageWidth / 2 + 40, 48);
+  doc.line(pageWidth / 2 - 45, 48, pageWidth / 2 + 45, 48);
 
   // 5. Awarded To Section
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(148, 163, 184);
-  doc.text("THIS IS PROUDLY CONFERRED UPON", pageWidth / 2, 57, { align: "center" });
+  doc.text("THIS OFFICIAL CREDENTIAL IS PROUDLY CONFERRED UPON", pageWidth / 2, 57, {
+    align: "center",
+  });
 
-  // Recipient Name (Bold, Prominent)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(255, 255, 255);
+  // Recipient Name (Bold, Prominent, dynamically scaled)
   const cleanName = userName.trim() || "Distinguished Scholar";
+  let nameFontSize = 24;
+  if (cleanName.length > 25) nameFontSize = 20;
+  if (cleanName.length > 36) nameFontSize = 16;
+  if (cleanName.length > 50) nameFontSize = 13;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(nameFontSize);
+  doc.setTextColor(255, 255, 255);
   doc.text(cleanName, pageWidth / 2, 70, { align: "center" });
 
-  // Name underline
+  // Name underline & decorative diamond
   doc.setDrawColor(71, 85, 105);
   doc.setLineWidth(0.5);
-  doc.line(pageWidth / 2 - 60, 73, pageWidth / 2 + 60, 73);
+  doc.line(pageWidth / 2 - 65, 74, pageWidth / 2 + 65, 74);
+  doc.setFillColor(212, 175, 55);
+  doc.circle(pageWidth / 2, 74, 1.2, "F");
 
   // 6. Curriculum Statement
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(148, 163, 184);
   doc.text(
-    "for successfully satisfying all academic requirements, completing 100% of the video curriculum, and demonstrating verified competency in",
+    "for demonstrating academic discipline, satisfying all assessment benchmarks, and successfully completing 100% of the curriculum in:",
     pageWidth / 2,
-    81,
+    82,
     { align: "center" }
   );
 
-  // Course Title (Cyan / Bright)
+  // Course Title (Cyan / Bright, dynamically scaled)
+  let courseFontSize = 14;
+  if (courseTitle.length > 50) courseFontSize = 12;
+  if (courseTitle.length > 75) courseFontSize = 10.5;
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(courseFontSize);
   doc.setTextColor(56, 189, 248);
-  const truncatedTitle = courseTitle.length > 70 ? courseTitle.slice(0, 67) + "..." : courseTitle;
+  const truncatedTitle = courseTitle.length > 85 ? courseTitle.slice(0, 82) + "..." : courseTitle;
   doc.text(`"${truncatedTitle}"`, pageWidth / 2, 91, { align: "center" });
 
   // 7. Academic Metrics Strip (3 boxes)
@@ -188,7 +205,7 @@ export function generatePdfCertificate(options: CertificatePdfOptions): void {
   doc.setTextColor(148, 163, 184);
   doc.text("Academic Dean · Vidcura Systems", 67.5, sigY + 8, { align: "center" });
 
-  // Center Seal Stamp (Gold circle with star)
+  // Center Seal Stamp (Gold double concentric circle with star)
   doc.setDrawColor(212, 175, 55);
   doc.setLineWidth(0.8);
   doc.circle(pageWidth / 2, sigY - 2, 11, "S");
@@ -235,7 +252,13 @@ export function generatePdfCertificate(options: CertificatePdfOptions): void {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
-  doc.text(`Verify Online: ${verifyUrl}`, 24, 184.5);
+
+  // Make the verification URL a live clickable link inside the PDF
+  if (typeof (doc as unknown as { textWithLink?: unknown }).textWithLink === "function") {
+    doc.textWithLink(`Verify Online: ${verifyUrl}`, 24, 184.5, { url: verifyUrl });
+  } else {
+    doc.text(`Verify Online: ${verifyUrl}`, 24, 184.5);
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
@@ -252,7 +275,11 @@ export function generatePdfCertificate(options: CertificatePdfOptions): void {
     { align: "right" }
   );
 
-  // Save PDF file
-  const filename = `Vidcura_Certificate_${id.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+  return doc;
+}
+
+export function generatePdfCertificate(options: CertificatePdfOptions): void {
+  const doc = createPdfCertificateDoc(options);
+  const filename = `Vidcura_Certificate_${options.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
   doc.save(filename);
 }

@@ -41,10 +41,10 @@ export function StreakDashboard() {
   });
 
   return (
-    <div className="clay-card p-5 bg-card border border-border rounded-2xl space-y-4">
+    <div className="clay-card p-4 sm:p-5 bg-card border border-border rounded-2xl space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
+        <h3 className="font-heading font-bold text-sm sm:text-base text-foreground flex items-center gap-2">
           <svg
             width="18"
             height="18"
@@ -62,29 +62,35 @@ export function StreakDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {/* Streak */}
-        <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <p className="font-heading font-black text-2xl text-amber-600 dark:text-amber-400">
+        <div className="text-center p-2.5 sm:p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <p className="font-heading font-black text-xl sm:text-2xl text-amber-600 dark:text-amber-400">
             {streak.currentStreak}
           </p>
-          <p className="text-[10px] text-muted-foreground font-bold uppercase">Day Streak</p>
+          <p className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase">
+            Day Streak
+          </p>
         </div>
 
         {/* XP */}
-        <div className="text-center p-3 rounded-xl bg-primary-500/10 border border-primary-500/20">
-          <p className="font-heading font-black text-2xl text-primary-600 dark:text-primary-400">
+        <div className="text-center p-2.5 sm:p-3 rounded-xl bg-primary-500/10 border border-primary-500/20">
+          <p className="font-heading font-black text-xl sm:text-2xl text-primary-600 dark:text-primary-400">
             {streak.totalXp}
           </p>
-          <p className="text-[10px] text-muted-foreground font-bold uppercase">Total Points</p>
+          <p className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase">
+            Total Points
+          </p>
         </div>
 
         {/* Best Streak */}
-        <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <p className="font-heading font-black text-2xl text-emerald-600 dark:text-emerald-400">
+        <div className="text-center p-2.5 sm:p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+          <p className="font-heading font-black text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400">
             {streak.bestStreak}
           </p>
-          <p className="text-[10px] text-muted-foreground font-bold uppercase">Best Streak</p>
+          <p className="text-[9px] sm:text-[10px] text-muted-foreground font-bold uppercase">
+            Best Streak
+          </p>
         </div>
       </div>
 
@@ -93,12 +99,14 @@ export function StreakDashboard() {
         <p className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground mb-2">
           Weekly Study Frequency
         </p>
-        <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center justify-between gap-1 sm:gap-1.5">
           {last7Days.map((day) => (
             <div key={day.dateStr} className="flex flex-col items-center gap-1">
-              <span className="text-[10px] text-muted-foreground font-body">{day.dayName}</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-body">
+                {day.dayName}
+              </span>
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-heading font-bold transition-all ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[11px] sm:text-xs font-heading font-bold transition-all ${
                   day.isActive
                     ? "bg-emerald-500 text-white shadow-sm"
                     : day.isToday

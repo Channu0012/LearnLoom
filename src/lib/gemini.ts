@@ -239,6 +239,31 @@ function getFallbackQuiz(videoTitle: string): QuizQuestion[] {
       explanation:
         "Active hands-on application and rigorous assessment validation ensure durable knowledge retention.",
     },
+    {
+      question:
+        "Which of the following describes an optimal architectural approach in this domain?",
+      options: [
+        "Monolithic and tightly coupled components without separation of concerns",
+        "Modular, maintainable design adhering to established industry design patterns",
+        "Ad-hoc scripts running without error handling or automated tests",
+        "Ignoring boundary constraints and data sanitization guidelines",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Modular architecture with strong separation of concerns provides predictable maintainability.",
+    },
+    {
+      question: "How should unexpected edge cases or runtime exceptions be addressed?",
+      options: [
+        "Silently swallowed without logging or state remediation",
+        "Handled through structured error boundaries and clear logging",
+        "By terminating the entire host system immediately",
+        "By disabling all defensive validations",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Resilient engineering mandates structured error management and observability across boundary layers.",
+    },
   ];
 }
 
