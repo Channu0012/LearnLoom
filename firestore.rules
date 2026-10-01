@@ -80,6 +80,22 @@ service cloud.firestore {
         // Only the owning user can read or write their progress
         allow read, write: if isUser(uid);
       }
+
+      // ── quizResults sub-collection: users/{uid}/quizResults/{resultId} ────
+      match /quizResults/{resultId} {
+        // Only the owning user can read or write their quiz results
+        allow read, write: if isUser(uid);
+      }
+
+      // ── certificates sub-collection: users/{uid}/certificates/{certId} ───
+      match /certificates/{certId} {
+        // Anyone can read certificates (for public verification)
+        allow read: if true;
+        // Only the owning user can create certificates
+        allow create: if isUser(uid);
+        // No updates or deletes (certificates are immutable)
+        allow update, delete: if false;
+      }
     }
 
     // ── courses/{courseId} ───────────────────────────────────────────────────

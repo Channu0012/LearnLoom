@@ -19,6 +19,7 @@
     "emulator": "firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "firebase": "^11.0.0",
     "firebase-admin": "^13.0.0",
     "next": "^15.3.4",

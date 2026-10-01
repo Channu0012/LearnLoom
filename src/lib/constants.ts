@@ -33,6 +33,8 @@ export const COLLECTIONS = {
   LESSONS: "lessons",
   PROGRESS: "progress",
   REPORTS: "reports",
+  QUIZ_RESULTS: "quizResults",
+  CERTIFICATES: "certificates",
 } as const;
 
 /** Report statuses */

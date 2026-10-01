@@ -1,8 +1,9 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// CoursePageClient — Universal Coursera-grade interactive learning experience
-// Features: Theatre player, Curriculum checklist, Study notes,
+// CoursePageClient — Vidcura's flagship learning experience
+// Features: Theatre player, Curriculum checklist, AI Quiz, AI Study Notes,
+// AI Study Companion, Streak Dashboard, Certificate System,
 // Ad & sponsor banner, Mobile responsive syllabus, and instant progress tracking.
 // ---------------------------------------------------------------------------
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -24,6 +25,10 @@ import { CourseNotes } from "@/components/courses/CourseNotes";
 import { CourseAdBanner } from "@/components/ads/CourseAdBanner";
 import { CourseraLoader } from "@/components/ui/CourseraLoader";
 import { recordStudyActivity } from "@/lib/streak";
+import { QuizModal } from "@/components/courses/QuizModal";
+import { StudyCompanion } from "@/components/courses/StudyCompanion";
+import { CertificateModal } from "@/components/courses/CertificateModal";
+import { StreakDashboard } from "@/components/courses/StreakDashboard";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -190,8 +195,17 @@ function CoursePlayerContent({
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "notes" | "report">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "notes" | "quiz" | "report">("overview");
   const [tabTransitioning, setTabTransitioning] = useState<string | null>(null);
+
+  // AI & Certificate Feature States
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isCompanionOpen, setIsCompanionOpen] = useState(false);
+  const [quizScores, setQuizScores] = useState<Map<string, { score: number; total: number }>>(
+    new Map()
+  );
+  const [showCourseComplete, setShowCourseComplete] = useState(false);
 
   // Lesson Pagination State (10 lessons per page)
   const LESSONS_PER_PAGE = 10;
@@ -518,11 +532,24 @@ function CoursePlayerContent({
     }
   };
 
-  const handleTabChange = (tab: "overview" | "notes" | "report") => {
+  const handleTabChange = (tab: "overview" | "notes" | "quiz" | "report") => {
     setTabTransitioning(tab);
     setActiveTab(tab);
     setTimeout(() => setTabTransitioning(null), 200);
   };
+
+  // Quiz completion handler — stores scores per lesson
+  const handleQuizComplete = useCallback(
+    (score: number, total: number) => {
+      if (!activeLesson) return;
+      setQuizScores((prev) => {
+        const next = new Map(prev);
+        next.set(activeLesson.id, { score, total });
+        return next;
+      });
+    },
+    [activeLesson]
+  );
 
   // Open YouTube-style rich Share modal
   const handleShare = () => {
@@ -556,6 +583,17 @@ function CoursePlayerContent({
   const progressPercent =
     lessons.length > 0 ? Math.round((completedIds.size / lessons.length) * 100) : 0;
   const isCompleted = progressPercent === 100;
+
+  // Calculate total quiz score across all lessons
+  const totalQuizScore = Array.from(quizScores.values()).reduce((a, b) => a + b.score, 0);
+  const totalQuizTotal = Array.from(quizScores.values()).reduce((a, b) => a + b.total, 0);
+
+  // Show course completion celebration when 100%
+  useEffect(() => {
+    if (isCompleted && completedIds.size > 0 && !showCourseComplete) {
+      setShowCourseComplete(true);
+    }
+  }, [isCompleted, completedIds.size, showCourseComplete]);
 
   return (
     <div className="container-page py-6 sm:py-8 max-w-7xl">
@@ -926,19 +964,25 @@ function CoursePlayerContent({
               {tabTransitioning === "notes" ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-ping" />
               ) : (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
+                <span>🤖</span>
               )}
-              <span>Study Notes</span>
+              <span>AI Notes</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange("quiz")}
+              className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                activeTab === "quiz"
+                  ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                  : "border-transparent text-muted-foreground hover:text-foreground active:bg-muted/50"
+              } ${tabTransitioning === "quiz" ? "animate-pulse" : ""}`}
+            >
+              {tabTransitioning === "quiz" ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              ) : (
+                <span>🧠</span>
+              )}
+              <span>AI Quiz</span>
             </button>
             <button
               type="button"
@@ -997,16 +1041,123 @@ function CoursePlayerContent({
 
               {/* Sponsored Banner */}
               <CourseAdBanner category={course.category} />
+
+              {/* Course Completion Celebration */}
+              {isCompleted && (
+                <div className="clay-card p-6 bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-emerald-950/30 dark:to-amber-950/30 border-2 border-emerald-500/30 rounded-2xl text-center space-y-3 animate-fade-in">
+                  <div className="text-4xl">🎉</div>
+                  <h3 className="font-heading font-black text-lg text-foreground">
+                    Course Completed!
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-body">
+                    You&apos;ve completed all {lessons.length} lessons. Claim your certificate!
+                  </p>
+                  <div className="flex items-center justify-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuizOpen(true)}
+                      className="btn-ghost text-xs px-4 py-2.5 inline-flex items-center gap-1.5"
+                    >
+                      🧠 Take Final Quiz
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCertificateOpen(true)}
+                      className="btn-primary text-xs px-5 py-2.5 inline-flex items-center gap-1.5 shadow-lg"
+                    >
+                      🎓 Get Certificate
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Tab 2: Notes Scratchpad */}
+          {/* Tab 2: AI-Powered Notes */}
           {activeTab === "notes" && (
             <CourseNotes
               courseId={courseId}
               courseTitle={course.title}
+              courseCategory={course.category}
               activeLessonTitle={activeLesson?.title ?? "Lesson"}
             />
+          )}
+
+          {/* Tab 3: AI Quiz */}
+          {activeTab === "quiz" && (
+            <div className="space-y-5">
+              {/* Quick Quiz Launch */}
+              <div className="clay-card p-6 bg-card border border-border rounded-2xl text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                  <span className="text-3xl">🧠</span>
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-lg text-foreground">
+                    AI-Powered Quiz
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-body mt-1">
+                    Test your understanding of &ldquo;{activeLesson?.title}&rdquo; with AI-generated
+                    questions
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsQuizOpen(true)}
+                  className="btn-primary text-sm px-6 py-3 inline-flex items-center gap-2 shadow-lg"
+                >
+                  <span>🧠</span>
+                  <span>Start Quiz</span>
+                </button>
+
+                {/* Show previous quiz score if exists */}
+                {activeLesson && quizScores.has(activeLesson.id) && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-xs font-heading font-bold text-emerald-600 dark:text-emerald-400">
+                      Previous Score: {quizScores.get(activeLesson.id)!.score}/
+                      {quizScores.get(activeLesson.id)!.total} (
+                      {Math.round(
+                        (quizScores.get(activeLesson.id)!.score /
+                          quizScores.get(activeLesson.id)!.total) *
+                          100
+                      )}
+                      %)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Quiz Stats Summary */}
+              {quizScores.size > 0 && (
+                <div className="clay-card p-5 bg-card border border-border rounded-2xl">
+                  <h4 className="font-heading font-bold text-sm text-foreground mb-3">
+                    📊 Quiz Performance
+                  </h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center p-2 rounded-lg bg-muted">
+                      <p className="font-heading font-black text-lg text-foreground">
+                        {quizScores.size}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-bold">Quizzes Taken</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-muted">
+                      <p className="font-heading font-black text-lg text-foreground">
+                        {totalQuizTotal > 0
+                          ? Math.round((totalQuizScore / totalQuizTotal) * 100)
+                          : 0}
+                        %
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-bold">Avg Score</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-muted">
+                      <p className="font-heading font-black text-lg text-foreground">
+                        {totalQuizScore}/{totalQuizTotal}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-bold">Total Correct</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Tab 4: Report Form */}
@@ -1358,6 +1509,13 @@ function CoursePlayerContent({
               </button>
             </div>
           )}
+
+          {/* Streak & Progress Dashboard */}
+          {user && (
+            <div className="mt-4">
+              <StreakDashboard />
+            </div>
+          )}
         </aside>
       </div>
 
@@ -1429,6 +1587,38 @@ function CoursePlayerContent({
         onClose={() => setIsShareModalOpen(false)}
         title={course.title}
         url={typeof window !== "undefined" ? window.location.href : ""}
+      />
+
+      {/* AI Quiz Modal */}
+      <QuizModal
+        isOpen={isQuizOpen}
+        onClose={() => setIsQuizOpen(false)}
+        lessonTitle={activeLesson?.title ?? "Lesson"}
+        courseTitle={course.title}
+        courseCategory={course.category}
+        lessonIndex={activeIdx}
+        totalLessons={lessons.length}
+        onQuizComplete={handleQuizComplete}
+      />
+
+      {/* Certificate Modal */}
+      <CertificateModal
+        isOpen={isCertificateOpen}
+        onClose={() => setIsCertificateOpen(false)}
+        userName={user?.displayName ?? "Learner"}
+        courseTitle={course.title}
+        lessonCount={lessons.length}
+        quizScore={totalQuizScore > 0 ? totalQuizScore : undefined}
+        quizTotal={totalQuizTotal > 0 ? totalQuizTotal : undefined}
+      />
+
+      {/* AI Study Companion — Floating Chat */}
+      <StudyCompanion
+        videoTitle={activeLesson?.title ?? ""}
+        courseTitle={course.title}
+        courseCategory={course.category}
+        isOpen={isCompanionOpen}
+        onToggle={() => setIsCompanionOpen((o) => !o)}
       />
     </div>
   );
