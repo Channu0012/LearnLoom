@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateNotes } from "@/lib/gemini";
 import { checkRateLimit, sanitizeInput } from "@/lib/security";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const ip =

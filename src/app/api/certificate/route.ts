@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, sanitizeInput, generateSecureCertificateId } from "@/lib/security";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
     year: "numeric",

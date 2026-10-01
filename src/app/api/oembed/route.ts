@@ -7,6 +7,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubeId } from "@/lib/constants";
 import type { OEmbedResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // Simple in-memory rate limiter (per-IP, resets on cold start)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RPM_LIMIT = parseInt(process.env.OEMBED_RATE_LIMIT_RPM ?? "30", 10);

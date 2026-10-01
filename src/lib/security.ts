@@ -139,3 +139,69 @@ export function verifyCertificateId(id: string): { isValid: boolean; reason?: st
 
   return { isValid: true };
 }
+
+// ── Anti-Abuse & Fake Account Protection (Z++ Grade) ─────────────────────
+// Known disposable, burner, and throwaway temporary email domains
+const DISPOSABLE_DOMAINS = new Set([
+  "mailinator.com",
+  "tempmail.com",
+  "temp-mail.org",
+  "guerrillamail.com",
+  "guerrillamailblock.com",
+  "10minutemail.com",
+  "10minutemail.net",
+  "yopmail.com",
+  "sharklasers.com",
+  "trashmail.com",
+  "dispostable.com",
+  "burnermail.io",
+  "dropmail.me",
+  "emailondeck.com",
+  "fakemailgenerator.com",
+  "getairmail.com",
+  "throwawaymail.com",
+  "crazymailing.com",
+  "maildrop.cc",
+  "mohmal.com",
+]);
+
+/**
+ * Validates whether an email address is from a known disposable burner provider.
+ */
+export function isDisposableEmail(email: string): boolean {
+  if (!email || typeof email !== "string") return false;
+  const parts = email.trim().toLowerCase().split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  return domain ? DISPOSABLE_DOMAINS.has(domain) : false;
+}
+
+/**
+ * Enforces Z++ password criteria: min 8 characters, at least 1 letter and 1 digit.
+ */
+export function validateSecurePassword(password: string): { valid: boolean; reason?: string } {
+  if (!password || password.length < 8) {
+    return { valid: false, reason: "Password must be at least 8 characters long." };
+  }
+  if (!/[A-Za-z]/.test(password)) {
+    return { valid: false, reason: "Password must contain at least one letter." };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, reason: "Password must contain at least one number." };
+  }
+  return { valid: true };
+}
+
+/**
+ * Sanitizes and normalizes user display names, stripping non-printable characters and scripts.
+ */
+export function sanitizeDisplayName(name: string, maxLen = 60): string {
+  if (!name || typeof name !== "string") return "Student";
+  return name
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Strip zero-width invisible characters
+    .trim()
+    .slice(0, maxLen);
+}

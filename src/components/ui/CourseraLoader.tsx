@@ -58,18 +58,54 @@ export function CourseraLoader({
 
       {/* Trust micro-pills */}
       <div className="flex items-center gap-3 sm:gap-4 text-[11px] font-heading font-semibold text-muted-foreground flex-wrap justify-center">
-        <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">
-          <span>✓</span>
+        <span className="inline-flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
           <span>Self-Paced</span>
         </span>
         <span className="text-border">·</span>
-        <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">
-          <span>✓</span>
+        <span className="inline-flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
           <span>Habit Streaks</span>
         </span>
         <span className="text-border">·</span>
-        <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">
-          <span>✓</span>
+        <span className="inline-flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
           <span>Distraction-Free</span>
         </span>
       </div>

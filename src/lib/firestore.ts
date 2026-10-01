@@ -18,6 +18,7 @@ import {
   startAfter,
   arrayUnion,
   serverTimestamp,
+  writeBatch,
   type DocumentSnapshot,
   type QueryDocumentSnapshot,
   type QueryConstraint,
@@ -206,9 +207,38 @@ export async function addLesson(courseId: string, data: Omit<LessonDoc, "id">): 
 export async function clearLessons(courseId: string): Promise<void> {
   try {
     const snap = await getDocs(collection(db, COLLECTIONS.COURSES, courseId, COLLECTIONS.LESSONS));
-    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+    if (snap.empty) return;
+    const BATCH_CHUNK_SIZE = 450;
+    const docs = snap.docs;
+    for (let i = 0; i < docs.length; i += BATCH_CHUNK_SIZE) {
+      const batch = writeBatch(db);
+      for (const d of docs.slice(i, i + BATCH_CHUNK_SIZE)) {
+        batch.delete(d.ref);
+      }
+      await batch.commit();
+    }
   } catch {
     // Non-fatal if clearing empty collection
+  }
+}
+
+/**
+ * High-performance atomic batch writer for course lessons.
+ * Saves 100+ video courses in single atomic chunks instead of sequential requests.
+ */
+export async function batchSetLessons(
+  courseId: string,
+  lessons: Array<Omit<LessonDoc, "id">>
+): Promise<void> {
+  const BATCH_CHUNK_SIZE = 450;
+  for (let i = 0; i < lessons.length; i += BATCH_CHUNK_SIZE) {
+    const chunk = lessons.slice(i, i + BATCH_CHUNK_SIZE);
+    const batch = writeBatch(db);
+    for (const lesson of chunk) {
+      const lessonRef = doc(collection(db, COLLECTIONS.COURSES, courseId, COLLECTIONS.LESSONS));
+      batch.set(lessonRef, lesson);
+    }
+    await batch.commit();
   }
 }
 

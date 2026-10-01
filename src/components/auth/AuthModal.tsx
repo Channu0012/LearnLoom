@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { isDisposableEmail, validateSecurePassword } from "@/lib/security";
 
 export function AuthModal() {
   const {
@@ -20,6 +21,7 @@ export function AuthModal() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [honeypot, setHoneypot] = useState(""); // Bot honeypot trap
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState("");
 
@@ -29,6 +31,7 @@ export function AuthModal() {
       setEmail("");
       setPassword("");
       setName("");
+      setHoneypot("");
       setLocalError("");
       clearAuthError();
     }
@@ -50,7 +53,14 @@ export function AuthModal() {
     e.preventDefault();
     setLocalError("");
 
-    if (!email.trim()) {
+    // Bot trap: automated scrapers fill all inputs
+    if (honeypot.trim()) {
+      closeAuthModal();
+      return;
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
       setLocalError("Please enter your email address.");
       return;
     }
@@ -60,13 +70,22 @@ export function AuthModal() {
     }
 
     if (authModalMode === "signup") {
-      if (password.length < 6) {
-        setLocalError("Password must be at least 6 characters long.");
+      if (isDisposableEmail(cleanEmail)) {
+        setLocalError(
+          "Disposable and burner email addresses are not permitted. Please use a verified email."
+        );
         return;
       }
-      await signUpWithEmail(email, password, name || email.split("@")[0]);
+      const pwCheck = validateSecurePassword(password);
+      if (!pwCheck.valid) {
+        setLocalError(
+          pwCheck.reason || "Password must be at least 8 characters with letters and numbers."
+        );
+        return;
+      }
+      await signUpWithEmail(cleanEmail, password, name || cleanEmail.split("@")[0]);
     } else {
-      await signInWithEmail(email, password);
+      await signInWithEmail(cleanEmail, password);
     }
   };
 
@@ -226,6 +245,20 @@ export function AuthModal() {
 
         {/* Email & Password Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Honeypot field for trapping automated malicious bots */}
+          <div className="hidden" aria-hidden="true" style={{ display: "none" }}>
+            <label htmlFor="website-trap">Leave this blank</label>
+            <input
+              id="website-trap"
+              type="text"
+              name="website_trap"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </div>
+
           {authModalMode === "signup" && (
             <div>
               <label
@@ -274,11 +307,11 @@ export function AuthModal() {
               >
                 Password
               </label>
-              {authModalMode === "signin" && (
-                <span className="text-[11px] text-primary-600 dark:text-primary-400 font-body">
-                  Min 6 characters
-                </span>
-              )}
+              <span className="text-[11px] text-primary-600 dark:text-primary-400 font-body">
+                {authModalMode === "signin"
+                  ? "Min 6 characters"
+                  : "Min 8 chars (letters + numbers)"}
+              </span>
             </div>
             <div className="relative">
               <input

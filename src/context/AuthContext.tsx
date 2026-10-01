@@ -19,6 +19,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { createUserDoc, getUser } from "@/lib/firestore";
 import type { UserDoc } from "@/lib/types";
 import { LIMITS } from "@/lib/constants";
+import { isDisposableEmail, validateSecurePassword, sanitizeDisplayName } from "@/lib/security";
 
 interface AuthContextValue {
   user: User | null;
@@ -196,9 +197,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ): Promise<boolean> => {
     setIsSigningIn(true);
     setAuthError(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Z++ Anti-Abuse: Block disposable / throwaway email domains
+    if (isDisposableEmail(cleanEmail)) {
+      setAuthError(
+        "Disposable and temporary burner email addresses are not permitted. Please use a verified email."
+      );
+      setIsSigningIn(false);
+      return false;
+    }
+
+    // Z++ Password Security Validation
+    const pwCheck = validateSecurePassword(pass);
+    if (!pwCheck.valid) {
+      setAuthError(pwCheck.reason || "Password does not meet enterprise security requirements.");
+      setIsSigningIn(false);
+      return false;
+    }
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), pass);
-      const cleanName = displayName.trim().slice(0, LIMITS.DISPLAY_NAME) || email.split("@")[0];
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+      const cleanName = sanitizeDisplayName(
+        displayName.trim() || cleanEmail.split("@")[0] || "Student",
+        LIMITS.DISPLAY_NAME
+      );
       await updateProfile(userCredential.user, { displayName: cleanName });
       await createUserDoc(userCredential.user.uid, {
         uid: userCredential.user.uid,
@@ -212,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (fbErr?.code === "auth/email-already-in-use") {
         setAuthError("This email address is already registered. Please sign in instead.");
       } else if (fbErr?.code === "auth/weak-password") {
-        setAuthError("Password should be at least 6 characters long.");
+        setAuthError("Password must be at least 8 characters long with letters and numbers.");
       } else if (fbErr?.code === "auth/invalid-email") {
         setAuthError("Please enter a valid email address.");
       } else {

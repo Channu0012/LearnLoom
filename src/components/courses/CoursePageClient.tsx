@@ -635,8 +635,21 @@ function CoursePlayerContent({
           <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1">
             {lessons.length} video lessons · Curated Curriculum
             {isLowInternet && (
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
-                ⚡ Data Saver
+              <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Data Saver</span>
               </span>
             )}
           </p>
@@ -731,7 +744,20 @@ function CoursePlayerContent({
                   </p>
                   {isLowInternet && (
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs mt-2 font-body animate-pulse">
-                      <span>⚡ Low-speed connection detected · Optimizing stream</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                      <span>Low-speed connection detected · Optimizing stream</span>
                     </div>
                   )}
                 </div>
@@ -753,8 +779,21 @@ function CoursePlayerContent({
                     </div>
                   </div>
 
-                  <p className="text-[11px] uppercase font-extrabold tracking-wider text-teal-400 mb-1">
-                    ✓ Lesson Completed · Next Video in {autoAdvanceCountdown}s
+                  <p className="text-[11px] uppercase font-extrabold tracking-wider text-teal-400 mb-1 flex items-center justify-center gap-1.5">
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Lesson Completed · Next Video in {autoAdvanceCountdown}s</span>
                   </p>
                   <h3 className="font-heading font-bold text-white text-sm sm:text-base max-w-md line-clamp-1 mb-3">
                     {autoAdvanceNextLesson.title}
@@ -823,8 +862,21 @@ function CoursePlayerContent({
                     Lesson {activeIdx + 1} of {lessons.length}
                   </span>
                   {isEnrolled && (
-                    <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                      ✓ In My Learning
+                    <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span>In My Learning</span>
                     </span>
                   )}
                 </div>
@@ -1030,7 +1082,19 @@ function CoursePlayerContent({
                 <div className="mt-6 pt-6 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                      ✓
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     </div>
                     <div>
                       <p className="font-heading font-bold text-xs text-foreground">
@@ -1043,7 +1107,19 @@ function CoursePlayerContent({
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-primary-500/10 text-primary-600 flex items-center justify-center flex-shrink-0">
-                      ★
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
                     </div>
                     <div>
                       <p className="font-heading font-bold text-xs text-foreground">
@@ -1230,8 +1306,21 @@ function CoursePlayerContent({
                           quizScores.get(activeLesson.id)!.total) *
                           100
                       ) >= 70 ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 ml-2">
-                          ✓ Passed
+                        <span className="text-emerald-600 dark:text-emerald-400 ml-2 inline-flex items-center gap-1">
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>Passed</span>
                         </span>
                       ) : (
                         <span className="text-amber-600 dark:text-amber-400 ml-2">Needs 70%</span>
@@ -1380,7 +1469,22 @@ function CoursePlayerContent({
                   {completedIds.size} of {lessons.length} completed
                 </span>
                 {isCompleted ? (
-                  <span className="font-bold text-emerald-600">✓ Finished!</span>
+                  <span className="font-bold text-emerald-600 inline-flex items-center gap-1">
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Finished!</span>
+                  </span>
                 ) : isEnrolled ? (
                   <span className="text-primary-600 font-semibold">Active Learner</span>
                 ) : (
@@ -1520,8 +1624,20 @@ function CoursePlayerContent({
                           )}
                           {/* Done checkmark overlay */}
                           {isDone && !isLoadingThis && (
-                            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
-                              ✓
+                            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                              <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
                             </div>
                           )}
                           {/* Lesson number badge */}

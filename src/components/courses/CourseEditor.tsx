@@ -21,7 +21,7 @@ import { generateKeywords } from "@/lib/keywords";
 import {
   createCourse,
   updateCourse,
-  addLesson,
+  batchSetLessons,
   clearLessons,
   getLessons,
   getCourse,
@@ -325,7 +325,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
 
       setLessons((prev) => [...prev, ...newLessons]);
       setPlaylistSuccessMsg(
-        `🎉 Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
+        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
       );
       setPlaylistInput("");
     } catch {
@@ -502,19 +502,15 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         await clearLessons(id);
       }
 
-      // Sync lessons
+      // High-capacity atomic batch lesson sync (handles 100+ videos instantly)
       if (id) {
-        for (let i = 0; i < lessons.length; i++) {
-          const lesson = lessons[i];
-          if (lesson && id) {
-            await addLesson(id, {
-              youtubeId: lesson.youtubeId,
-              title: lesson.title.trim().slice(0, LIMITS.LESSON_TITLE),
-              order: i,
-              thumbnailUrl: lesson.thumbnailUrl,
-            });
-          }
-        }
+        const lessonDocs = lessons.map((lesson, i) => ({
+          youtubeId: lesson.youtubeId,
+          title: lesson.title.trim().slice(0, LIMITS.LESSON_TITLE),
+          order: i,
+          thumbnailUrl: lesson.thumbnailUrl,
+        }));
+        await batchSetLessons(id, lessonDocs);
         const targetPath = status === "published" ? `/course/${id}` : "/my-courses";
         router.push(targetPath);
         router.refresh();
@@ -744,7 +740,20 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <span>⚡ 1-Click Playlist</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>1-Click Playlist</span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-accent-500 text-white font-extrabold uppercase">
                   Fast
                 </span>

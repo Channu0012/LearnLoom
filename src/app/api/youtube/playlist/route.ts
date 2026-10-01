@@ -5,6 +5,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubePlaylistId } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 // In-memory rate limiting (max 15 playlist imports per minute per IP)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RPM_LIMIT = 15;
@@ -185,7 +187,7 @@ export async function GET(request: NextRequest) {
       playlistId,
       title: playlistTitle,
       itemCount: videos.length,
-      videos: videos.slice(0, 60), // Up to 60 lessons per course
+      videos: videos.slice(0, 150), // Supports massive playlists up to 150 lessons
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {

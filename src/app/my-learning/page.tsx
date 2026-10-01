@@ -178,7 +178,6 @@ export default function MyLearningPage() {
             }`}
           >
             <span>Completed</span>
-            <span className="text-emerald-400 font-black">✓</span>
             <span>({completedItems.length})</span>
           </button>
         </div>
@@ -283,7 +282,20 @@ export default function MyLearningPage() {
                         </span>
                         {isFinished && (
                           <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                            <span>✓ Completed</span>
+                            <svg
+                              width="11"
+                              height="11"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Completed</span>
                           </span>
                         )}
                       </div>

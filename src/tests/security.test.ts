@@ -5,6 +5,9 @@ import {
   escapeXml,
   generateSecureCertificateId,
   verifyCertificateId,
+  isDisposableEmail,
+  validateSecurePassword,
+  sanitizeDisplayName,
 } from "@/lib/security";
 
 describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
@@ -78,6 +81,33 @@ describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
     it("rejects malformed IDs", () => {
       expect(verifyCertificateId("invalid-id").isValid).toBe(false);
       expect(verifyCertificateId("").isValid).toBe(false);
+    });
+  });
+
+  describe("Anti-Abuse & Fake Account Protection (Z++ Grade)", () => {
+    it("detects and blocks disposable temporary burner emails", () => {
+      expect(isDisposableEmail("bot@mailinator.com")).toBe(true);
+      expect(isDisposableEmail("hacker@tempmail.com")).toBe(true);
+      expect(isDisposableEmail("spammer@guerrillamail.com")).toBe(true);
+      expect(isDisposableEmail("attacker@10minutemail.com")).toBe(true);
+      expect(isDisposableEmail("student@gmail.com")).toBe(false);
+      expect(isDisposableEmail("user@outlook.com")).toBe(false);
+      expect(isDisposableEmail("learner@university.edu")).toBe(false);
+    });
+
+    it("enforces strong password policy against brute-force / bots", () => {
+      expect(validateSecurePassword("short").valid).toBe(false);
+      expect(validateSecurePassword("allletters").valid).toBe(false);
+      expect(validateSecurePassword("12345678").valid).toBe(false);
+      expect(validateSecurePassword("ValidPass123").valid).toBe(true);
+    });
+
+    it("sanitizes display names and strips zero-width invisibles", () => {
+      const maliciousName = "<script>hack()</script>Alex\u200B\uFEFF";
+      const clean = sanitizeDisplayName(maliciousName);
+      expect(clean).toBe("Alex");
+      expect(clean).not.toContain("<script>");
+      expect(clean).not.toContain("\u200B");
     });
   });
 });

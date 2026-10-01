@@ -266,33 +266,84 @@ export default function TermsPage() {
           <p className="text-muted-foreground leading-relaxed">
             Questions about these terms? Reach out to us:
           </p>
-          <ul className="list-none text-muted-foreground space-y-1.5 mt-3">
-            <li>
-              📧 Legal:{" "}
-              <a
-                href="mailto:legal@vidcura.app"
-                className="text-primary-500 underline hover:no-underline font-semibold"
+          <ul className="list-none text-muted-foreground space-y-2 mt-3">
+            <li className="flex items-center gap-2">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary-500"
+                aria-hidden="true"
               >
-                legal@vidcura.app
-              </a>
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              <span>
+                Legal:{" "}
+                <a
+                  href="mailto:legal@vidcura.app"
+                  className="text-primary-500 underline hover:no-underline font-semibold"
+                >
+                  legal@vidcura.app
+                </a>
+              </span>
             </li>
-            <li>
-              📧 Takedowns:{" "}
-              <a
-                href="mailto:takedown@vidcura.app"
-                className="text-primary-500 underline hover:no-underline font-semibold"
+            <li className="flex items-center gap-2">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary-500"
+                aria-hidden="true"
               >
-                takedown@vidcura.app
-              </a>
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              <span>
+                Takedowns:{" "}
+                <a
+                  href="mailto:takedown@vidcura.app"
+                  className="text-primary-500 underline hover:no-underline font-semibold"
+                >
+                  takedown@vidcura.app
+                </a>
+              </span>
             </li>
-            <li>
-              📧 Privacy:{" "}
-              <a
-                href="mailto:privacy@vidcura.app"
-                className="text-primary-500 underline hover:no-underline font-semibold"
+            <li className="flex items-center gap-2">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary-500"
+                aria-hidden="true"
               >
-                privacy@vidcura.app
-              </a>
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              <span>
+                Privacy:{" "}
+                <a
+                  href="mailto:privacy@vidcura.app"
+                  className="text-primary-500 underline hover:no-underline font-semibold"
+                >
+                  privacy@vidcura.app
+                </a>
+              </span>
             </li>
           </ul>
         </section>

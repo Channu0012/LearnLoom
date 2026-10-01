@@ -40,36 +40,101 @@ export default function TakedownPage() {
           Vidcura is built to support and promote YouTube creators — not to exploit them. We
           understand that your content is your livelihood and your intellectual property.
         </p>
-        <ul className="text-sm font-body text-foreground/80 space-y-2">
-          <li className="flex items-start gap-2">
-            <span className="text-teal-600 font-bold mt-0.5">✓</span>
+        <ul className="text-sm font-body text-foreground/80 space-y-2.5">
+          <li className="flex items-start gap-2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>
               We <strong>never</strong> download, re-host, mirror, or redistribute your videos
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-teal-600 font-bold mt-0.5">✓</span>
+          <li className="flex items-start gap-2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>
               All views through Vidcura count towards{" "}
               <strong>your YouTube analytics and monetisation</strong>
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-teal-600 font-bold mt-0.5">✓</span>
+          <li className="flex items-start gap-2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>
               Your channel name, video title, and thumbnail are{" "}
               <strong>always credited and linked</strong>
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-teal-600 font-bold mt-0.5">✓</span>
+          <li className="flex items-start gap-2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>
               We are <strong>100% free and non-commercial</strong> — zero ads, zero revenue from
               your content
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-teal-600 font-bold mt-0.5">✓</span>
+          <li className="flex items-start gap-2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>
               If you still want your content removed, we will{" "}
               <strong>comply within 48 hours</strong>, no questions asked

@@ -147,8 +147,21 @@ export function PlaylistGuideVideo() {
 
             {/* Right: Clean, Crisp Step Guide */}
             <div className="lg:col-span-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-heading font-bold mb-4 border border-primary-200 dark:border-primary-800">
-                <span>⚡ Instant Setup</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-heading font-bold mb-4 border border-primary-200 dark:border-primary-800">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Instant Setup</span>
               </div>
 
               <h2
