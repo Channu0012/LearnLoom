@@ -15,6 +15,7 @@ import {
   getProgress,
   enrollOrStartCourse,
   markLessonComplete,
+  saveQuizScore,
   createReport,
   serializeCourse,
 } from "@/lib/firestore";
@@ -340,6 +341,15 @@ function CoursePlayerContent({
           if (prog.lastLessonId && lessons.find((l) => l.id === prog.lastLessonId)) {
             setActiveLessonId(prog.lastLessonId);
           }
+          if (prog.quizScores) {
+            const map = new Map<string, { score: number; total: number }>();
+            Object.entries(prog.quizScores).forEach(([k, v]) => {
+              if (v && typeof v.score === "number" && typeof v.total === "number") {
+                map.set(k, v);
+              }
+            });
+            setQuizScores(map);
+          }
         } else {
           // Auto-start silently into My Learning
           await enrollOrStartCourse(user.uid, courseId, lessons[0]?.id);
@@ -534,7 +544,7 @@ function CoursePlayerContent({
     setTimeout(() => setTabTransitioning(null), 200);
   };
 
-  // Quiz completion handler — stores scores per lesson
+  // Quiz completion handler — stores scores per lesson and persists to Firestore
   const handleQuizComplete = useCallback(
     (score: number, total: number) => {
       if (!activeLesson) return;
@@ -543,8 +553,11 @@ function CoursePlayerContent({
         next.set(activeLesson.id, { score, total });
         return next;
       });
+      if (user) {
+        saveQuizScore(user.uid, courseId, activeLesson.id, score, total);
+      }
     },
-    [activeLesson]
+    [activeLesson, user, courseId]
   );
 
   // Open YouTube-style rich Share modal

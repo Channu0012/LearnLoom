@@ -62,6 +62,7 @@ export interface ProgressDoc {
   courseId: string;
   completedLessonIds: string[];
   lastLessonId: string | null;
+  quizScores?: Record<string, { score: number; total: number }>;
   updatedAt: Timestamp;
 }
 
