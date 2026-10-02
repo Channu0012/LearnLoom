@@ -110,12 +110,39 @@ export function StudyCompanion({
     }
   };
 
-  const suggestedQuestions = [
-    `Summarize key principles covered in "${videoTitle}"`,
-    "Provide a concrete industry example of this concept",
-    "What architectural anti-patterns should be avoided here?",
-    "How do these principles scale in production?",
-  ];
+  const suggestedQuestions = (() => {
+    const combined = `${courseTitle} ${videoTitle} ${courseCategory}`.toLowerCase();
+    if (/python/i.test(combined)) {
+      return [
+        "Explain Python decorators with a clean code example",
+        "How do list comprehensions differ from generator expressions?",
+        "What is the Global Interpreter Lock (GIL) and why does it exist?",
+        `Summarize the core technical mechanisms in "${videoTitle}"`,
+      ];
+    }
+    if (/react|frontend|next/i.test(combined)) {
+      return [
+        "Explain useEffect dependency array and cleanup functions",
+        "Why does mutating state directly prevent re-renders?",
+        "What is the difference between useMemo and useCallback?",
+        `Summarize the core technical mechanisms in "${videoTitle}"`,
+      ];
+    }
+    if (/sql|database|postgres/i.test(combined)) {
+      return [
+        "What are the ACID guarantees in relational databases?",
+        "How do B-Tree indexes accelerate SELECT queries?",
+        "What is the difference between an INNER JOIN and a LEFT JOIN?",
+        `Summarize the core technical mechanisms in "${videoTitle}"`,
+      ];
+    }
+    return [
+      `Summarize key technical principles in "${videoTitle}"`,
+      "Provide a concrete industry example of this concept",
+      "What architectural anti-patterns should be avoided here?",
+      "How do these principles scale in production?",
+    ];
+  })();
 
   if (!isOpen) {
     return (
@@ -173,9 +200,12 @@ export function StudyCompanion({
             </svg>
           </div>
           <div className="min-w-0">
-            <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-foreground">
-              AI Study Assistant
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-foreground">
+                AI Academic Tutor
+              </h3>
+            </div>
             <p className="text-[10px] text-muted-foreground truncate max-w-[220px]">
               Lesson: {videoTitle}
             </p>
