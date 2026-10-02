@@ -3,7 +3,8 @@
 // ---------------------------------------------------------------------------
 // Explore page — Bold, Clean & Attractive YouTube-Style Video Discovery
 // Features: One prominent search bar, full-strength search engine, zero clutter,
-// and distraction-free video masterclasses grid.
+// smart "Refresh Feed" button that prioritizes new or unseen courses (persisted
+// in localStorage), and distraction-free video masterclasses grid.
 // ---------------------------------------------------------------------------
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
@@ -13,11 +14,44 @@ import type { CourseDoc } from "@/lib/types";
 import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard";
 
 const COURSES_PER_PAGE = 12;
+const SEEN_STORAGE_KEY = "learnloom_seen_courses_v1";
+
+// Fisher-Yates Dynamic Shuffle for fresh recommendations
+function shuffleArray<T>(array: T[]): T[] {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function getSeenCourseIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(SEEN_STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSeenCourseIds(ids: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify([...ids].slice(-300)));
+  } catch {
+    // Ignore storage quota
+  }
+}
 
 export default function ExplorePage() {
   const [searchInput, setSearchInput] = useState("");
   const [rawCourses, setRawCourses] = useState<CourseDoc[]>([]);
+  const [feedCourses, setFeedCourses] = useState<CourseDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [fetchError, setFetchError] = useState("");
 
@@ -29,6 +63,51 @@ export default function ExplorePage() {
     if (q) {
       setSearchInput(q);
     }
+  }, []);
+
+  // ── YouTube-Style Intelligent Feed Refresh (Unseen/New Prioritization) ───
+  const refreshFeed = useCallback((sourceCourses: CourseDoc[]) => {
+    if (sourceCourses.length === 0) return;
+    setIsRefreshing(true);
+
+    const seenIds = getSeenCourseIds();
+    const unseen = sourceCourses.filter((c) => !seenIds.has(c.id));
+    const seen = sourceCourses.filter((c) => seenIds.has(c.id));
+
+    let nextFeed: CourseDoc[];
+    let msg = "";
+
+    if (unseen.length > 0) {
+      // Prioritize unseen courses first (shuffled), followed by seen courses (shuffled)
+      const shuffledUnseen = shuffleArray(unseen);
+      const shuffledSeen = shuffleArray(seen);
+      nextFeed = [...shuffledUnseen, ...shuffledSeen];
+
+      // Mark first batch of surfaced unseen courses as seen
+      shuffledUnseen.slice(0, COURSES_PER_PAGE).forEach((c) => seenIds.add(c.id));
+      saveSeenCourseIds(seenIds);
+
+      msg = `Refreshed with ${unseen.length} new or unseen recommendation${
+        unseen.length === 1 ? "" : "s"
+      }!`;
+    } else {
+      // User has cycled through all courses; restart freshness cycle with randomized mix
+      saveSeenCourseIds(new Set());
+      nextFeed = shuffleArray(sourceCourses);
+      msg = "Catalog refreshed with a fresh randomized mix!";
+    }
+
+    setFeedCourses(nextFeed);
+    setCurrentPage(1);
+    setRefreshMessage(msg);
+
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 450);
+
+    setTimeout(() => {
+      setRefreshMessage("");
+    }, 3500);
   }, []);
 
   // ── Fetch published courses from Firestore ─────────────────────────────
@@ -45,6 +124,7 @@ export default function ExplorePage() {
       }));
 
       setRawCourses(fetched);
+      refreshFeed(fetched);
     } catch {
       setFetchError(
         "Unable to load masterclasses right now. Please check your internet connection."
@@ -52,7 +132,7 @@ export default function ExplorePage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshFeed]);
 
   useEffect(() => {
     fetchCourses();
@@ -60,20 +140,24 @@ export default function ExplorePage() {
 
   // ── Full-Strength Instant Search & Filtering ──────────────────────────
   const courses = useMemo(() => {
-    if (rawCourses.length === 0) return [];
-
     const queryClean = searchInput.trim();
-    if (!queryClean) return rawCourses;
+    if (!queryClean) return feedCourses;
 
     // Run full-strength search across titles, descriptions, creators, keywords & acronyms
     const ranked = searchCoursesFullStrength(rawCourses, queryClean);
     return ranked.map((r) => r.course);
-  }, [rawCourses, searchInput]);
+  }, [rawCourses, feedCourses, searchInput]);
 
   // Reset pagination on search change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchInput]);
+
+  const handleRefreshClick = () => {
+    if (searchInput) setSearchInput("");
+    refreshFeed(rawCourses);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
   const paginatedCourses = courses.slice(
@@ -98,45 +182,17 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      {/* The One Search Bar — Clean, Bold, Attractive (YouTube style) */}
-      <div className="max-w-2xl mx-auto mb-10 sm:mb-12">
-        <div className="relative group">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-500/20 via-primary-500/20 to-teal-500/20 blur-md opacity-40 group-focus-within:opacity-100 transition-opacity" />
-          <div className="relative flex items-center bg-card border-2 border-border/80 group-focus-within:border-teal-500 rounded-2xl shadow-sm group-focus-within:shadow-md transition-all">
-            <div className="pl-4 sm:pl-5 pr-2 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-teal-600 dark:group-focus-within:text-teal-400 transition-colors">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </div>
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search video masterclasses (e.g. Python, React, DSA, System Design)..."
-              className="w-full py-4 pr-12 text-base sm:text-lg bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none font-body"
-              aria-label="Search masterclasses"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => setSearchInput("")}
-                className="absolute right-3.5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
-                aria-label="Clear search query"
-              >
+      {/* The One Search Bar & YouTube-Style Refresh Button */}
+      <div className="max-w-3xl mx-auto mb-10 sm:mb-12">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Main Search Input */}
+          <div className="relative flex-1 w-full group">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-500/20 via-primary-500/20 to-teal-500/20 blur-md opacity-40 group-focus-within:opacity-100 transition-opacity" />
+            <div className="relative flex items-center bg-card border-2 border-border/80 group-focus-within:border-teal-500 rounded-2xl shadow-sm group-focus-within:shadow-md transition-all">
+              <div className="pl-4 sm:pl-5 pr-2 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-teal-600 dark:group-focus-within:text-teal-400 transition-colors">
                 <svg
-                  width="18"
-                  height="18"
+                  width="22"
+                  height="22"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -145,13 +201,78 @@ export default function ExplorePage() {
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="18" x2="18" y2="6" />
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-              </button>
-            )}
+              </div>
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search video masterclasses (e.g. Python, React, DSA, System Design)..."
+                className="w-full py-3.5 sm:py-4 pr-12 text-base sm:text-lg bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none font-body"
+                aria-label="Search masterclasses"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  className="absolute right-3.5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+                  aria-label="Clear search query"
+                  title="Clear search"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="18" x2="18" y2="6" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* YouTube-Style Refresh Button */}
+          <button
+            type="button"
+            onClick={handleRefreshClick}
+            disabled={isRefreshing || loading}
+            className="w-full sm:w-auto shrink-0 min-h-[52px] sm:min-h-[58px] px-5 py-3 rounded-2xl bg-card border-2 border-border/80 hover:border-teal-500 hover:bg-muted/40 text-foreground font-heading font-bold text-sm inline-flex items-center justify-center gap-2 shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer"
+            title="Refresh videos to discover fresh or unseen masterclasses"
+          >
+            <svg
+              className={`w-4 h-4 text-teal-600 dark:text-teal-400 transition-transform ${
+                isRefreshing ? "animate-spin" : "group-hover:rotate-45"
+              }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19" />
+            </svg>
+            <span>Refresh Feed</span>
+          </button>
         </div>
+
+        {/* Refresh Notification Toast / Indicator */}
+        {refreshMessage && (
+          <div className="mt-3 px-3 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-heading font-semibold flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping shrink-0" />
+            <span>{refreshMessage}</span>
+          </div>
+        )}
 
         {/* Results Counter if actively searching */}
         {searchInput.trim() && !loading && (
