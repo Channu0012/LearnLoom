@@ -154,6 +154,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
         />
+        {/* Automatic Chunk Load Error Self-Healing Recovery */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){if(typeof window==='undefined')return;window.addEventListener('error',function(e){var msg=(e&&e.message)||'';var file=(e&&e.filename)||'';if(msg.indexOf('Loading chunk')!==-1||msg.indexOf('ChunkLoadError')!==-1||file.indexOf('/_next/static/chunks/')!==-1){var k='__next_chunk_reload';var c=parseInt(sessionStorage.getItem(k)||'0',10);if(c<2){sessionStorage.setItem(k,String(c+1));window.location.reload();}}});})();`,
+          }}
+        />
       </head>
       <body className="overflow-x-hidden w-full max-w-full bg-background text-foreground antialiased selection:bg-primary-500 selection:text-white">
         {/* Skip to Content for Accessibility */}
