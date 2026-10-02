@@ -10,6 +10,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { escapeXml } from "@/lib/security";
 import { generatePdfCertificate } from "@/lib/pdfCertificate";
+import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 
 interface CertificateData {
   id: string;
@@ -374,139 +375,19 @@ export function CertificateModal({
                 </div>
               </div>
 
-              {/* Executive Certificate Frame (Coursera / Google Skill LookMax Design) */}
-              <div
-                ref={certRef}
-                className="relative bg-gradient-to-br from-[#0B1120] via-[#0F172A] to-[#1E293B] border-2 border-amber-500/50 rounded-2xl p-4 sm:p-8 text-center overflow-hidden shadow-2xl text-white"
-              >
-                {/* Gold Outer and Inner Ornamental Lines */}
-                <div className="absolute inset-1.5 sm:inset-2 border border-amber-500/30 rounded-xl pointer-events-none" />
-                <div className="absolute inset-2.5 sm:inset-3 border border-slate-700/60 rounded-lg pointer-events-none" />
-
-                {/* Institution Crest */}
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center shadow-md">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="font-heading font-extrabold text-xs sm:text-sm tracking-[0.2em] uppercase text-amber-400 block leading-tight">
-                      VIDCURA
-                    </span>
-                    <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-slate-400 font-mono block leading-tight">
-                      GLOBAL CREDENTIALING AUTHORITY
-                    </span>
-                  </div>
-                </div>
-
-                <div className="h-px w-24 sm:w-32 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto mb-3" />
-
-                <p className="text-[9px] sm:text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-amber-300 mb-0.5">
-                  Accredited Certificate of Completion
-                </p>
-
-                <p className="text-[10px] sm:text-[11px] text-slate-400 font-body mb-2">
-                  This official academic credential is conferred upon
-                </p>
-
-                <h3 className="font-heading font-black text-xl sm:text-3xl lg:text-4xl text-white mb-2 pb-1.5 inline-block px-3 sm:px-6 border-b-2 border-amber-500/40 break-words max-w-full">
-                  {effectiveName}
-                </h3>
-
-                <p className="text-[10px] sm:text-[11px] text-slate-400 font-body mt-2 mb-1 max-w-md mx-auto">
-                  for demonstrating subject mastery and successfully satisfying all requirements of
-                </p>
-
-                <h4 className="font-heading font-bold text-sm sm:text-lg text-sky-400 mb-4 max-w-lg mx-auto leading-snug break-words">
-                  &ldquo;{certificate.courseTitle}&rdquo;
-                </h4>
-
-                {/* Metric Strip (3 Boxes) */}
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-5 py-2.5 px-2 sm:px-4 rounded-xl bg-slate-900/80 border border-slate-700/80 max-w-lg mx-auto">
-                  <div className="text-center">
-                    <p className="font-heading font-black text-xs sm:text-sm text-white">
-                      {certificate.lessonCount} Modules
-                    </p>
-                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
-                      Curriculum Completed
-                    </p>
-                  </div>
-                  <div className="text-center border-x border-slate-800">
-                    <p className="font-heading font-black text-xs sm:text-sm text-emerald-400">
-                      {certificate.quizScore != null ? `${certificate.quizScore}%` : "100%"}
-                    </p>
-                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
-                      {certificate.quizScore != null && certificate.quizScore >= 85
-                        ? "Honors Distinction"
-                        : "Verified Pass"}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-heading font-bold text-[10px] sm:text-xs text-white truncate px-1">
-                      {certificate.issuedDate}
-                    </p>
-                    <p className="text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold tracking-wider">
-                      Official Date
-                    </p>
-                  </div>
-                </div>
-
-                {/* Signatures & Seal Section */}
-                <div className="grid grid-cols-3 items-center justify-between gap-2 pt-2 mb-3 max-w-lg mx-auto border-t border-slate-800">
-                  <div className="text-left">
-                    <p className="font-serif italic text-[11px] sm:text-xs text-slate-300 truncate">
-                      Dr. Elena Vance
-                    </p>
-                    <div className="h-px w-14 sm:w-20 bg-slate-600 my-0.5" />
-                    <p className="font-heading text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold">
-                      Academic Dean
-                    </p>
-                  </div>
-
-                  {/* Seal Stamp */}
-                  <div className="flex items-center justify-center">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-amber-500/70 flex flex-col items-center justify-center bg-amber-500/10 shadow-inner">
-                      <span className="text-[6px] sm:text-[7px] font-mono font-black text-amber-400 tracking-tighter">
-                        OFFICIAL
-                      </span>
-                      <span className="text-[7px] sm:text-[8px] font-bold text-amber-300 leading-none">
-                        SEAL
-                      </span>
-                      <span className="text-[5px] sm:text-[6px] font-mono text-emerald-400 font-bold">
-                        VERIFIED
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-serif italic text-[11px] sm:text-xs text-slate-300 truncate">
-                      Marcus Sterling
-                    </p>
-                    <div className="h-px w-14 sm:w-20 bg-slate-600 my-0.5 ml-auto" />
-                    <p className="font-heading text-[7px] sm:text-[8px] text-slate-400 uppercase font-bold">
-                      Registrar
-                    </p>
-                  </div>
-                </div>
-
-                {/* Verification Footer */}
-                <div className="pt-2.5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-mono gap-1">
-                  <span className="truncate max-w-full">
-                    ID: <span className="font-bold text-white">{certificate.id}</span>
-                  </span>
-                  <span className="text-emerald-400 font-bold inline-flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>SHA-256 HMAC Verified</span>
-                  </span>
-                </div>
+              {/* Official Classical Diploma Preview matching user standard */}
+              <div ref={certRef} className="w-full">
+                <OfficialCertificateView
+                  recipientName={effectiveName}
+                  courseTitle={certificate.courseTitle}
+                  certificateId={certificate.id}
+                  issuedDate={certificate.issuedDate}
+                  instructorName="Dr. Ronald Vance"
+                  instructorTitle="Instructor"
+                  managerName="Elena Rostova"
+                  managerTitle="Training Manager"
+                  isInteractive={false}
+                />
               </div>
 
               {/* Action Feedback Messages */}

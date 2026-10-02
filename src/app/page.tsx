@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
+import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 
 export default function HomePage() {
   const topCategories = [
@@ -159,160 +160,72 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Interactive Credential Replica Card */}
-          <div className="clay-card p-6 sm:p-10 bg-card border-2 border-amber-500/30 rounded-3xl shadow-2xl relative overflow-hidden">
-            {/* Guilloché Geometric Border Highlight */}
-            <div className="absolute inset-1.5 sm:inset-2.5 rounded-[22px] border border-amber-500/20 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-amber-500/10 via-teal-500/5 to-transparent rounded-bl-full pointer-events-none" />
+          {/* Classical Diploma Credential Replica Card */}
+          <OfficialCertificateView
+            recipientName="Sarah Jenkins"
+            courseTitle="Full-Stack Web Development & Cloud Systems Masterclass"
+            certificateId="VL-2026-F98B-E2A1"
+            issuedDate="October 02, 2026"
+            instructorName="Dr. Ronald Vance"
+            instructorTitle="Instructor"
+            managerName="Elena Rostova"
+            managerTitle="Training Manager"
+            isInteractive={false}
+          />
 
-            <div className="relative z-10 space-y-6 sm:space-y-8">
-              {/* Certificate Top Header */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-border/80 pb-6 text-center sm:text-left">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="8" r="7" />
-                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 block">
-                      Vidcura Academic Board
-                    </span>
-                    <h3 className="font-heading font-extrabold text-lg sm:text-xl text-foreground">
-                      Certificate of Master Examination
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-xs font-mono">
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold inline-flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    HMAC Verified
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-foreground font-semibold">
-                    ID: VL-2026-F98B-E2A1
-                  </span>
-                </div>
-              </div>
-
-              {/* Certificate Body Text */}
-              <div className="text-center py-2 sm:py-4 space-y-3 max-w-2xl mx-auto">
-                <p className="text-xs font-heading uppercase tracking-widest text-muted-foreground">
-                  This executive credential is conferred upon
-                </p>
-                <div className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight bg-gradient-to-r from-foreground via-primary-600 to-foreground bg-clip-text">
-                  Alex Morgan
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed max-w-xl mx-auto">
-                  having satisfactorily passed all comprehensive module examinations, fulfilled 100%
-                  video lecture attendance, and demonstrated mastery in
-                </p>
-                <div className="font-heading font-bold text-lg sm:text-xl text-primary-600 dark:text-primary-400">
-                  Distributed Systems &amp; High-Concurrency Cloud Architecture
-                </div>
-              </div>
-
-              {/* Certificate Signatures & Distinction Footer */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-border/80 items-end text-center">
-                {/* Dean Signature */}
-                <div className="space-y-1">
-                  <div className="font-serif italic text-base sm:text-lg text-foreground/80 tracking-wide">
-                    Dr. Ronald Vance
-                  </div>
-                  <div className="w-32 h-px bg-border mx-auto" />
-                  <p className="text-[10px] font-heading font-bold uppercase tracking-wider text-muted-foreground">
-                    Director of Curriculum
-                  </p>
-                </div>
-
-                {/* Academic Seal Badge */}
-                <div className="flex flex-col items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-amber-500/10 border-2 border-amber-500/40 text-amber-600 dark:text-amber-400 flex flex-col items-center justify-center shadow-inner">
-                    <span className="text-[9px] font-heading font-black">HONORS</span>
-                    <span className="text-[11px] font-mono font-bold">94%</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground mt-1">
-                    Graduation Seal
-                  </span>
-                </div>
-
-                {/* Registrar Signature */}
-                <div className="space-y-1">
-                  <div className="font-serif italic text-base sm:text-lg text-foreground/80 tracking-wide">
-                    Elena Rostova
-                  </div>
-                  <div className="w-32 h-px bg-border mx-auto" />
-                  <p className="text-[10px] font-heading font-bold uppercase tracking-wider text-muted-foreground">
-                    Registrar of Records
-                  </p>
-                </div>
-              </div>
-
-              {/* Real Value Pillars Bar */}
-              <div className="pt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground font-body border-t border-border/50">
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    className="text-teal-600"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  <span className="font-semibold text-foreground">
-                    Print-Ready Vector PDF (A4 300 DPI)
-                  </span>
-                </div>
-                <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    className="text-sky-600"
-                  >
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                    <rect x="2" y="9" width="4" height="12" />
-                    <circle cx="4" cy="4" r="2" />
-                  </svg>
-                  <span className="font-semibold text-foreground">
-                    1-Click Direct LinkedIn Sync
-                  </span>
-                </div>
-                <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    className="text-emerald-600"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  <span className="font-semibold text-foreground">
-                    Online Cryptographic Verification
-                  </span>
-                </div>
-              </div>
+          {/* Real Value Pillars Bar */}
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground font-body">
+            <div className="flex items-center gap-1.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-teal-600"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span className="font-semibold text-foreground">
+                Print-Ready Vector PDF (A4 300 DPI)
+              </span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-border" />
+            <div className="flex items-center gap-1.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-sky-600"
+              >
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                <rect x="2" y="9" width="4" height="12" />
+                <circle cx="4" cy="4" r="2" />
+              </svg>
+              <span className="font-semibold text-foreground">1-Click Direct LinkedIn Sync</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-border" />
+            <div className="flex items-center gap-1.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-emerald-600"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span className="font-semibold text-foreground">
+                Online Cryptographic Verification (SHA-256)
+              </span>
             </div>
           </div>
         </div>
