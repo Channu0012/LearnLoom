@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
-// import { StreakWidget } from "@/components/layout/StreakWidget";
 
 export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
     useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
@@ -17,7 +17,7 @@ export function Header() {
         <aside
           role="alert"
           aria-live="assertive"
-          className="bg-amber-500/10 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2.5 text-xs font-body flex items-center justify-between gap-3 animate-fade-in"
+          className="bg-amber-500/10 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2 text-xs font-body flex items-center justify-between gap-3 animate-fade-in"
         >
           <div className="flex items-center gap-2 flex-1">
             <svg
@@ -59,7 +59,8 @@ export function Header() {
           </button>
         </aside>
       )}
-      <div className="container-page flex items-center justify-between h-16 gap-4">
+
+      <div className="container-page flex items-center justify-between h-16 gap-2 sm:gap-4">
         {/* Logo */}
         <Link
           href="/"
@@ -85,15 +86,41 @@ export function Header() {
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-5" aria-label="Main navigation">
+        {/* Desktop Navigation - Comprehensive Suite */}
+        <nav
+          className="hidden md:flex items-center gap-1 lg:gap-1.5 xl:gap-2"
+          aria-label="Main navigation"
+        >
+          {/* Explore */}
           <Link
-            href="/quick-watch"
-            className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors inline-flex items-center gap-1.5"
+            href="/explore"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
               width="15"
               height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            <span>Explore</span>
+          </Link>
+
+          {/* Quick Watch */}
+          <Link
+            href="/quick-watch"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -106,80 +133,174 @@ export function Header() {
             </svg>
             <span>Quick Watch</span>
           </Link>
-          <Link
-            href="/explore"
-            className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors"
-          >
-            Explore
-          </Link>
-          {user && (
-            <>
-              <Link
-                href="/my-courses"
-                className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors"
-              >
-                My Courses
-              </Link>
-              <Link
-                href="/my-learning"
-                className="font-body font-semibold text-sm text-foreground/80 hover:text-primary-500 transition-colors"
-              >
-                My Learning
-              </Link>
-              {userDoc?.isAdmin && (
-                <Link
-                  href="/admin"
-                  className="font-body font-semibold text-sm text-accent-500 hover:text-accent-600 transition-colors inline-flex items-center gap-1.5"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  Admin
-                </Link>
-              )}
-            </>
-          )}
-        </nav>
 
-        {/* Auth controls */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Create Course / Studio */}
           <Link
-            href="/quick-watch"
-            className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-foreground/80 hover:bg-muted active:scale-95 transition-all"
-            title="Quick Watch"
-            aria-label="Quick Watch"
+            href="/create"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
-              width="18"
-              height="18"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              <polygon points="5 3 19 12 5 21 5 3" />
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
+            <span>Create Course</span>
           </Link>
+
+          {/* My Learning (Streaks & Active Modules) */}
+          <Link
+            href="/my-learning"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span>My Learning</span>
+          </Link>
+
+          {/* My Courses */}
+          <Link
+            href="/my-courses"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>My Courses</span>
+          </Link>
+
+          {/* Verify Credential */}
+          <Link
+            href="/verify"
+            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <polyline points="9 12 11 14 15 10" />
+            </svg>
+            <span>Verify</span>
+          </Link>
+
+          {/* Admin panel (if admin) */}
+          {userDoc?.isAdmin && (
+            <Link
+              href="/admin"
+              className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-accent-500 hover:text-accent-600 hover:bg-accent-500/10 transition-colors inline-flex items-center gap-1.5"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>Admin</span>
+            </Link>
+          )}
+        </nav>
+
+        {/* Right Section: Mobile Menu Trigger + Auth Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Mobile All-Options Launcher Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            className="md:hidden min-w-[40px] min-h-[40px] px-2.5 py-1.5 rounded-xl border border-border bg-card hover:bg-muted active:scale-95 transition-all text-foreground inline-flex items-center gap-1.5 text-xs font-heading font-bold"
+            aria-label="Toggle platform navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+            <span className="text-[11px] uppercase tracking-wider font-extrabold">Menu</span>
+          </button>
+
+          {/* Auth Controls */}
           {!loading && (
             <>
               {user ? (
-                <div className="flex items-center gap-3 relative">
+                <div className="flex items-center gap-2 relative">
                   <button
                     id="user-menu-btn"
-                    onClick={() => setMenuOpen((o) => !o)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-80 transition-opacity p-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    aria-label="User menu"
-                    aria-expanded={menuOpen}
+                    onClick={() => setUserDropdownOpen((o) => !o)}
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-85 transition-opacity p-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    aria-label="User profile menu"
+                    aria-expanded={userDropdownOpen}
                     aria-haspopup="true"
                   >
                     {user.photoURL ? (
@@ -191,22 +312,22 @@ export function Header() {
                         className="rounded-full border-2 border-border object-cover"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center font-heading font-bold text-primary-700 border border-primary-200">
+                      <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-950 flex items-center justify-center font-heading font-bold text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-800">
                         {(user.displayName ?? "U")[0].toUpperCase()}
                       </div>
                     )}
                   </button>
 
-                  {/* Dropdown menu */}
-                  {menuOpen && (
+                  {/* Desktop / Tablet User Dropdown Menu */}
+                  {userDropdownOpen && (
                     <div
-                      className="absolute top-12 right-0 clay-card p-2 min-w-[210px] z-50 bg-card border border-border shadow-xl rounded-2xl animate-scale-in"
+                      className="absolute top-12 right-0 clay-card p-2 min-w-[220px] z-50 bg-card border border-border shadow-2xl rounded-2xl animate-scale-in"
                       role="menu"
                       aria-labelledby="user-menu-btn"
                     >
-                      <div className="px-3 py-2">
+                      <div className="px-3 py-2.5 bg-muted/40 rounded-xl mb-1">
                         <p className="text-xs font-heading font-bold text-foreground truncate">
-                          {user.displayName ?? "Student"}
+                          {user.displayName ?? "Vidcura Scholar"}
                         </p>
                         {user.email && (
                           <p className="text-[11px] text-muted-foreground font-body truncate">
@@ -214,62 +335,115 @@ export function Header() {
                           </p>
                         )}
                       </div>
-                      <hr className="border-border my-1" />
+                      <hr className="border-border/60 my-1" />
                       <Link
-                        href="/quick-watch"
-                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        href="/my-learning"
+                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => setUserDropdownOpen(false)}
                       >
-                        Quick Watch
-                      </Link>
-                      <Link
-                        href="/create"
-                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors text-foreground"
-                        role="menuitem"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Create Course
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        </svg>
+                        <span>My Learning &amp; Streaks</span>
                       </Link>
                       <Link
                         href="/my-courses"
-                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => setUserDropdownOpen(false)}
                       >
-                        My Courses
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                        </svg>
+                        <span>My Published Courses</span>
                       </Link>
                       <Link
-                        href="/my-learning"
-                        className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body hover:bg-muted transition-colors md:hidden text-foreground"
+                        href="/create"
+                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => setUserDropdownOpen(false)}
                       >
-                        My Learning
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        <span>Create from Playlist</span>
+                      </Link>
+                      <Link
+                        href="/verify"
+                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
+                        role="menuitem"
+                        onClick={() => setUserDropdownOpen(false)}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <polyline points="9 12 11 14 15 10" />
+                        </svg>
+                        <span>Verify Credential ID</span>
                       </Link>
                       {userDoc?.isAdmin && (
                         <Link
                           href="/admin"
-                          className="flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm font-body text-accent-500 hover:bg-muted transition-colors"
+                          className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body text-accent-500 hover:bg-muted transition-colors"
                           role="menuitem"
-                          onClick={() => setMenuOpen(false)}
+                          onClick={() => setUserDropdownOpen(false)}
                         >
-                          Admin panel
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          </svg>
+                          <span>Admin Panel</span>
                         </Link>
                       )}
-                      <hr className="border-border my-1" />
+                      <hr className="border-border/60 my-1" />
                       <button
                         type="button"
                         onClick={() => {
                           signOut();
-                          setMenuOpen(false);
+                          setUserDropdownOpen(false);
                         }}
-                        className="w-full text-left min-h-[44px] px-3 py-2 rounded-lg text-sm font-body text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2"
+                        className="w-full text-left min-h-[40px] px-3 py-2 rounded-lg text-xs font-body text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2"
                         role="menuitem"
                       >
                         <svg
-                          width="16"
-                          height="16"
+                          width="14"
+                          height="14"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -282,7 +456,7 @@ export function Header() {
                           <polyline points="16 17 21 12 16 7" />
                           <line x1="21" y1="12" x2="9" y2="12" />
                         </svg>
-                        Sign out
+                        <span>Sign out</span>
                       </button>
                     </div>
                   )}
@@ -292,11 +466,11 @@ export function Header() {
                   type="button"
                   onClick={() => openAuthModal("signin")}
                   disabled={isSigningIn}
-                  className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 min-h-[44px] inline-flex items-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                  className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 min-h-[40px] inline-flex items-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSigningIn ? (
                     <svg
-                      className="animate-spin h-4 w-4 text-white"
+                      className="animate-spin h-3.5 w-3.5 text-white"
                       viewBox="0 0 24 24"
                       fill="none"
                       aria-hidden="true"
@@ -317,8 +491,8 @@ export function Header() {
                     </svg>
                   ) : (
                     <svg
-                      width="16"
-                      height="16"
+                      width="15"
+                      height="15"
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                       className="flex-shrink-0"
@@ -349,11 +523,302 @@ export function Header() {
         </div>
       </div>
 
+      {/* Mobile App Navigation Drawer (Opens from Header Menu Button) */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-card/98 backdrop-blur-xl animate-slide-up shadow-2xl">
+          <div className="p-4 space-y-2 max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <div className="px-2 py-1 flex items-center justify-between text-[11px] font-heading font-black uppercase tracking-wider text-muted-foreground">
+              <span>Platform Directory</span>
+              <span className="text-teal-600 dark:text-teal-400">All Options</span>
+            </div>
+
+            {/* 1. Explore */}
+            <Link
+              href="/explore"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>Explore Catalog</span>
+                  <span className="text-[10px] font-mono font-medium text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
+                    8 Fields
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Curated academic courses &amp; playlists
+                </p>
+              </div>
+            </Link>
+
+            {/* 2. Quick Watch */}
+            <Link
+              href="/quick-watch"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>Quick Watch</span>
+                  <span className="text-[10px] font-mono font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                    Ad-Free
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Paste any YouTube URL for instant theater focus
+                </p>
+              </div>
+            </Link>
+
+            {/* 3. Create Course Studio */}
+            <Link
+              href="/create"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>Course Studio (Create)</span>
+                  <span className="text-[10px] font-mono font-medium text-primary-600 dark:text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-full">
+                    Syllabus AI
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Generate curriculum from any playlist link
+                </p>
+              </div>
+            </Link>
+
+            {/* 4. My Learning & Streaks */}
+            <Link
+              href="/my-learning"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>My Learning &amp; Streaks</span>
+                  <span className="text-[10px] font-mono font-medium text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                    XP Tracking
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Daily 7-day habits, active lectures &amp; quizzes
+                </p>
+              </div>
+            </Link>
+
+            {/* 5. My Courses */}
+            <Link
+              href="/my-courses"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>My Created Courses</span>
+                  <span className="text-[10px] font-mono font-medium text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full">
+                    Creator
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Manage your authored curricula &amp; edits
+                </p>
+              </div>
+            </Link>
+
+            {/* 6. Verify Credential */}
+            <Link
+              href="/verify"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted active:scale-[0.98] transition-all border border-border/70"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <polyline points="9 12 11 14 15 10" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-heading font-bold text-foreground flex items-center justify-between">
+                  <span>Verify Credential</span>
+                  <span className="text-[10px] font-mono font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    SHA-256
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-body truncate">
+                  Validate official certificates &amp; honours
+                </p>
+              </div>
+            </Link>
+
+            {/* 7. Admin (if admin) */}
+            {userDoc?.isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl bg-accent-500/10 hover:bg-accent-500/20 active:scale-[0.98] transition-all border border-accent-500/30"
+              >
+                <div className="w-10 h-10 rounded-xl bg-accent-500/20 text-accent-500 flex items-center justify-center flex-shrink-0">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-heading font-bold text-accent-500 flex items-center justify-between">
+                    <span>Admin Command Center</span>
+                    <span className="text-[10px] font-mono font-bold bg-accent-500 text-white px-2 py-0.5 rounded-full">
+                      Root
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body truncate">
+                    Platform moderation &amp; user records
+                  </p>
+                </div>
+              </Link>
+            )}
+
+            {/* Auth Actions in Drawer */}
+            <div className="pt-3 border-t border-border/80">
+              {user ? (
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/60">
+                  <div className="flex items-center gap-2.5 truncate">
+                    {user.photoURL ? (
+                      <Image
+                        src={user.photoURL}
+                        alt={user.displayName ?? "User"}
+                        width={32}
+                        height={32}
+                        className="rounded-full border border-border"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold text-xs flex items-center justify-center">
+                        {(user.displayName ?? "U")[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className="truncate">
+                      <p className="text-xs font-heading font-bold text-foreground truncate">
+                        {user.displayName ?? "Student"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      signOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-destructive hover:bg-destructive/10 border border-destructive/20"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openAuthModal("signin");
+                  }}
+                  className="btn-primary w-full py-3 rounded-2xl text-xs sm:text-sm font-heading font-bold shadow-md flex items-center justify-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>Sign in to save your certificates</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Backdrop overlay for closing dropdown */}
-      {menuOpen && (
+      {userDropdownOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/5"
-          onClick={() => setMenuOpen(false)}
+          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[1px]"
+          onClick={() => setUserDropdownOpen(false)}
           aria-hidden="true"
         />
       )}

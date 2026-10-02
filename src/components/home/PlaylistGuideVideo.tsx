@@ -220,30 +220,29 @@ export function PlaylistGuideVideo() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Button: Strictly Explore Only */}
               <div className="flex flex-wrap items-center gap-3">
                 <Link
-                  href="/quick-watch"
-                  className="btn-primary text-xs sm:text-sm px-5 py-2.5 min-h-[44px] inline-flex items-center gap-2 shadow-sm"
+                  href="/explore"
+                  className="btn-primary text-xs sm:text-sm px-6 py-2.5 min-h-[44px] inline-flex items-center gap-2 shadow-sm font-heading font-bold"
                 >
                   <svg
-                    width="14"
-                    height="14"
+                    width="15"
+                    height="15"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2.5"
+                    strokeWidth="2.2"
                   >
-                    <polygon points="5 3 19 12 5 21 5 3" />
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
                   </svg>
-                  <span>Try Quick Watch</span>
+                  <span>Explore Masterclasses</span>
                 </Link>
-                <Link
-                  href="/create"
-                  className="btn-ghost text-xs sm:text-sm px-5 py-2.5 min-h-[44px] inline-flex items-center gap-1.5 border border-border hover:bg-muted"
-                >
-                  <span>Build a Course →</span>
-                </Link>
+                <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-body">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Available on any device</span>
+                </div>
               </div>
             </div>
           </div>
