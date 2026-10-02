@@ -202,19 +202,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 2. Check sample of video items for commercial entertainment/music/movie signatures
+    // 2. Strict educational verification across ALL video items
+    const verifiedEducationalVideos: PlaylistVideoItem[] = [];
     let blockedCount = 0;
     let sampleReason = "";
-    const sample = videos.slice(0, 10);
-    for (const v of sample) {
+
+    for (const v of videos) {
       const vFilter = validateEducationalContent(v.title);
       if (vFilter.blocked) {
         blockedCount++;
         sampleReason = vFilter.reason || sampleReason;
+      } else {
+        verifiedEducationalVideos.push(v);
       }
     }
 
-    if (blockedCount >= 2 || (videos.length === 1 && blockedCount === 1)) {
+    if (
+      verifiedEducationalVideos.length === 0 ||
+      blockedCount >= Math.max(2, Math.floor(videos.length * 0.25))
+    ) {
       return NextResponse.json(
         {
           error:
@@ -229,8 +235,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       playlistId,
       title: playlistTitle,
-      itemCount: videos.length,
-      videos: videos.slice(0, 150), // Supports massive playlists up to 150 lessons
+      itemCount: verifiedEducationalVideos.length,
+      videos: verifiedEducationalVideos.slice(0, 150), // Supports massive playlists up to 150 lessons
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {

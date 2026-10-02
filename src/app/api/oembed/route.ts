@@ -104,12 +104,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "We couldn't fetch video details right now. You can still add the video and edit the title manually.",
-        videoId,
-        title: "Untitled Video",
-        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+          "Unable to verify this video with YouTube. Only verified public educational videos can be imported.",
+        blocked: true,
       },
-      { status: 200 } // Return 200 with fallback so UI can still use the ID
+      { status: 502 }
     );
   }
 }

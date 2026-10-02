@@ -26,6 +26,7 @@ import {
   getCourse,
 } from "@/lib/firestore";
 import { serverTimestamp } from "firebase/firestore";
+import { validateEducationalContent, validateCourseEducation } from "@/lib/contentFilter";
 
 // ── Lesson row component ──────────────────────────────────────────────────
 
@@ -249,12 +250,27 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       const data = (await res.json()) as {
         videoId?: string;
         title?: string;
+        channelName?: string;
         thumbnailUrl?: string;
         error?: string;
+        blocked?: boolean;
       };
 
-      if (!res.ok || data.error || !data.videoId) {
-        setUrlError(data.error || "Unable to retrieve video information. Please check the URL.");
+      if (!res.ok || data.blocked || data.error || !data.videoId) {
+        setUrlError(
+          data.error ||
+            "This video cannot be imported. Vidcura strictly permits authentic educational lectures and masterclasses only. Commercial music, movies, and entertainment are prohibited."
+        );
+        return;
+      }
+
+      // Strict client-side educational verification
+      const filter = validateEducationalContent(data.title ?? "", data.channelName);
+      if (filter.blocked) {
+        setUrlError(
+          filter.reason ||
+            "This video was identified as non-educational entertainment or music and cannot be added."
+        );
         return;
       }
 
@@ -269,7 +285,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       ]);
       setUrlInput("");
     } catch {
-      setUrlError("Network connection interrupted. Please try again.");
+      setUrlError(
+        "Unable to verify this video. Please ensure it is an active public educational video."
+      );
     } finally {
       setFetchingVideo(false);
     }
@@ -317,7 +335,19 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
       }
 
-      const newLessons: LessonInput[] = data.videos.map((v, index) => ({
+      // Filter out any non-educational videos from the playlist
+      const filteredVideos = (data.videos || []).filter(
+        (v) => !validateEducationalContent(v.title).blocked
+      );
+
+      if (filteredVideos.length === 0) {
+        setUrlError(
+          "All videos in this playlist were identified as commercial music, movies, or entertainment. Only authentic educational courses can be imported."
+        );
+        return;
+      }
+
+      const newLessons: LessonInput[] = filteredVideos.map((v, index) => ({
         tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
         youtubeId: v.videoId,
         title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
@@ -325,8 +355,11 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       }));
 
       setLessons((prev) => [...prev, ...newLessons]);
+      const skippedCount = (data.videos || []).length - filteredVideos.length;
       setPlaylistSuccessMsg(
-        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
+        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!${
+          skippedCount > 0 ? ` (${skippedCount} non-educational item(s) excluded)` : ""
+        }`
       );
       setPlaylistInput("");
     } catch {
@@ -368,12 +401,19 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             const res = await fetch(`/api/oembed?url=${encodeURIComponent(line)}`);
             const data = (await res.json()) as {
               title?: string;
+              channelName?: string;
               thumbnailUrl?: string;
               blocked?: boolean;
               error?: string;
             };
 
             if (!res.ok || data.blocked) {
+              skippedNonEducational++;
+              continue;
+            }
+
+            const localFilter = validateEducationalContent(data.title ?? "", data.channelName);
+            if (localFilter.blocked) {
               skippedNonEducational++;
               continue;
             }
@@ -388,12 +428,8 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
               thumbnailUrl: data.thumbnailUrl || youtubeThumbnail(videoId),
             });
           } catch {
-            validLessons.push({
-              tempId: `tmp-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
-              youtubeId: videoId,
-              title: `Lesson ${lessons.length + validLessons.length + 1}`,
-              thumbnailUrl: youtubeThumbnail(videoId),
-            });
+            skippedNonEducational++;
+            continue;
           }
         }
         completed++;
@@ -478,6 +514,29 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   async function saveCourse(status: "draft" | "published") {
     if (!user) return;
     if (!validate(status === "published")) return;
+
+    // Strict Educational Verification before publishing
+    if (status === "published") {
+      const courseCheck = validateCourseEducation({
+        title,
+        description,
+        lessons,
+      });
+
+      if (!courseCheck.valid) {
+        setSaveError(
+          courseCheck.reason ||
+            "Course rejected: Only authentic educational coursework is allowed on Vidcura. Commercial movies, music videos, and entertainment are prohibited."
+        );
+        setErrors((prev) => ({
+          ...prev,
+          course: courseCheck.reason || "Educational integrity verification failed.",
+        }));
+        setSaving(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
 
     setSaving(true);
     setSaveError("");
@@ -647,6 +706,33 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       <h1 className="font-heading font-extrabold text-3xl mb-8 text-foreground">
         {courseId ? "Edit Course" : "Create a Course"}
       </h1>
+
+      {/* Educational Rejection / Save Error Banner */}
+      {(saveError || errors.course) && (
+        <div
+          className="p-5 rounded-2xl bg-destructive/10 border-2 border-destructive/30 text-destructive mb-6 flex items-start gap-3 shadow-sm animate-fade-in"
+          role="alert"
+        >
+          <svg
+            className="w-5 h-5 shrink-0 mt-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div className="flex-1 text-sm font-heading font-semibold leading-relaxed">
+            <p className="font-bold text-base mb-1">Publishing Blocked — Non-Educational Content</p>
+            <p className="font-body text-xs sm:text-sm">{saveError || errors.course}</p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-8">
         {/* Title */}
