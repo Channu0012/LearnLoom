@@ -55,9 +55,9 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up">
-            A distraction-free academic workspace. Complete mandatory 5-question module assessments,
-            maintain verified 7-day study streaks, and earn career credentials with 1-click LinkedIn
-            endorsement.
+            A distraction-free academic workspace. Complete mandatory lecture quizzes after each
+            module, maintain verified 7-day study streaks, and earn career credentials with 1-click
+            LinkedIn endorsement.
           </p>
 
           {/* Hero CTA - Strictly Only Explore Show */}
@@ -105,8 +105,8 @@ export default function HomePage() {
           <div className="inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-3.5 px-6 rounded-2xl bg-card border border-border text-xs sm:text-sm text-muted-foreground font-body shadow-sm max-w-3xl mx-auto">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-              <span className="font-heading font-bold text-foreground">5-Question MCQs</span>
-              <span>Per lecture</span>
+              <span className="font-heading font-bold text-foreground">Lecture Quizzes</span>
+              <span>After each module</span>
             </div>
             <div className="w-px h-4 bg-border hidden sm:block" aria-hidden="true" />
             <div className="flex items-center gap-2">
@@ -152,11 +152,11 @@ export default function HomePage() {
               id="credential-showcase-title"
               className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight"
             >
-              Real Vector Certificates. Verifiable Worldwide.
+              Earn Verified Credentials Through Academic Mastery
             </h2>
             <p className="font-body text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mt-2 leading-relaxed">
               Complete every lecture without skipping, score 70%+ on all module assessments, and
-              instantly receive your official cryptographically verified diploma.
+              receive your official cryptographically verified diploma.
             </p>
           </div>
 
@@ -254,7 +254,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Pillar 1: Mandatory 5-Question Module Assessment */}
+            {/* Pillar 1: Mandatory Adaptive Lecture Assessment */}
             <div className="clay-card p-6 sm:p-7 bg-card border border-border rounded-3xl hover:border-primary-400 transition-all shadow-sm hover:shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5 border border-amber-500/20">
@@ -276,11 +276,11 @@ export default function HomePage() {
                   STRICT 70% PASS THRESHOLD
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  5-Question Module Quizzes
+                  Adaptive Lecture Quizzes
                 </h3>
                 <p className="font-body text-sm text-muted-foreground leading-relaxed">
-                  Every video lecture concludes with a 5-question comprehensive assessment. Next
-                  lectures unlock only after validating comprehension.
+                  Every video lecture concludes with an interactive comprehension assessment. Next
+                  lectures unlock only after demonstrating subject mastery.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/60 text-xs font-heading font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-between">
@@ -425,7 +425,7 @@ export default function HomePage() {
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>Mandatory 5-Question MCQs (70% Pass)</span>
+                  <span>Mandatory Lecture Quizzes (70% Pass)</span>
                 </div>
               </div>
 
@@ -484,11 +484,11 @@ export default function HomePage() {
             id="disciplines-title"
             className="font-heading font-black text-2xl sm:text-4xl text-foreground mb-4 tracking-tight"
           >
-            Explore Over 500+ Accredited Masterclasses
+            Daily Curated Learning Pathways &amp; Skill Tracks
           </h2>
-          <p className="font-body text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed">
-            Select a discipline to dive straight into curated lecture syllabi with integrated
-            assessments.
+          <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed">
+            Build an unstoppable daily habit. Dive into hand-picked curricula across 8 core
+            disciplines, curated with interactive quizzes and career credentials.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 text-left">

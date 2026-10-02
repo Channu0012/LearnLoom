@@ -27,7 +27,10 @@ export async function generateQuiz(
   lessonIndex: number,
   totalLessons: number
 ): Promise<QuizQuestion[]> {
-  if (!genAI) return getFallbackQuiz(videoTitle);
+  // Determine question count dynamically based on lecture depth (7, 8, 9, or 10 questions)
+  const questionCount = [7, 8, 9, 10][(lessonIndex + (totalLessons || 1)) % 4] || 8;
+
+  if (!genAI) return getFallbackQuiz(videoTitle).slice(0, questionCount);
 
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -37,7 +40,7 @@ Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
 - Current Module: "${videoTitle}" (Lesson ${lessonIndex + 1} of ${totalLessons})
 
-Generate exactly 5 multiple-choice questions based on the topic "${videoTitle}" to assess student retention, conceptual mastery, and practical competence.
+Generate exactly ${questionCount} multiple-choice questions based on the topic "${videoTitle}" to assess student retention, conceptual mastery, and practical competence.
 
 Strict Assessment Standards:
 1. Questions must evaluate depth of understanding, architectural principles, and real-world application.
@@ -61,12 +64,13 @@ Return ONLY a valid JSON array with this exact structure (no markdown fences, no
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return getFallbackQuiz(videoTitle);
+    if (!jsonMatch) return getFallbackQuiz(videoTitle).slice(0, questionCount);
 
     const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return getFallbackQuiz(videoTitle);
+    if (!Array.isArray(parsed) || parsed.length === 0)
+      return getFallbackQuiz(videoTitle).slice(0, questionCount);
 
-    return parsed.slice(0, 5).map((q) => ({
+    return parsed.slice(0, questionCount).map((q) => ({
       question: stripEmojis(String(q.question || "")),
       options: Array.isArray(q.options)
         ? q.options.map((opt) => stripEmojis(String(opt))).slice(0, 4)
@@ -79,7 +83,7 @@ Return ONLY a valid JSON array with this exact structure (no markdown fences, no
     }));
   } catch (error) {
     console.error("[Gemini] Quiz generation failed:", error);
-    return getFallbackQuiz(videoTitle);
+    return getFallbackQuiz(videoTitle).slice(0, questionCount);
   }
 }
 
@@ -263,6 +267,66 @@ function getFallbackQuiz(videoTitle: string): QuizQuestion[] {
       correctIndex: 1,
       explanation:
         "Resilient engineering mandates structured error management and observability across boundary layers.",
+    },
+    {
+      question: "Which evaluation criteria best signifies that a system is ready for production?",
+      options: [
+        "Passing automated test coverage, strict type checks, and load tolerance",
+        "The code compiles locally without running any unit tests",
+        "Omitting integration boundaries to speed up deployment",
+        "Deploying changes without code review or security auditing",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Production readiness requires automated test suites, type verification, and validated operational resiliency.",
+    },
+    {
+      question: "What is the primary benefit of immutability in state management?",
+      options: [
+        "Predictable change tracking, deterministic renders, and easier debugging",
+        "Reduced initial memory footprint under all workloads",
+        "Elimination of the need for structured unit tests",
+        "Automatic compilation into machine language",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Immutable data structures guarantee predictable transitions, simplify state auditing, and prevent side-effect bugs.",
+    },
+    {
+      question: "When refactoring legacy logic, what is the safest first step?",
+      options: [
+        "Establish comprehensive automated regression tests covering existing behaviors",
+        "Rewrite the entire subsystem from scratch without verification",
+        "Remove existing telemetry and error handling",
+        "Rename all public API signatures simultaneously",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Regression test coverage creates a safety harness that guarantees behavior preservation throughout refactoring.",
+    },
+    {
+      question: "How does asynchronous decoupled processing improve user experience?",
+      options: [
+        "By offloading long-running tasks so the interface remains fluid and interactive",
+        "By forcing users to wait until background operations complete synchronously",
+        "By discarding failed network payloads automatically",
+        "By increasing server CPU utilization unnecessarily",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Non-blocking background queues prevent main thread starvation, keeping client interactions instantaneous.",
+    },
+    {
+      question: "What is the key principle behind secure credential and token management?",
+      options: [
+        "Principle of least privilege, strict encryption in transit, and server-side secret isolation",
+        "Hardcoding keys into public client-side JavaScript bundles",
+        "Storing unhashed plaintext secrets in client browser localStorage",
+        "Disabling CORS and authentication headers to simplify testing",
+      ],
+      correctIndex: 0,
+      explanation:
+        "Defense-in-depth requires minimal scopes, environment secret encapsulation, and transit encryption.",
     },
   ];
 }

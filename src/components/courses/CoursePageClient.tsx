@@ -1330,7 +1330,7 @@ function CoursePlayerContent({
                   >
                     <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
-                  <span>Launch Assessment (5 Questions)</span>
+                  <span>Launch Module Quiz</span>
                 </button>
 
                 {/* Show previous assessment score if exists */}
