@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { generateKeywords, parseQueryTerms, rankByRelevance } from "@/lib/keywords";
+import {
+  generateKeywords,
+  parseQueryTerms,
+  rankByRelevance,
+  searchCoursesFullStrength,
+} from "@/lib/keywords";
 
 describe("generateKeywords", () => {
   it("tokenises and deduplicates words", () => {
@@ -136,5 +141,83 @@ describe("rankByRelevance", () => {
     const original = [...courses];
     rankByRelevance(courses, ["react"]);
     expect(courses).toEqual(original);
+  });
+});
+
+describe("searchCoursesFullStrength", () => {
+  const testCourses = [
+    {
+      title: "Python 101: Absolute Fundamentals",
+      description: "Learn clean coding and backend automation",
+      creatorName: "Guido van Rossum",
+      keywords: ["python", "fundamentals", "backend", "programming"],
+    },
+    {
+      title: "Deep Dive into Machine Learning",
+      description: "Build neural networks and predictive models with PyTorch",
+      creatorName: "Andrew Ng",
+      keywords: ["machine", "learning", "neural", "pytorch", "ai"],
+    },
+    {
+      title: "Mastering React & Next.js",
+      description: "Modern frontend web development with server components",
+      creatorName: "Dan Abramov",
+      keywords: ["react", "nextjs", "frontend", "javascript", "web"],
+    },
+    {
+      title: "Data Structures & Algorithms in C++",
+      description: "Ace your competitive programming and technical interviews",
+      creatorName: "Stroustrup",
+      keywords: ["data", "structures", "algorithms", "cpp", "interviews"],
+    },
+  ];
+
+  it("returns all courses with score 0 when search query is empty", () => {
+    const res = searchCoursesFullStrength(testCourses, "");
+    expect(res.length).toBe(testCourses.length);
+    expect(res.every((r) => r.score === 0)).toBe(true);
+  });
+
+  it("ranks exact title match at top with highest score", () => {
+    const res = searchCoursesFullStrength(testCourses, "Mastering React & Next.js");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.title).toBe("Mastering React & Next.js");
+  });
+
+  it("finds courses using prefix matching (e.g. 'py' matches Python)", () => {
+    const res = searchCoursesFullStrength(testCourses, "py");
+    expect(res.length).toBeGreaterThan(0);
+    const titles = res.map((r) => r.course.title);
+    expect(titles).toContain("Python 101: Absolute Fundamentals");
+  });
+
+  it("expands acronyms like 'ml' to find Machine Learning", () => {
+    const res = searchCoursesFullStrength(testCourses, "ml");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.title).toContain("Machine Learning");
+  });
+
+  it("expands acronyms like 'dsa' to find Data Structures & Algorithms", () => {
+    const res = searchCoursesFullStrength(testCourses, "dsa");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.title).toContain("Data Structures & Algorithms");
+  });
+
+  it("finds courses by creator name", () => {
+    const res = searchCoursesFullStrength(testCourses, "Andrew Ng");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.creatorName).toBe("Andrew Ng");
+  });
+
+  it("finds courses by description terms", () => {
+    const res = searchCoursesFullStrength(testCourses, "competitive programming");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.title).toContain("C++");
+  });
+
+  it("boosts courses matching all multi-word query terms", () => {
+    const res = searchCoursesFullStrength(testCourses, "neural networks pytorch");
+    expect(res.length).toBeGreaterThan(0);
+    expect(res[0].course.title).toContain("Machine Learning");
   });
 });

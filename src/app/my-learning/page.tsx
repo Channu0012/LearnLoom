@@ -278,7 +278,7 @@ export default function MyLearningPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap mb-1">
                         <span className="badge-primary text-[10px] font-heading font-bold inline-block">
-                          {course.category}
+                          {course.creatorName ? `By ${course.creatorName}` : "Enrolled Masterclass"}
                         </span>
                         {isFinished && (
                           <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">

@@ -9,7 +9,6 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
-  CATEGORIES,
   LIMITS,
   extractYouTubeId,
   extractYouTubePlaylistId,
@@ -168,7 +167,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<Category | "">("");
+  const [existingCategory, setExistingCategory] = useState<Category>("Other");
   const [lessons, setLessons] = useState<LessonInput[]>([]);
 
   // URL input state
@@ -209,7 +208,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         }
         setTitle(course.title);
         setDescription(course.description);
-        setCategory(course.category);
+        if (course.category) {
+          setExistingCategory(course.category);
+        }
         const existingLessons = await getLessons(courseId);
         setLessons(
           existingLessons.map((l) => ({
@@ -486,14 +487,14 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       const keywords = generateKeywords({
         title,
         description,
-        category: category || "",
+        category: existingCategory,
         lessonTitles,
       });
 
       const courseData = {
         title: title.trim().slice(0, LIMITS.COURSE_TITLE),
         description: description.trim().slice(0, LIMITS.COURSE_DESCRIPTION),
-        category: (category || "Other") as Category,
+        category: existingCategory,
         creatorId: user.uid,
         creatorName: user.displayName ?? "Anonymous",
         status,
@@ -705,38 +706,6 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           )}
           <p className="text-xs text-muted-foreground mt-1 text-right">
             {description.length}/{LIMITS.COURSE_DESCRIPTION}
-          </p>
-        </div>
-
-        {/* Academic Discipline / Field (Optional) */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label
-              htmlFor="course-category"
-              className="block font-heading font-semibold text-sm text-foreground"
-            >
-              Academic Discipline (Optional)
-            </label>
-            <span className="text-xs text-muted-foreground font-body">
-              All subjects are freely searchable
-            </span>
-          </div>
-          <select
-            id="course-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Category)}
-            className="input"
-          >
-            <option value="">General / Open Curricula…</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-muted-foreground mt-1.5 font-body">
-            Categorization is flexible. Students can discover your masterclass using open keyword
-            search across all disciplines.
           </p>
         </div>
 

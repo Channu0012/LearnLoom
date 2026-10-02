@@ -2,15 +2,15 @@ import Link from "next/link";
 import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
 
 export default function HomePage() {
-  const topCategories = [
-    { name: "Programming & CS", count: "140+ Courses", tag: "Most Active" },
-    { name: "System Design & DevOps", count: "65+ Courses", tag: "Architect" },
-    { name: "Artificial Intelligence", count: "90+ Courses", tag: "New MCQ" },
-    { name: "Product & UI/UX", count: "48+ Courses", tag: "Design" },
-    { name: "Business & Finance", count: "54+ Courses", tag: "Executive" },
-    { name: "Science & Mathematics", count: "72+ Courses", tag: "Foundations" },
-    { name: "Academic Exam Prep", count: "36+ Courses", tag: "Mastery" },
-    { name: "Data Engineering", count: "58+ Courses", tag: "High Demand" },
+  const popularSearches = [
+    { name: "Python Programming", query: "python", tag: "High Demand", count: "140+ Courses" },
+    { name: "React & Next.js", query: "react", tag: "Frontend", count: "85+ Courses" },
+    { name: "Artificial Intelligence", query: "ai", tag: "Hot Topic", count: "90+ Courses" },
+    { name: "Data Structures & DSA", query: "dsa", tag: "Algorithms", count: "75+ Courses" },
+    { name: "System Design & DevOps", query: "devops", tag: "Architecture", count: "65+ Courses" },
+    { name: "SQL & Databases", query: "sql", tag: "Data", count: "58+ Courses" },
+    { name: "Machine Learning", query: "machine learning", tag: "AI/ML", count: "70+ Courses" },
+    { name: "Web Development", query: "web", tag: "Complete Tracks", count: "95+ Courses" },
   ];
 
   return (
@@ -378,35 +378,35 @@ export default function HomePage() {
       >
         <div className="container-page max-w-5xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            <span>Dynamic Discovery</span>
+            <span>Instant Search</span>
           </div>
           <h2
             id="disciplines-title"
             className="font-heading font-black text-2xl sm:text-4xl text-foreground mb-4 tracking-tight"
           >
-            Open Educational Disciplines &amp; Skill Tracks
+            Search Any Subject or Skill Track
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed">
-            Build an unstoppable daily habit. Explore verified masterclasses across any academic
-            domain, curated with interactive lecture quizzes and structured progression.
+            Find free video masterclasses on any academic subject or technical stack. Complete
+            lecture quizzes and earn accredited completion credentials.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 text-left">
-            {topCategories.map((cat) => (
+            {popularSearches.map((item) => (
               <Link
-                key={cat.name}
-                href={`/explore?q=${encodeURIComponent(cat.name.replace("&", ""))}`}
+                key={item.name}
+                href={`/explore?q=${encodeURIComponent(item.query)}`}
                 className="p-4 rounded-2xl bg-card border border-border hover:border-teal-500 hover:shadow-md active:scale-[0.98] transition-all group flex flex-col justify-between min-h-[90px]"
               >
                 <div>
                   <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full inline-block mb-1.5">
-                    {cat.tag}
+                    {item.tag}
                   </span>
                   <div className="text-xs sm:text-sm font-heading font-bold text-foreground group-hover:text-teal-600 transition-colors">
-                    {cat.name}
+                    {item.name}
                   </div>
                 </div>
-                <div className="text-[11px] font-body text-muted-foreground mt-2">{cat.count}</div>
+                <div className="text-[11px] font-body text-muted-foreground mt-2">{item.count}</div>
               </Link>
             ))}
           </div>

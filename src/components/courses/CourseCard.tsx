@@ -79,9 +79,9 @@ export function CourseCard({ course }: CourseCardProps) {
       {/* Content */}
       <div className="p-4 flex flex-col justify-between h-36">
         <div>
-          {/* Category */}
-          <span className="badge-primary text-[11px] mb-2 inline-block font-heading font-semibold">
-            {course.category}
+          {/* Creator / Course Badge */}
+          <span className="badge-primary text-[10px] mb-2 inline-block font-heading font-semibold">
+            {course.creatorName ? `By ${course.creatorName}` : "Curated Masterclass"}
           </span>
 
           {/* Title */}

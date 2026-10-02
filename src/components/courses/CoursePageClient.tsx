@@ -642,8 +642,8 @@ function CoursePlayerContent({
               Explore
             </Link>
             <span className="text-muted-foreground text-xs">/</span>
-            <span className="text-xs font-heading font-bold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-950/60 px-2 py-0.5 rounded-md">
-              {course.category}
+            <span className="text-xs font-heading font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md">
+              Academic Masterclass
             </span>
           </div>
           <h1 className="font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl text-foreground break-words line-clamp-2 sm:line-clamp-none">
