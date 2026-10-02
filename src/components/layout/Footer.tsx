@@ -69,11 +69,6 @@ export function Footer() {
                   My Learning &amp; Streaks
                 </Link>
               </li>
-              <li>
-                <Link href="/verify" className="hover:text-primary-500 transition-colors">
-                  Verify Credential ID
-                </Link>
-              </li>
             </ul>
           </nav>
 

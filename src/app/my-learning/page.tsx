@@ -354,11 +354,7 @@ export default function MyLearningPage() {
                     }`}
                   >
                     <span>
-                      {isFinished
-                        ? "Review Course Lessons"
-                        : pct === 0
-                          ? "Start Lesson 1"
-                          : "Resume"}
+                      {isFinished ? "Review Course Lessons" : pct === 0 ? "Get Started" : "Resume"}
                     </span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                       <polygon points="5 3 19 12 5 21 5 3" />

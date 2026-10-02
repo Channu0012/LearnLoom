@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubePlaylistId } from "@/lib/constants";
+import { validateEducationalContent } from "@/lib/contentFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -180,6 +181,48 @@ export async function GET(request: NextRequest) {
             "No videos found in this playlist. Please ensure the playlist is public and contains videos.",
         },
         { status: 404 }
+      );
+    }
+
+    const channelName =
+      ytData?.header?.playlistHeaderRenderer?.ownerText?.runs?.[0]?.text ||
+      ytData?.metadata?.playlistMetadataRenderer?.ownerText?.runs?.[0]?.text ||
+      "";
+
+    // 1. Academic integrity check: verify playlist title and channel
+    const playlistFilter = validateEducationalContent(playlistTitle, channelName);
+    if (playlistFilter.blocked) {
+      return NextResponse.json(
+        {
+          error: playlistFilter.reason,
+          blocked: true,
+          category: playlistFilter.category,
+        },
+        { status: 422 }
+      );
+    }
+
+    // 2. Check sample of video items for commercial entertainment/music/movie signatures
+    let blockedCount = 0;
+    let sampleReason = "";
+    const sample = videos.slice(0, 10);
+    for (const v of sample) {
+      const vFilter = validateEducationalContent(v.title);
+      if (vFilter.blocked) {
+        blockedCount++;
+        sampleReason = vFilter.reason || sampleReason;
+      }
+    }
+
+    if (blockedCount >= 2 || (videos.length === 1 && blockedCount === 1)) {
+      return NextResponse.json(
+        {
+          error:
+            sampleReason ||
+            "This playlist contains commercial music, movies, or entertainment videos that do not meet Vidcura's academic standards.",
+          blocked: true,
+        },
+        { status: 422 }
       );
     }
 

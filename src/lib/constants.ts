@@ -2,7 +2,7 @@
 // Shared constants — single source of truth for the entire app
 // ---------------------------------------------------------------------------
 
-/** Fixed category list — never changed without a data migration */
+/** Fixed category list for backwards-compatible database storage */
 export const CATEGORIES = [
   "Programming",
   "Design",
@@ -12,11 +12,26 @@ export const CATEGORIES = [
   "Science and maths",
   "Music and arts",
   "Health and fitness",
-  "Movies",
   "Other",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
+
+/** Open educational topic suggestions for dynamic discovery and fast search */
+export const POPULAR_TOPICS = [
+  "Computer Science",
+  "Artificial Intelligence",
+  "Web Development",
+  "Mathematics",
+  "Physics",
+  "Design & 3D",
+  "Business & Finance",
+  "Languages",
+  "Music Theory",
+  "Philosophy & History",
+  "Engineering",
+  "Data Science",
+] as const;
 
 /** Course publish statuses */
 export const COURSE_STATUS = {

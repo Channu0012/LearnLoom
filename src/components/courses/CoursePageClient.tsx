@@ -351,10 +351,14 @@ function CoursePlayerContent({
             setQuizScores(map);
           }
         } else {
-          // Auto-start silently into My Learning
-          await enrollOrStartCourse(user.uid, courseId, lessons[0]?.id);
-          if (isMounted) {
-            setIsEnrolled(true);
+          // Only auto-enroll if user arrived via explicit "Get Started" link (?start=true)
+          const urlParams =
+            typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+          if (urlParams?.get("start") === "true") {
+            await enrollOrStartCourse(user.uid, courseId, lessons[0]?.id);
+            if (isMounted) setIsEnrolled(true);
+          } else {
+            if (isMounted) setIsEnrolled(false);
           }
         }
       } catch {
@@ -710,6 +714,20 @@ function CoursePlayerContent({
               </svg>
               <span>Edit</span>
             </Link>
+          )}
+
+          {user && !isEnrolled && (
+            <button
+              type="button"
+              onClick={() => handleEnrollAndStart(true)}
+              disabled={isEnrolling}
+              className="btn-primary text-xs px-4 py-2 min-h-[44px] inline-flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+            >
+              <span>{isEnrolling ? "Starting…" : "Get Started"}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </button>
           )}
 
           {!user && (

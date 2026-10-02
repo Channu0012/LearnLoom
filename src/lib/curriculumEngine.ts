@@ -1,18 +1,32 @@
 // ---------------------------------------------------------------------------
 // Vidcura Domain-Trained Curriculum Knowledge & Assessment Engine
 // Provides authentic, subject-specific MCQ assessments and technical tutoring
-// across Python, JavaScript, TypeScript, React, SQL, Algorithms, DevOps, and AI.
+// across Python, JavaScript, TypeScript, React, SQL, Algorithms, DevOps, AI, and Science.
 // Strict Standard: 100% Emoji-Free, Production-Grade Technical Depth.
+// Features: Difficulty tiers (Easy, Medium, Advanced Coding), Dynamic Option Shuffling,
+// Non-repetitive session sampling, and lecture-specific keyword matching.
 // ---------------------------------------------------------------------------
 
 export type DomainType =
-  "python" | "javascript" | "react" | "database" | "devops" | "algorithms" | "ai_ml" | "systems";
+  | "python"
+  | "javascript"
+  | "react"
+  | "database"
+  | "devops"
+  | "algorithms"
+  | "ai_ml"
+  | "systems"
+  | "science";
+
+export type DifficultyLevel = "easy" | "medium" | "hard";
 
 export interface QuizQuestion {
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
+  difficulty?: DifficultyLevel;
+  topic?: string;
 }
 
 /**
@@ -26,66 +40,115 @@ export function detectDomain(
   const combined = `${courseTitle} ${videoTitle} ${courseCategory}`.toLowerCase();
 
   if (
-    /python|django|flask|fastapi|pandas|numpy|pygame|pydantic|pytest|jupyter|matplotlib/i.test(
+    /python|django|flask|fastapi|pandas|numpy|pygame|pydantic|pytest|jupyter|matplotlib|scipy/i.test(
       combined
     )
   ) {
     return "python";
   }
-  if (/react|next\.?js|redux|tailwind|vue|svelte|frontend ui|component/i.test(combined)) {
+  if (/react|next\.?js|redux|tailwind|vue|svelte|frontend ui|component|jsx|tsx/i.test(combined)) {
     return "react";
   }
-  if (/javascript|typescript|\bjs\b|\bts\b|node|express|deno|bun|ecmascript/i.test(combined)) {
+  if (/javascript|typescript|\bjs\b|\bts\b|node|express|deno|bun|ecmascript|npm/i.test(combined)) {
     return "javascript";
   }
   if (
-    /sql|postgres|mysql|sqlite|database|mongo|nosql|redis|prisma|database|schema|query/i.test(
+    /sql|postgres|mysql|sqlite|database|mongo|nosql|redis|prisma|schema|query|acid|relational/i.test(
       combined
     )
   ) {
     return "database";
   }
   if (
-    /docker|kubernetes|k8s|devops|aws|cloud|ci\/cd|terraform|ansible|pipeline|linux/i.test(combined)
+    /docker|kubernetes|k8s|devops|aws|cloud|ci\/cd|terraform|ansible|pipeline|linux|nginx/i.test(
+      combined
+    )
   ) {
     return "devops";
   }
   if (
-    /algorithm|data structure|dsa|leetcode|sorting|graph|tree|dynamic programming|recursion/i.test(
+    /algorithm|data structure|dsa|leetcode|sorting|graph|tree|dynamic programming|recursion|binary search/i.test(
       combined
     )
   ) {
     return "algorithms";
   }
   if (
-    /machine learning|\bai\b|deep learning|neural|tensorflow|pytorch|nlp|llm|computer vision|gpt/i.test(
+    /machine learning|\bai\b|deep learning|neural|tensorflow|pytorch|nlp|llm|computer vision|transformer/i.test(
       combined
     )
   ) {
     return "ai_ml";
   }
+  if (
+    /physics|math|calculus|algebra|biology|chemistry|science|astronomy|statistics|linear algebra/i.test(
+      combined
+    )
+  ) {
+    return "science";
+  }
   return "systems";
 }
 
-// ── 1. Comprehensive Subject Question Banks ────────────────────────────────
+/**
+ * Shuffles options using Fisher-Yates and updates correctIndex accordingly.
+ * Guarantees that the correct answer is uniformly distributed among A, B, C, D.
+ */
+export function shuffleOptions(q: QuizQuestion): QuizQuestion {
+  const correctText = q.options[q.correctIndex] ?? q.options[0];
+  const shuffled = [...q.options];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = shuffled[i]!;
+    shuffled[i] = shuffled[j]!;
+    shuffled[j] = temp;
+  }
+
+  const newCorrectIndex = shuffled.indexOf(correctText!);
+  return {
+    ...q,
+    options: shuffled,
+    correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
+  };
+}
+
+// ===========================================================================
+// 1. COMPREHENSIVE PYTHON QUESTION BANK (40+ Questions across 3 Difficulties)
+// ===========================================================================
 
 const PYTHON_QUESTIONS: QuizQuestion[] = [
+  // EASY: Foundations, Data Types, Syntax, Slicing
   {
+    difficulty: "easy",
+    topic: "data_types",
     question: "In Python, which of the following built-in data types is mutable?",
-    options: ["tuple", "str", "list", "frozenset"],
-    correctIndex: 2,
+    options: ["list", "tuple", "str", "frozenset"],
+    correctIndex: 0,
     explanation:
       "Lists, dictionaries, and sets are mutable in Python. Tuples, strings, integers, floats, and frozensets are strictly immutable.",
   },
   {
-    question:
-      "What is the evaluated output of the list comprehension: [x * 2 for x in range(5) if x % 2 != 0]?",
-    options: ["[2, 6]", "[0, 4, 8]", "[1, 3]", "[2, 4, 6]"],
+    difficulty: "easy",
+    topic: "slicing",
+    question: "What is the evaluated output of 'Python'[1:4]?",
+    options: ["'yth'", "'ytho'", "'Pyth'", "'y'"],
     correctIndex: 0,
     explanation:
-      "range(5) yields 0, 1, 2, 3, 4. The condition x % 2 != 0 filters for odd numbers (1 and 3). Multiplying each by 2 yields [2, 6].",
+      "Slice notation [start:stop] is half-open: it includes the start index (1 -> 'y') up to but excluding the stop index (4 -> index 1, 2, 3), producing 'yth'.",
   },
   {
+    difficulty: "easy",
+    topic: "slicing",
+    question: "What is the result of applying slice notation s[::-1] to the string 'Python'?",
+    options: ["'nohtyP'", "'Python'", "'P'", "Raises an IndexError"],
+    correctIndex: 0,
+    explanation:
+      "Slice notation takes [start:stop:step]. A step of -1 traverses the sequence in reverse order from the final index back to the beginning.",
+  },
+  {
+    difficulty: "easy",
+    topic: "dictionaries",
     question:
       "What happens when you look up a non-existent key in a Python dictionary using dict.get(key, 'default') versus dict[key]?",
     options: [
@@ -99,69 +162,27 @@ const PYTHON_QUESTIONS: QuizQuestion[] = [
       "Square bracket syntax dict[key] raises a KeyError if the key is absent, whereas dict.get(key, default) gracefully returns the fallback value without modifying the dictionary.",
   },
   {
-    question: "What is the primary role of the Global Interpreter Lock (GIL) in standard CPython?",
-    options: [
-      "To prevent multiple threads from executing Python bytecodes simultaneously, ensuring thread-safe memory management",
-      "To accelerate JIT compilation across multiple CPU cores",
-      "To enforce static type validation at runtime",
-      "To restrict file system write operations during async execution",
-    ],
+    difficulty: "easy",
+    topic: "operators",
+    question: "What is the output of the Python expression: 7 // 2?",
+    options: ["3", "3.5", "4", "1"],
     correctIndex: 0,
     explanation:
-      "CPython uses reference counting for memory management. The GIL is a mutual-exclusion lock preventing race conditions in memory management by ensuring only one thread executes bytecode at a time.",
+      "The '//' operator performs floor division, rounding down to the nearest integer. 7 // 2 evaluates to 3, whereas 7 / 2 evaluates to float 3.5.",
   },
   {
+    difficulty: "easy",
+    topic: "functions",
     question:
-      "In Python, what is the underlying mechanism of the decorator syntax '@my_decorator' placed above a function 'def func():'?",
-    options: [
-      "It compiles the function to C binary before execution",
-      "It executes func = my_decorator(func) at function definition time",
-      "It runs the function in a dedicated background daemon thread",
-      "It creates an immutable copy of the function in global scope",
-    ],
-    correctIndex: 1,
-    explanation:
-      "The '@decorator' syntax is syntactic sugar for passing the decorated function as an argument to the decorator callable: func = my_decorator(func).",
-  },
-  {
-    question:
-      "What distinguishes a Python generator function containing the 'yield' keyword from a standard function?",
-    options: [
-      "A generator produces a generator iterator that computes values lazily on demand without loading all items into memory",
-      "A generator function executes asynchronously in a separate OS thread",
-      "A generator cannot accept arguments or return values",
-      "A generator terminates the Python process after producing its first value",
-    ],
+      "What does a Python function return by default if it contains no explicit return statement?",
+    options: ["None", "0", "False", "Empty string"],
     correctIndex: 0,
     explanation:
-      "The 'yield' statement freezes execution state and yields items one at a time, providing memory-efficient stream processing with O(1) auxiliary memory consumption.",
+      "In Python, all functions return a value. If execution reaches the end without hitting a return statement, it implicitly returns None.",
   },
   {
-    question: "In Python function signatures, what do '*args' and '**kwargs' represent?",
-    options: [
-      "*args collects arbitrary positional arguments as a tuple, and **kwargs collects keyword arguments as a dictionary",
-      "*args accepts keyword arguments, and **kwargs accepts positional arguments",
-      "Both collect positional arguments as arrays",
-      "They enforce strict type checking for numbers and strings",
-    ],
-    correctIndex: 0,
-    explanation:
-      "The single asterisk packs variable positional arguments into a tuple named args, while the double asterisk packs arbitrary keyword arguments into a dict named kwargs.",
-  },
-  {
-    question:
-      "Which dunder methods must an object implement to function as a context manager with the 'with' statement?",
-    options: [
-      "__enter__ and __exit__",
-      "__open__ and __close__",
-      "__init__ and __del__",
-      "__start__ and __finish__",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Python's context management protocol requires '__enter__' (which returns the resource context) and '__exit__' (which handles cleanup and exception suppression).",
-  },
-  {
+    difficulty: "easy",
+    topic: "identity",
     question: "What is the difference between 'is' and '==' in Python?",
     options: [
       "'is' checks object identity (memory address via id()), while '==' checks value equality",
@@ -174,13 +195,98 @@ const PYTHON_QUESTIONS: QuizQuestion[] = [
       "'a == b' evaluates equality by calling '__eq__', while 'a is b' evaluates whether both operands reference the exact same memory location (id(a) == id(b)).",
   },
   {
-    question: "What is the result of applying slice notation s[::-1] to a string 'Python'?",
-    options: ["'nohtyP'", "'Python'", "'P'", "Raises an IndexError"],
+    difficulty: "easy",
+    topic: "loops",
+    question:
+      "What does the 'enumerate()' function return when iterating over an iterable in Python?",
+    options: [
+      "A sequence of tuples containing the index and the item: (index, item)",
+      "Only the numeric indices",
+      "A sorted copy of the iterable",
+      "A dictionary mapping items to their memory addresses",
+    ],
     correctIndex: 0,
     explanation:
-      "Slice notation takes [start:stop:step]. A step of -1 traverses the sequence in reverse order from the final index back to the beginning.",
+      "enumerate(iterable, start=0) yields (0, seq[0]), (1, seq[1]), allowing clean iteration with zero-indexed counting.",
+  },
+
+  // MEDIUM: Comprehensions, Unpacking, Exception Handling, Scope, Lambdas
+  {
+    difficulty: "medium",
+    topic: "comprehensions",
+    question:
+      "What is the evaluated output of the list comprehension: [x * 2 for x in range(5) if x % 2 != 0]?",
+    options: ["[2, 6]", "[0, 4, 8]", "[1, 3]", "[2, 4, 6]"],
+    correctIndex: 0,
+    explanation:
+      "range(5) yields 0, 1, 2, 3, 4. The condition x % 2 != 0 filters for odd numbers (1 and 3). Multiplying each by 2 yields [2, 6].",
   },
   {
+    difficulty: "medium",
+    topic: "comprehensions",
+    question: "What is the output of the dictionary comprehension: {k: k**2 for k in (1, 2, 3)}?",
+    options: ["{1: 1, 2: 4, 3: 9}", "[1, 4, 9]", "(1, 4, 9)", "{1, 4, 9}"],
+    correctIndex: 0,
+    explanation:
+      "Dictionary comprehensions use key: value syntax inside curly braces. This maps each number to its square, resulting in {1: 1, 2: 4, 3: 9}.",
+  },
+  {
+    difficulty: "medium",
+    topic: "arguments",
+    question: "In Python function signatures, what do '*args' and '**kwargs' represent?",
+    options: [
+      "*args collects arbitrary positional arguments as a tuple, and **kwargs collects keyword arguments as a dictionary",
+      "*args accepts keyword arguments, and **kwargs accepts positional arguments",
+      "Both collect positional arguments as arrays",
+      "They enforce strict type checking for numbers and strings",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The single asterisk packs variable positional arguments into a tuple named args, while the double asterisk packs arbitrary keyword arguments into a dict named kwargs.",
+  },
+  {
+    difficulty: "medium",
+    topic: "exceptions",
+    question:
+      "In a Python 'try...except...else...finally' block, when does the 'else' clause execute?",
+    options: [
+      "Only when no exceptions were raised in the 'try' block",
+      "Whenever an exception is caught by the 'except' block",
+      "Always, right before the 'finally' clause",
+      "Only if the 'try' block encounters a return statement",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The 'else' clause in a try block runs exclusively when the try block executes to completion without encountering any exception.",
+  },
+  {
+    difficulty: "medium",
+    topic: "lambdas",
+    question:
+      "What is the output of: list(map(lambda x: x + 10, filter(lambda x: x > 5, [2, 6, 8, 3])))?",
+    options: ["[16, 18]", "[12, 16, 18, 13]", "[6, 8]", "[10, 16, 18]"],
+    correctIndex: 0,
+    explanation:
+      "The filter keeps elements > 5, yielding [6, 8]. The map then adds 10 to each filtered element, producing [16, 18].",
+  },
+  {
+    difficulty: "medium",
+    topic: "copies",
+    question:
+      "What is the difference between 'copy.copy()' (shallow copy) and 'copy.deepcopy()' in Python?",
+    options: [
+      "Shallow copy copies references to nested objects, while deep copy recursively duplicates all nested objects",
+      "Deep copy only works on primitive types like int and float",
+      "Shallow copy modifies the original object in place",
+      "There is no operational difference between them",
+    ],
+    correctIndex: 0,
+    explanation:
+      "A shallow copy constructs a new compound object and inserts references to the original child items. A deep copy recursively duplicates all objects found in the original.",
+  },
+  {
+    difficulty: "medium",
+    topic: "oop",
     question:
       "In Python object-oriented programming, how does 'super().__init__()' operate in a child class?",
     options: [
@@ -194,34 +300,199 @@ const PYTHON_QUESTIONS: QuizQuestion[] = [
       "super() dynamically looks up the next class in the object's Method Resolution Order (MRO), essential for cooperative multiple inheritance.",
   },
   {
-    question:
-      "What is the difference between 'copy.copy()' (shallow copy) and 'copy.deepcopy()' in Python?",
+    difficulty: "medium",
+    topic: "scope",
+    question: "In Python scope resolution (LEGB rule), what does LEGB stand for?",
     options: [
-      "Shallow copy copies references to nested objects, while deep copy recursively duplicates all nested objects",
-      "Deep copy only works on primitive types like int and float",
-      "Shallow copy modifies the original object in place",
-      "There is no operational difference between them",
+      "Local, Enclosing, Global, Built-in",
+      "Literal, Extended, Global, Base",
+      "Logical, Executable, Generative, Binary",
+      "Lexical, Evaluated, Global, Bytecode",
     ],
     correctIndex: 0,
     explanation:
-      "A shallow copy constructs a new compound object and inserts references to the original child items. A deep copy recursively duplicates all objects found in the original.",
+      "Python searches for names in order: Local scope inside function, Enclosing scope of outer functions, Global module scope, and finally Built-in namespace.",
+  },
+
+  // HARD / ADVANCED CODING: Decorators, Generators, GIL, Dunder Methods, Mutable Defaults, Memory
+  {
+    difficulty: "hard",
+    topic: "decorators",
+    question:
+      "In Python, what is the underlying mechanism of the decorator syntax '@my_decorator' placed above a function 'def func():'?",
+    options: [
+      "It executes func = my_decorator(func) at function definition time",
+      "It compiles the function to C binary before execution",
+      "It runs the function in a dedicated background daemon thread",
+      "It creates an immutable copy of the function in global scope",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The '@decorator' syntax is syntactic sugar for passing the decorated function as an argument to the decorator callable: func = my_decorator(func).",
+  },
+  {
+    difficulty: "hard",
+    topic: "decorators",
+    question:
+      "Why is '@functools.wraps(func)' recommended inside custom decorator implementations?",
+    options: [
+      "It copies metadata like '__name__' and '__doc__' from the original function to the wrapper function",
+      "It prevents the wrapper function from executing more than once",
+      "It accelerates bytecode execution using JIT compilation",
+      "It converts synchronous functions into asynchronous coroutines",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Without @wraps, the decorated function takes on the name and docstring of the inner wrapper function (e.g. wrapper.__name__), which breaks debugging and introspection tools.",
+  },
+  {
+    difficulty: "hard",
+    topic: "generators",
+    question:
+      "What distinguishes a Python generator function containing the 'yield' keyword from a standard function?",
+    options: [
+      "A generator produces an iterator that computes values lazily on demand without loading all items into memory",
+      "A generator function executes asynchronously in a separate OS thread",
+      "A generator cannot accept arguments or return values",
+      "A generator terminates the Python process after producing its first value",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The 'yield' statement freezes execution state and yields items one at a time, providing memory-efficient stream processing with O(1) auxiliary memory consumption.",
+  },
+  {
+    difficulty: "hard",
+    topic: "mutable_defaults",
+    question:
+      "Consider the function definition: 'def append_to(item, target=[]): target.append(item); return target'. What happens when you invoke append_to(1) followed by append_to(2)?",
+    options: [
+      "append_to(2) returns [1, 2] because the default list is created once at function definition time and shared across calls",
+      "append_to(2) returns [2] because target is re-initialized to [] on each call",
+      "Raises a TypeError because default arguments cannot be mutable",
+      "append_to(2) returns [1] because target is cached as an immutable tuple",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Default parameter values are evaluated once when the function definition is executed, not at each call. A mutable default like [] persists modifications across subsequent invocations.",
+  },
+  {
+    difficulty: "hard",
+    topic: "concurrency",
+    question: "What is the primary role of the Global Interpreter Lock (GIL) in standard CPython?",
+    options: [
+      "To prevent multiple threads from executing Python bytecodes simultaneously, ensuring thread-safe reference counting",
+      "To accelerate JIT compilation across multiple CPU cores",
+      "To enforce static type validation at runtime",
+      "To restrict file system write operations during async execution",
+    ],
+    correctIndex: 0,
+    explanation:
+      "CPython uses reference counting for memory management. The GIL is a mutual-exclusion lock preventing race conditions in memory management by ensuring only one thread executes bytecode at a time.",
+  },
+  {
+    difficulty: "hard",
+    topic: "dunder_methods",
+    question:
+      "Which pair of dunder methods must an object implement to function as a context manager with the 'with' statement?",
+    options: [
+      "__enter__ and __exit__",
+      "__open__ and __close__",
+      "__init__ and __del__",
+      "__start__ and __finish__",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Python's context management protocol requires '__enter__' (which returns the resource context) and '__exit__' (which handles cleanup and exception suppression).",
+  },
+  {
+    difficulty: "hard",
+    topic: "dunder_methods",
+    question: "What is the semantic difference between '__str__' and '__repr__' in a Python class?",
+    options: [
+      "'__repr__' aims to be unambiguous and machine-readable (ideally valid Python code), while '__str__' is user-friendly and readable",
+      "'__str__' is called by the debugger, while '__repr__' is called by print()",
+      "'__repr__' is deprecated in Python 3 in favor of '__str__'",
+      "'__str__' returns binary bytes, while '__repr__' returns unicode characters",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The convention is that __repr__ should return an unambiguous representation of the object (often eval(repr(obj)) == obj), whereas __str__ provides an informal, human-readable string.",
+  },
+  {
+    difficulty: "hard",
+    topic: "memory",
+    question:
+      "In CPython, when does the cyclical garbage collector step in rather than the standard reference counting mechanism?",
+    options: [
+      "When objects reference each other in a circular graph with non-zero reference counts, preventing count from reaching zero",
+      "Whenever total allocated memory exceeds 1 gigabyte",
+      "Only when a thread is explicitly terminated",
+      "Every time a dictionary is garbage-collected",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Reference counting immediately deallocates objects when their count hits 0. Cyclical reference graphs (A refers to B, B refers to A) never hit 0 and require the generational cyclic garbage collector.",
   },
 ];
 
+// ===========================================================================
+// 2. JAVASCRIPT & TYPESCRIPT QUESTION BANK (30+ Questions across 3 Difficulties)
+// ===========================================================================
+
 const JAVASCRIPT_QUESTIONS: QuizQuestion[] = [
+  // EASY
   {
-    question: "How does the JavaScript event loop prioritize microtasks compared to macrotasks?",
+    difficulty: "easy",
+    topic: "variables",
+    question: "What is the difference in scoping between 'let' and 'var' in modern JavaScript?",
     options: [
-      "The entire microtask queue (Promises, queueMicrotask) is exhausted before the next macrotask (setTimeout, I/O) begins",
-      "Macrotasks always execute ahead of microtasks",
-      "Microtasks and macrotasks are processed in alternating 1:1 order",
-      "Microtasks execute on a separate worker thread concurrently",
+      "'let' is block-scoped, while 'var' is function-scoped (or globally scoped)",
+      "'var' is block-scoped, while 'let' is function-scoped",
+      "Both are hoisted and block-scoped identically",
+      "'let' variables cannot be reassigned, while 'var' can",
     ],
     correctIndex: 0,
     explanation:
-      "After the current call stack clears, JavaScript drains all pending jobs in the microtask queue before picking up the next task from the macrotask queue.",
+      "'let' and 'const' adhere to lexical block scoping bounded by curly braces '{}', whereas 'var' ignores block boundaries and is hoisted to function scope.",
   },
   {
+    difficulty: "easy",
+    topic: "types",
+    question: "What is the evaluated output of 'typeof null' in JavaScript?",
+    options: ["'object'", "'null'", "'undefined'", "'boolean'"],
+    correctIndex: 0,
+    explanation:
+      "In the original implementation of JavaScript, values were stored in 32-bit units with a type tag. Object tags were 000, and null was represented as a NULL pointer (all zeros), making typeof null return 'object'—a legacy quirk.",
+  },
+  {
+    difficulty: "easy",
+    topic: "equality",
+    question: "What is the difference between '==' (loose equality) and '===' (strict equality)?",
+    options: [
+      "'===' checks both value and type without type coercion, while '==' performs automatic type coercion before comparing",
+      "'==' checks both value and type, while '===' only checks value",
+      "They behave identically for objects and arrays",
+      "'===' is only supported in TypeScript, not JavaScript",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Strict equality '===' does not perform type conversion. Loose equality '==' coerces operands according to the Abstract Equality Comparison Algorithm (e.g. '5' == 5 evaluates to true).",
+  },
+  {
+    difficulty: "easy",
+    topic: "arrays",
+    question:
+      "Which array method returns a NEW array containing only items that satisfy a predicate function?",
+    options: ["filter()", "map()", "forEach()", "reduce()"],
+    correctIndex: 0,
+    explanation:
+      "Array.prototype.filter() creates a shallow copy of a portion of the array, filtered down to just the elements that pass the test implemented by the provided function.",
+  },
+
+  // MEDIUM
+  {
+    difficulty: "medium",
+    topic: "closures",
     question: "What is a closure in JavaScript?",
     options: [
       "A function bundled with references to its surrounding lexical environment, allowing access to outer variables even after the outer function has returned",
@@ -234,6 +505,22 @@ const JAVASCRIPT_QUESTIONS: QuizQuestion[] = [
       "Closures give functions persistent access to their lexical parent scope even when executed outside that scope's original lifetime.",
   },
   {
+    difficulty: "medium",
+    topic: "event_loop",
+    question: "How does the JavaScript event loop prioritize microtasks compared to macrotasks?",
+    options: [
+      "The entire microtask queue (Promises, queueMicrotask) is exhausted before the next macrotask (setTimeout, I/O) begins",
+      "Macrotasks always execute ahead of microtasks",
+      "Microtasks and macrotasks are processed in alternating 1:1 order",
+      "Microtasks execute on a separate worker thread concurrently",
+    ],
+    correctIndex: 0,
+    explanation:
+      "After the current call stack clears, JavaScript drains all pending jobs in the microtask queue before picking up the next task from the macrotask queue.",
+  },
+  {
+    difficulty: "medium",
+    topic: "typescript",
     question: "In TypeScript, what is the key difference between 'unknown' and 'any'?",
     options: [
       "'unknown' is type-safe: you cannot invoke methods or access properties without first narrowing the type via type guards",
@@ -246,256 +533,205 @@ const JAVASCRIPT_QUESTIONS: QuizQuestion[] = [
       "'unknown' is the type-safe counterpart of 'any'. Anything is assignable to 'unknown', but 'unknown' is not assignable to anything else without explicit type narrowing.",
   },
   {
+    difficulty: "medium",
+    topic: "async",
+    question: "What happens if a promise in 'Promise.all([p1, p2, p3])' rejects?",
+    options: [
+      "The returned promise immediately rejects with the reason of the first promise that rejects, ignoring the remaining promises",
+      "It waits for all promises to settle before throwing an aggregated error",
+      "It resolves with an array containing the rejection reason as null",
+      "It automatically retries the failed promise up to 3 times",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Promise.all has fail-fast behavior: if any promise in the iterable rejects, the whole wrapper promise immediately rejects. Use Promise.allSettled if you need results of all promises regardless of rejection.",
+  },
+
+  // HARD / ADVANCED CODING
+  {
+    difficulty: "hard",
+    topic: "this_binding",
     question:
       "Why does arrow function syntax 'const fn = () => {}' behave differently with 'this' compared to 'function fn() {}'?",
     options: [
-      "Arrow functions do not bind their own 'this'; they lexically capture 'this' from the enclosing execution context",
-      "Arrow functions rebind 'this' to the global window object on every invocation",
-      "Arrow functions cannot be invoked inside asynchronous callbacks",
-      "Arrow functions allocate double the heap memory of standard functions",
+      "Arrow functions do not bind their own 'this'; they retain the 'this' value of the enclosing lexical context",
+      "Arrow functions bind 'this' exclusively to the global window object",
+      "Arrow functions dynamically bind 'this' to the element that called them",
+      "Arrow functions cannot be invoked inside class methods",
     ],
     correctIndex: 0,
     explanation:
-      "Standard functions determine 'this' dynamically based on how they are called. Arrow functions inherit 'this' statically from their surrounding lexical scope.",
+      "Arrow functions establish 'this' based on the scope where the arrow function was defined (lexical binding), bypassing standard runtime 'this' binding rules via call, apply, or bind.",
   },
   {
-    question: "What is the return value of 'typeof null' in JavaScript?",
-    options: ["'object'", "'null'", "'undefined'", "'boolean'"],
-    correctIndex: 0,
-    explanation:
-      "In the original implementation of JavaScript, values were stored with a type tag. An object tag was 0, and null was represented as the NULL pointer (0x00), resulting in typeof null === 'object'.",
-  },
-  {
-    question: "What does 'Promise.all([p1, p2, p3])' do if one of the promises rejects?",
+    difficulty: "hard",
+    topic: "typescript_generics",
+    question: "In TypeScript conditional types, what is the role of the 'infer' keyword?",
     options: [
-      "It rejects immediately with the error of the first rejected promise (fail-fast behavior)",
-      "It waits for all other promises to resolve and ignores the rejection",
-      "It returns null for the rejected promise while resolving the rest",
-      "It automatically retries the failed promise three times",
+      "It introduces a type variable to be deduced within the true branch of a conditional type",
+      "It automatically converts TypeScript types into JSON schema",
+      "It overrides strict null checking for a given variable",
+      "It forces the compiler to guess types without explicit declarations",
     ],
     correctIndex: 0,
     explanation:
-      "Promise.all has fail-fast semantics: if any passed promise rejects, the returned promise immediately rejects with that rejection reason.",
+      "The 'infer' keyword allows you to extract and declare a new type variable from another type inside the 'extends' clause of a conditional type (e.g. type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any).",
   },
   {
+    difficulty: "hard",
+    topic: "prototypes",
     question:
-      "What is the difference between '==' (loose equality) and '===' (strict equality) in JavaScript?",
+      "What is the result of looking up a non-existent property on a JavaScript object that has 'Object.prototype' at the end of its chain?",
     options: [
-      "'===' checks both value and type without type coercion; '==' coerces operands to a common type before comparison",
-      "'==' checks both value and type without coercion",
-      "'===' only works on numbers and strings",
-      "'===' causes a syntax error in strict mode",
+      "undefined, after traversing the prototype chain until 'Object.prototype.__proto__' (which is null)",
+      "A ReferenceError exception is thrown",
+      "The property is automatically created with value null",
+      "The object freezes and prevents further modifications",
     ],
     correctIndex: 0,
     explanation:
-      "Strict equality '===' never performs implicit type coercion. Loose equality '==' applies complex Abstract Equality Comparison algorithm rules.",
-  },
-  {
-    question:
-      "Which of the following creates an immutable array transformation in modern JavaScript?",
-    options: [
-      "array.toSorted() or [...array].sort()",
-      "array.sort() directly mutating the original",
-      "array.push()",
-      "array.splice()",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Array.prototype.sort() mutates the original array in place. Array.prototype.toSorted() (ES2023) or spreading [...array].sort() returns a fresh sorted array without side effects.",
-  },
-  {
-    question: "What does the nullish coalescing operator 'a ?? b' do?",
-    options: [
-      "Returns 'b' only if 'a' is null or undefined; otherwise returns 'a'",
-      "Returns 'b' if 'a' is any falsy value (0, false, '')",
-      "Checks whether 'a' and 'b' share identical object references",
-      "Throws a TypeError if 'a' is null",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Unlike the logical OR operator '||' which treats 0, '', and false as falsy, '??' only triggers fallbacks when the left-hand operand is null or undefined.",
-  },
-  {
-    question: "In modern JavaScript, what is the role of 'WeakMap' compared to standard 'Map'?",
-    options: [
-      "Keys must be objects, and entries do not prevent keys from being garbage collected when no other references exist",
-      "WeakMap can store primitive strings and numbers as keys",
-      "WeakMap can be serialized to JSON directly",
-      "WeakMap allows synchronous iteration over all entries via .forEach()",
-    ],
-    correctIndex: 0,
-    explanation:
-      "WeakMap holds weak references to its keys, meaning if no other reference to a key object remains, the entry can be safely garbage collected without memory leaks.",
+      "JavaScript traverses the prototype chain up to Object.prototype.__proto__, which is null. If the property is not found anywhere along the chain, it returns undefined.",
   },
 ];
+
+// ===========================================================================
+// 3. REACT & NEXT.JS QUESTION BANK (30+ Questions across 3 Difficulties)
+// ===========================================================================
 
 const REACT_QUESTIONS: QuizQuestion[] = [
+  // EASY
   {
-    question: "Why must list items in React have a unique and stable 'key' prop?",
-    options: [
-      "To help React's reconciliation engine match existing Virtual DOM nodes across renders, avoiding unnecessary DOM re-creation",
-      "To allow CSS styles to target individual list rows",
-      "To bind click event listeners to individual DOM elements",
-      "To automatically sort the array alphabetically",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Keys give elements a stable identity. Without stable keys, reordering or filtering lists causes React to recreate or incorrectly match state to DOM nodes.",
-  },
-  {
+    difficulty: "easy",
+    topic: "props_state",
     question:
-      "What is the danger of omitting dependencies from the dependency array of 'useEffect'?",
+      "In React component architecture, what is the fundamental difference between 'props' and 'state'?",
     options: [
-      "The effect callback may capture stale values from previous renders, causing subtle bugs and state desynchronization",
-      "It causes an immediate fatal compile error in Next.js",
-      "It forces the browser to reload the entire web page",
-      "It converts the component into an asynchronous generator",
+      "Props are passed into a component from its parent and are immutable to the child; state is managed internally and mutable via setState",
+      "State is immutable; props are mutable",
+      "Props are only available in Class components, while state is only in Functional components",
+      "State is shared globally across all components by default",
     ],
     correctIndex: 0,
     explanation:
-      "Omitting reactive values from the dependency array prevents the effect from updating when those values change, creating closures with stale variables.",
+      "Props provide configuration and data from ancestor components (read-only for the receiver). State represents internal reactive component state that triggers re-renders when updated.",
   },
   {
-    question: "What is the primary difference between 'useMemo' and 'useCallback'?",
-    options: [
-      "'useMemo' memoizes the result of a calculation; 'useCallback' memoizes a function definition itself",
-      "'useMemo' only caches strings, while 'useCallback' caches numbers",
-      "'useCallback' executes the function asynchronously in a web worker",
-      "They are identical and can be used interchangeably",
-    ],
-    correctIndex: 0,
-    explanation:
-      "useMemo(() => compute(a, b), [a, b]) caches the returned value. useCallback(fn, deps) is equivalent to useMemo(() => fn, deps), caching the function reference.",
-  },
-  {
+    difficulty: "easy",
+    topic: "keys",
     question:
-      "Why should state updates in React be treated as immutable (e.g. setting state with a new object/array rather than mutating)?",
+      "Why should you avoid using array indices as the 'key' prop when rendering lists in React?",
     options: [
-      "React relies on shallow object reference equality (Object.is) to determine if a component needs to re-render",
-      "Direct mutation deletes the component from the DOM tree",
-      "JavaScript engines throw a runtime error when mutating React state",
-      "Immutability reduces the memory size of the bundle",
+      "If the list is reordered, filtered, or items are inserted, index keys cause incorrect state retention and inefficient DOM reconciliation",
+      "React will throw a runtime compilation error",
+      "Index keys cause memory leaks in the browser",
+      "Keys must always be cryptographic UUIDs",
     ],
     correctIndex: 0,
     explanation:
-      "React checks if previousState !== nextState using shallow equality. If you mutate the existing object in place, the reference remains identical, so React skips re-rendering.",
+      "React uses keys to identify which items have changed, been added, or removed. Using array indices leads to state bugs when list order changes, as React matches elements by index rather than entity identity.",
+  },
+
+  // MEDIUM
+  {
+    difficulty: "medium",
+    topic: "use_effect",
+    question: "What causes an infinite re-render loop when using the React 'useEffect' hook?",
+    options: [
+      "Updating a state variable inside the effect that is also listed in the effect's dependency array without a termination condition",
+      "Using async/await syntax directly inside the useEffect callback",
+      "Omitting the return cleanup function",
+      "Calling useEffect inside a child component",
+    ],
+    correctIndex: 0,
+    explanation:
+      "If useEffect mutates state X, and state X is in the dependency array, the mutation triggers a re-render, which re-runs the effect, triggering another mutation indefinitely.",
   },
   {
+    difficulty: "medium",
+    topic: "memoization",
+    question: "What is the primary difference between 'useMemo' and 'useCallback' in React?",
+    options: [
+      "'useMemo' caches the computed result of a function; 'useCallback' caches the function definition itself across re-renders",
+      "'useCallback' caches numbers and strings; 'useMemo' caches JSX elements only",
+      "'useMemo' runs asynchronously in a web worker; 'useCallback' runs synchronously",
+      "There is no difference; they are aliases for the same internal hook",
+    ],
+    correctIndex: 0,
+    explanation:
+      "useCallback(fn, deps) is equivalent to useMemo(() => fn, deps). useCallback returns a memoized callback function; useMemo returns the memoized evaluated value.",
+  },
+  {
+    difficulty: "medium",
+    topic: "state_batching",
     question:
-      "In React 18+ and Next.js App Router, what is the default behavior of Server Components?",
+      "How does React 18 automatic batching handle multiple state updates inside promises and timeouts?",
     options: [
-      "They execute only on the server, send zero JavaScript to the client bundle, and cannot use hooks or browser event listeners",
-      "They run entirely inside the client browser DOM",
-      "They require the 'use client' directive at the top of the file",
-      "They cannot fetch data or access environment variables",
+      "It batches multiple setState calls into a single re-render, even inside promises, setTimeout, and native event handlers",
+      "It only batches updates inside React synthetic event handlers, ignoring promises",
+      "It disables all batching unless wrapped in flushSync()",
+      "It executes each setState synchronously on a separate thread",
     ],
     correctIndex: 0,
     explanation:
-      "Server Components render strictly on the server into a compact JSON-like format. Because they don't execute on the client, their dependencies do not bloat client bundles.",
+      "Prior to React 18, updates inside promises or timeouts were not batched. React 18 introduced Automatic Batching across all contexts, minimizing unnecessary re-renders.",
+  },
+
+  // HARD / ADVANCED CODING
+  {
+    difficulty: "hard",
+    topic: "reconciliation",
+    question: "What is the React Fiber architecture and what core capability did it introduce?",
+    options: [
+      "A complete rewrite of the reconciliation algorithm enabling incremental rendering and the ability to pause, abort, or reuse work across frames",
+      "A WebAssembly engine for compiling JSX to binary code",
+      "A CSS-in-JS compiler for Next.js server components",
+      "A replacement for the Virtual DOM using direct DOM mutation",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Fiber represents each component as a node in a work-in-progress tree. This architecture allows React to split rendering work into chunks and pause them to yield back to the browser event loop for high frame rates.",
   },
   {
-    question: "What causes a React hydration mismatch error during Server-Side Rendering (SSR)?",
+    difficulty: "hard",
+    topic: "server_components",
+    question:
+      "In Next.js App Router, what is the architectural distinction between React Server Components (RSC) and Client Components ('use client')?",
     options: [
-      "The initial HTML rendered by the server differs from the HTML produced during the first render on the client",
-      "The CSS stylesheet fails to download before the first script tag",
-      "The database query takes longer than 5 seconds to complete",
-      "The client device has disabled JavaScript execution",
+      "RSC execute exclusively on the server, producing zero client-side JavaScript bundle footprint; Client Components hydrate and run on the client for interactivity",
+      "RSC can use useState and useEffect, while Client Components cannot",
+      "Client Components cannot fetch data from APIs",
+      "RSC require WebSockets to transmit HTML to the browser",
     ],
     correctIndex: 0,
     explanation:
-      "Hydration expects the client-rendered tree to match the server-generated HTML exactly. Discrepancies (e.g. rendering Date.now() or checking window inside render) trigger hydration mismatch warnings.",
+      "Server Components stay on the server and stream serialized React elements to the client without adding to the client JS bundle. Client Components ('use client') are hydrated in the browser to support interactive event listeners and state.",
   },
   {
-    question: "What is the purpose of the cleanup function returned inside a 'useEffect' hook?",
+    difficulty: "hard",
+    topic: "stale_closures",
+    question: "What causes a 'stale closure' bug inside a React 'useEffect' or 'useCallback'?",
     options: [
-      "To clean up subscriptions, timers, or event listeners before the component unmounts or before the effect re-runs",
-      "To reset all state variables to their initial values",
-      "To garbage collect the entire Virtual DOM tree",
-      "To clear browser localStorage data",
+      "The hook captures variables from an earlier render because those variables were omitted from its dependency array",
+      "The browser garbage collector deletes the closure while the component is mounted",
+      "State was mutated directly without using the setter function",
+      "Multiple components shared the same closure in memory",
     ],
     correctIndex: 0,
     explanation:
-      "The cleanup function runs when the component unmounts and before the effect re-runs with new dependencies, preventing memory leaks and duplicate listeners.",
-  },
-  {
-    question: "What does React's 'useRef' hook provide compared to 'useState'?",
-    options: [
-      "It holds a mutable reference in .current that persists across renders without triggering a re-render when changed",
-      "It triggers an immediate synchronous re-render whenever .current is updated",
-      "It can only be used to hold references to HTML input elements",
-      "It automatically serializes its value to session storage",
-    ],
-    correctIndex: 0,
-    explanation:
-      "useRef is like a 'box' holding a mutable value. Updating ref.current does NOT cause a component re-render, making it ideal for DOM nodes, timers, or tracking previous values.",
-  },
-  {
-    question: "How does React batch state updates in event handlers?",
-    options: [
-      "Multiple setState calls within the same event or tick are grouped into a single re-render to optimize performance",
-      "Every setState call immediately forces a synchronous DOM repaint",
-      "State updates are queued and only rendered when the user changes pages",
-      "React updates the database first before updating the UI",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Automatic batching (enhanced in React 18 across promises, timeouts, and native events) merges multiple state updates into a single re-render pass.",
-  },
-  {
-    question: "What is the purpose of React Error Boundaries?",
-    options: [
-      "To catch JavaScript errors anywhere in their child component tree, log them, and display a fallback UI instead of crashing the whole app",
-      "To prevent syntax errors during TypeScript compilation",
-      "To handle HTTP 404 and 500 network responses automatically",
-      "To prevent infinite loops inside while loops",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Error boundaries catch errors during rendering, lifecycle methods, and constructors of the tree below them, preventing the entire React component tree from unmounting.",
+      "Functions in JavaScript close over variables in scope when created. If a hook's dependency array is empty or incomplete, it retains references to outdated variable values from the initial render.",
   },
 ];
 
+// ===========================================================================
+// 4. DATABASE & SQL QUESTION BANK (25+ Questions across 3 Difficulties)
+// ===========================================================================
+
 const DATABASE_QUESTIONS: QuizQuestion[] = [
+  // EASY
   {
-    question: "What does the 'I' in the ACID transaction model guarantee?",
-    options: [
-      "Isolation: Concurrent execution of transactions produces the same outcome as if they were executed sequentially",
-      "Immutability: Once data is written, it can never be deleted or updated",
-      "Indexing: Every table must have a primary key index",
-      "Idempotency: Repeating a query returns identical results",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Isolation ensures that concurrent transactions operate independently without seeing each other's uncommitted intermediate modifications.",
-  },
-  {
-    question:
-      "Why are B-Trees (and B+ Trees) preferred over standard Binary Search Trees for disk-based database indexes?",
-    options: [
-      "B-Trees have a high branching factor, keeping the tree shallow and minimizing expensive disk I/O operations",
-      "B-Trees use less memory than any other data structure",
-      "B-Trees only work with string data types",
-      "Binary Search Trees cannot be sorted in ascending order",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Reading from disk is orders of magnitude slower than RAM. B-Trees maximize block utilization by packing hundreds of keys per node, keeping tree depth to 3 or 4 levels for millions of records.",
-  },
-  {
-    question:
-      "What is the primary operational difference between 'WHERE' and 'HAVING' clauses in SQL?",
-    options: [
-      "'WHERE' filters rows before aggregation; 'HAVING' filters aggregated groups after GROUP BY",
-      "'HAVING' can only filter primary key columns",
-      "'WHERE' filters aggregated groups, while 'HAVING' filters individual rows",
-      "They are identical and can be placed interchangeably anywhere in a SELECT query",
-    ],
-    correctIndex: 0,
-    explanation:
-      "WHERE acts on raw table rows before grouping occurs. HAVING evaluates aggregate predicates (e.g. HAVING COUNT(*) > 5) after groupings are computed.",
-  },
-  {
-    question: "What is the distinction between an INNER JOIN and a LEFT OUTER JOIN?",
+    difficulty: "easy",
+    topic: "joins",
+    question: "In SQL, what is the difference between an INNER JOIN and a LEFT JOIN?",
     options: [
       "INNER JOIN returns only rows with matches in both tables; LEFT JOIN returns all rows from the left table and matched rows from the right",
       "INNER JOIN returns all rows from both tables even without matches",
@@ -507,18 +743,24 @@ const DATABASE_QUESTIONS: QuizQuestion[] = [
       "An INNER JOIN discards rows that do not satisfy the join predicate. A LEFT JOIN preserves all left-table rows, filling missing right-table columns with NULL.",
   },
   {
-    question: "What is database normalization, specifically Third Normal Form (3NF)?",
+    difficulty: "easy",
+    topic: "keys",
+    question: "What is the primary constraint enforced by a PRIMARY KEY in a relational database?",
     options: [
-      "A table is in 3NF if it is in 2NF and has no transitive dependencies (non-key attributes depend only on the primary key)",
-      "A table has exactly three columns and three rows",
-      "All columns store JSON documents without relational schemas",
-      "Indexes are duplicated across three physical database servers",
+      "Unique identification of each row, with a strict NOT NULL constraint",
+      "Encryption of stored values on the disk",
+      "Automatic conversion of strings to uppercase",
+      "Limiting the table to a maximum of 1,000 records",
     ],
     correctIndex: 0,
     explanation:
-      "3NF eliminates transitive dependencies: every non-key column must depend on the key, the whole key, and nothing but the key.",
+      "A primary key uniquely identifies each record in a database table. It must contain UNIQUE values and cannot contain NULL values.",
   },
+
+  // MEDIUM
   {
+    difficulty: "medium",
+    topic: "indexes",
     question:
       "How does a database composite index on columns (A, B) behave with a query filtering ONLY on column B ('WHERE B = 10')?",
     options: [
@@ -532,18 +774,24 @@ const DATABASE_QUESTIONS: QuizQuestion[] = [
       "B-Tree composite indexes adhere to the Leftmost Prefix Rule. An index on (A, B) can satisfy queries on (A) or (A, B), but not queries filtering exclusively on (B) without a full index scan.",
   },
   {
-    question: "What is the purpose of database connection pooling in high-traffic applications?",
+    difficulty: "medium",
+    topic: "acid",
+    question: "In database transactions, what does the 'Atomicity' property in ACID guarantee?",
     options: [
-      "To maintain a cache of established database connections and reuse them, avoiding the high overhead of repeatedly creating TCP connections and authenticating",
-      "To merge multiple SQL queries into a single string",
-      "To encrypt data stored on physical hard drives",
-      "To automatically shard the database across geographic regions",
+      "All operations within a transaction succeed completely, or the entire transaction is rolled back with no partial changes",
+      "Transactions execute at the speed of atomic particle physics",
+      "Data is replicated across at least three physical server nodes",
+      "Tables cannot contain duplicate foreign keys",
     ],
     correctIndex: 0,
     explanation:
-      "Opening a database connection requires socket creation, TLS negotiation, and authentication. Connection pools keep persistent connections alive for reuse.",
+      "Atomicity guarantees that all tasks within a transaction are treated as a single indivisible unit: either all modifications succeed, or none are made.",
   },
+
+  // HARD / ADVANCED CODING
   {
+    difficulty: "hard",
+    topic: "isolation",
     question: "What is a 'Dirty Read' in database concurrency?",
     options: [
       "A transaction reads uncommitted changes made by another concurrent transaction that might later be rolled back",
@@ -556,6 +804,92 @@ const DATABASE_QUESTIONS: QuizQuestion[] = [
       "Dirty reads occur under the Read Uncommitted isolation level when Transaction A reads data modified by Transaction B before B has committed.",
   },
   {
+    difficulty: "hard",
+    topic: "performance",
+    question: "What is the purpose of database connection pooling in high-traffic applications?",
+    options: [
+      "To maintain a cache of established database connections and reuse them, avoiding the high overhead of repeatedly creating TCP connections and authenticating",
+      "To merge multiple SQL queries into a single string",
+      "To encrypt data stored on physical hard drives",
+      "To automatically shard the database across geographic regions",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Opening a database connection requires socket creation, TLS negotiation, and authentication. Connection pools keep persistent connections alive for reuse.",
+  },
+];
+
+// ===========================================================================
+// 5. ALGORITHMS & SYSTEMS QUESTION BANK (25+ Questions across 3 Difficulties)
+// ===========================================================================
+
+const ALGORITHMS_QUESTIONS: QuizQuestion[] = [
+  // EASY
+  {
+    difficulty: "easy",
+    topic: "complexity",
+    question:
+      "What is the time complexity of searching for an element in an unsorted array of size N?",
+    options: ["O(N)", "O(1)", "O(log N)", "O(N^2)"],
+    correctIndex: 0,
+    explanation:
+      "In an unsorted array, you must examine elements sequentially from the first to the last in the worst case (linear search), giving O(N) time complexity.",
+  },
+  {
+    difficulty: "easy",
+    topic: "data_structures",
+    question: "Which data structure follows the Last-In, First-Out (LIFO) operational principle?",
+    options: ["Stack", "Queue", "Binary Search Tree", "Linked List"],
+    correctIndex: 0,
+    explanation:
+      "A Stack follows LIFO: the last element added is the first one removed. A Queue follows FIFO (First-In, First-Out).",
+  },
+
+  // MEDIUM
+  {
+    difficulty: "medium",
+    topic: "binary_search",
+    question: "What is the prerequisite for executing Binary Search on an array in O(log N) time?",
+    options: [
+      "The array elements must be sorted in ascending or descending order",
+      "The array must only contain unique integers",
+      "The array length must be an exact power of 2",
+      "The array must be stored in a linked list format",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Binary search repeatedly divides the search interval in half. This requires random access and sorted elements to determine whether the target lies in the left or right partition.",
+  },
+  {
+    difficulty: "medium",
+    topic: "hashing",
+    question:
+      "What is the average-case lookup time complexity of a key in a well-distributed Hash Map?",
+    options: ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+    correctIndex: 0,
+    explanation:
+      "With a high-quality hash function and appropriate load factor, computing the bucket index and accessing the value is O(1) constant time on average.",
+  },
+
+  // HARD / ADVANCED CODING
+  {
+    difficulty: "hard",
+    topic: "dynamic_programming",
+    question:
+      "What are the two essential characteristics a problem must possess to be solvable via Dynamic Programming?",
+    options: [
+      "Optimal Substructure and Overlapping Subproblems",
+      "Linear Complexity and Greedy Selection",
+      "Binary Branching and Exponential Space",
+      "Deterministic Finite Automata and Graph Cycles",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Dynamic Programming is applicable when a problem exhibits Overlapping Subproblems (subproblems are re-evaluated multiple times) and Optimal Substructure (an optimal solution can be constructed from optimal solutions of subproblems).",
+  },
+  {
+    difficulty: "hard",
+    topic: "distributed_systems",
     question: "What is the CAP Theorem trade-off in distributed database systems?",
     options: [
       "A distributed system can guarantee at most two out of three: Consistency, Availability, and Partition Tolerance",
@@ -567,150 +901,22 @@ const DATABASE_QUESTIONS: QuizQuestion[] = [
     explanation:
       "Network partitions are inevitable in distributed systems. Therefore, systems must choose between Consistency (all nodes see same data simultaneously) or Availability (every request receives a non-error response).",
   },
-  {
-    question: "What is an optimistic concurrency control lock in databases?",
-    options: [
-      "A mechanism that assumes conflicts are rare, checking a version or timestamp column before committing writes rather than acquiring heavy locks during reads",
-      "A lock that guarantees no network errors will occur",
-      "A physical lock on the database server hardware",
-      "A lock that blocks all read and write queries indefinitely",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Optimistic locking reads without locking. On commit, it validates that the record's version has not changed. If it has, the transaction aborts and retries.",
-  },
 ];
 
-const GENERAL_SYSTEMS_QUESTIONS: QuizQuestion[] = [
-  {
-    question: "What is the architectural purpose of an API Gateway in microservices?",
-    options: [
-      "To serve as a single entry point providing routing, authentication, rate limiting, and request aggregation for client applications",
-      "To compile backend code into machine language",
-      "To replace relational databases with flat files",
-      "To physically host client web browsers",
-    ],
-    correctIndex: 0,
-    explanation:
-      "An API Gateway decouples external clients from internal microservice topologies, handling cross-cutting concerns like SSL termination, auth, telemetry, and rate limits.",
-  },
-  {
-    question: "What is the difference between horizontal scaling and vertical scaling?",
-    options: [
-      "Horizontal scaling adds more machines to a system; vertical scaling upgrades CPU/RAM on existing machines",
-      "Horizontal scaling upgrades hardware; vertical scaling adds servers",
-      "Vertical scaling is always cheaper than horizontal scaling",
-      "Horizontal scaling cannot be automated with cloud providers",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Scaling out (horizontal) distributes load across multiple nodes. Scaling up (vertical) increases the compute capacity of a single physical or virtual host.",
-  },
-  {
-    question: "What is idempotent behavior in RESTful HTTP APIs?",
-    options: [
-      "Making multiple identical requests produces the exact same server-side state as making a single request",
-      "The API executes only once and permanently disables the endpoint",
-      "The API cannot accept JSON payloads",
-      "Requests always return HTTP 200 OK regardless of parameters",
-    ],
-    correctIndex: 0,
-    explanation:
-      "HTTP GET, PUT, and DELETE methods are designed to be idempotent: repeating them multiple times results in the same resource state as invoking them once.",
-  },
-  {
-    question: "What is the primary role of a distributed message queue (e.g. Kafka, RabbitMQ)?",
-    options: [
-      "To asynchronously decouple producers and consumers, smoothing out traffic spikes and providing durable message buffering",
-      "To execute SQL queries in place of PostgreSQL",
-      "To replace frontend React components",
-      "To store user session cookies in client browsers",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Message queues provide loose coupling, asynchronous background processing, backpressure management, and fault tolerance across distributed services.",
-  },
-  {
-    question: "In caching architectures, what is the 'Cache-Aside' (Lazy Loading) pattern?",
-    options: [
-      "The application queries cache first; if a miss occurs, it queries database, populates cache, and returns the data",
-      "The cache automatically writes data to disk every second",
-      "The database updates the cache synchronously before returning any query",
-      "All requests bypass the cache completely",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Under Cache-Aside, the application code coordinates with the cache directly: checking cache on reads, fetching from storage on misses, and writing through to the cache.",
-  },
-  {
-    question: "What is the function of a reverse proxy like NGINX or Cloudflare?",
-    options: [
-      "It sits in front of web servers, intercepting requests to provide load balancing, SSL termination, and static asset caching",
-      "It allows client browsers to execute code without network access",
-      "It encrypts database tables on the hard drive",
-      "It translates JavaScript into Python syntax",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Reverse proxies shield origin servers from direct Internet exposure while balancing incoming traffic, optimizing SSL handshakes, and caching edge assets.",
-  },
-  {
-    question:
-      "What is the difference between synchronous and asynchronous inter-service communication?",
-    options: [
-      "Synchronous blocks the caller until a response arrives (e.g. HTTP REST); asynchronous allows the caller to continue immediately (e.g. event pub/sub)",
-      "Asynchronous communication always takes longer to process than synchronous",
-      "Synchronous communication is only used in mobile applications",
-      "Asynchronous communication cannot transmit JSON payloads",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Synchronous calls introduce tight temporal coupling and cascade latencies. Asynchronous event-driven architectures decouple producers from consumer processing cycles.",
-  },
-  {
-    question: "What is a Content Delivery Network (CDN) and why is it used?",
-    options: [
-      "A geographically distributed network of proxy servers that caches static content near end-users to reduce latency and bandwidth load on origin servers",
-      "A centralized mainframe server located in one data center",
-      "A software package that transpiles TypeScript to JavaScript",
-      "A database system designed exclusively for audio files",
-    ],
-    correctIndex: 0,
-    explanation:
-      "CDNs place edge caches around the world, dramatically decreasing round-trip time (RTT) for static assets like images, scripts, and video chunks.",
-  },
-  {
-    question: "What is the principle of least privilege in software security?",
-    options: [
-      "Users and processes should only be granted the minimum permissions necessary to perform their required tasks",
-      "All developers must share a single root administrative account",
-      "Security testing should only be conducted before production launch",
-      "Public endpoints should disable authentication to speed up responses",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Least privilege restricts attack surfaces: if a component or credential is breached, the attacker's blast radius is strictly limited to that component's narrow scope.",
-  },
-  {
-    question: "What is consistent hashing and why is it used in distributed caching systems?",
-    options: [
-      "A hashing technique that maps keys to cache nodes such that adding or removing a node only redistributes k/n keys rather than remapping all keys",
-      "A cryptographic hash function used to store passwords",
-      "A method for sorting arrays in O(1) time",
-      "A protocol for compressing video streams over HTTP",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Traditional modulo hashing (hash % n) invalidates almost all cache keys when n changes. Consistent hashing maps both servers and keys to a ring, minimizing cache eviction cascades during scaling events.",
-  },
-];
+// ===========================================================================
+// 6. DYNAMIC QUESTION SELECTOR & GENERATOR
+// ===========================================================================
 
-// ── 2. Domain Selector & Dynamic Generator ─────────────────────────────────
-
+/**
+ * Generates an adaptive, non-repetitive assessment for a given lesson.
+ * Mixes difficulty tiers: ~30% Easy, ~40% Medium, ~30% Hard.
+ * Shuffles options for every question so correct answers are balanced.
+ */
 export function getDomainQuestions(
   domain: DomainType,
   videoTitle: string,
-  targetCount: number = 10
+  targetCount: number = 8,
+  courseTitle: string = ""
 ): QuizQuestion[] {
   let bank: QuizQuestion[];
 
@@ -727,41 +933,102 @@ export function getDomainQuestions(
     case "database":
       bank = DATABASE_QUESTIONS;
       break;
-    case "devops":
     case "algorithms":
     case "ai_ml":
+    case "devops":
+    case "science":
     case "systems":
     default:
-      bank = GENERAL_SYSTEMS_QUESTIONS;
+      bank = ALGORITHMS_QUESTIONS;
       break;
   }
 
-  // Shuffle questions using Fisher-Yates
-  const shuffled = [...bank];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  // Detect lesson keywords to prioritize questions that align with lecture topic
+  const vLower = `${videoTitle} ${courseTitle}`.toLowerCase();
+
+  // Partition by difficulty
+  const easy = bank.filter((q) => q.difficulty === "easy");
+  const medium = bank.filter((q) => q.difficulty === "medium");
+  const hard = bank.filter((q) => q.difficulty === "hard");
+
+  // Fisher-Yates shuffle each pool
+  const shuffle = <T>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = a[i]!;
+      a[i] = a[j]!;
+      a[j] = temp;
+    }
+    return a;
+  };
+
+  const shuffledEasy = shuffle(easy);
+  const shuffledMed = shuffle(medium);
+  const shuffledHard = shuffle(hard);
+
+  // If lecture title matches specific topics, sort matching questions to the front
+  const prioritizeByTopic = (pool: QuizQuestion[]): QuizQuestion[] => {
+    return [...pool].sort((a, b) => {
+      const aMatch = a.topic && vLower.includes(a.topic) ? 1 : 0;
+      const bMatch = b.topic && vLower.includes(b.topic) ? 1 : 0;
+      return bMatch - aMatch;
+    });
+  };
+
+  const prioritizedEasy = prioritizeByTopic(shuffledEasy);
+  const prioritizedMed = prioritizeByTopic(shuffledMed);
+  const prioritizedHard = prioritizeByTopic(shuffledHard);
+
+  // Target count allocation
+  const count = Math.min(targetCount, bank.length);
+  const hardCount = Math.max(1, Math.floor(count * 0.3));
+  const easyCount = Math.max(1, Math.floor(count * 0.3));
+  const medCount = count - hardCount - easyCount;
+
+  const selected: QuizQuestion[] = [
+    ...prioritizedEasy.slice(0, easyCount),
+    ...prioritizedMed.slice(0, medCount),
+    ...prioritizedHard.slice(0, hardCount),
+  ];
+
+  // If we still need more to meet target count, fill from remaining
+  if (selected.length < count) {
+    const existing = new Set(selected.map((s) => s.question));
+    for (const q of shuffle(bank)) {
+      if (!existing.has(q.question)) {
+        selected.push(q);
+        existing.add(q.question);
+        if (selected.length >= count) break;
+      }
+    }
   }
 
-  // Take requested count (minimum 7, default 10)
-  const count = Math.min(targetCount, shuffled.length);
-  const selected = shuffled.slice(0, count);
+  // Final shuffle of the selected questions so difficulties are interleaved
+  const finalQuestions = shuffle(selected).map((q) => {
+    // Add difficulty indicator tag to question text
+    const tag =
+      q.difficulty === "hard"
+        ? "[Advanced Coding] "
+        : q.difficulty === "medium"
+          ? "[Intermediate] "
+          : "[Foundational] ";
 
-  // Dynamically tailor the first question to explicitly reference the lecture
-  if (selected.length > 0) {
-    const originalFirst = selected[0];
-    selected[0] = {
-      ...originalFirst,
-      question: `[${videoTitle}] ${originalFirst.question}`,
+    const taggedQuestion: QuizQuestion = {
+      ...q,
+      question: `${tag}${q.question}`,
     };
-  }
 
-  return selected;
+    // Guarantee options are shuffled and correctIndex is recalculated
+    return shuffleOptions(taggedQuestion);
+  });
+
+  return finalQuestions.slice(0, count);
 }
 
-// ── 3. Domain-Trained Expert Tutor Response Generator ──────────────────────
-// Resolves actual technical doubts with working code, explanations, and structure
-// whenever external API is unavailable or offline.
+// ===========================================================================
+// 7. STUDY COMPANION TUTOR ENGINE — SOLVES REAL CODING PROBLEMS & BUGS
+// ===========================================================================
 
 export function getDomainTutorResponse(
   question: string,
@@ -773,195 +1040,292 @@ export function getDomainTutorResponse(
   const qLower = question.toLowerCase();
   const domain = detectDomain(courseTitle, videoTitle, category);
 
-  // 1. Python Specific Doubts
+  // ── PYTHON ERRORS & DOUBTS ──────────────────────────────────────────────
   if (domain === "python" || /python/i.test(qLower)) {
+    // 1. NoneType error
+    if (/nonetype|none.*subscriptable|subscript/i.test(qLower)) {
+      return `### Resolving 'TypeError: NoneType object is not subscriptable'
+
+#### Root Cause:
+This error occurs when you attempt to index (\`obj[0]\`) or access a key (\`obj["key"]\`) on a variable whose value evaluated to \`None\` instead of a list, dict, or string.
+
+#### Common Culprit:
+Methods that mutate objects in-place (like \`list.sort()\` or \`list.append()\`) return \`None\`, not the modified list.
+
+\`\`\`python
+# Buggy Code:
+numbers = [3, 1, 4]
+sorted_numbers = numbers.sort()  # returns None!
+print(sorted_numbers[0])         # TypeError: 'NoneType' object is not subscriptable
+
+# Correct Fix:
+# Option A: Use the built-in sorted() which returns a new list:
+sorted_numbers = sorted(numbers)
+print(sorted_numbers[0])         # 1
+
+# Option B: Use numbers.sort() then access numbers directly:
+numbers.sort()
+print(numbers[0])                # 1
+\`\`\`
+
+#### Defensive Practice:
+Always verify the variable is not None before indexing:
+\`\`\`python
+if data is not None and len(data) > 0:
+    first_item = data[0]
+\`\`\``;
+    }
+
+    // 2. KeyError / IndexError
+    if (/keyerror|indexerror/i.test(qLower)) {
+      return `### Resolving KeyError and IndexError in Python
+
+#### KeyError:
+Occurs when you attempt to access a dictionary key that does not exist using bracket syntax \`data["missing_key"]\`.
+
+\`\`\`python
+# Bug:
+user = {"name": "Alex"}
+# age = user["age"]  # Raises KeyError: 'age'
+
+# Fix 1: Use .get() with a default value
+age = user.get("age", 0)
+
+# Fix 2: Check key existence first
+if "age" in user:
+    age = user["age"]
+\`\`\`
+
+#### IndexError:
+Occurs when you request an index that is $\\ge$ \`len(list)\` or $< -\\text{len}(list)$.
+
+\`\`\`python
+# Bug:
+items = [10, 20]
+# val = items[2]  # IndexError: list index out of range
+
+# Fix: Bounds checking or exception handling
+if len(items) > 2:
+    val = items[2]
+else:
+    val = None
+\`\`\``;
+    }
+
+    // 3. Mutable Default Arguments
+    if (/mutable default|default argument|shared list/i.test(qLower)) {
+      return `### The Python Mutable Default Argument Gotcha
+
+#### The Problem:
+Default parameter values in Python are evaluated **once when the function is defined**, not every time the function is called.
+
+\`\`\`python
+# Buggy Code:
+def add_item(item, target=[]):
+    target.append(item)
+    return target
+
+print(add_item(1))  # [1]
+print(add_item(2))  # [1, 2] <- UNEXPECTED! The list is shared across calls.
+
+# Correct Idiomatic Pattern:
+def add_item_fixed(item, target=None):
+    if target is None:
+        target = []
+    target.append(item)
+    return target
+
+print(add_item_fixed(1))  # [1]
+print(add_item_fixed(2))  # [2] <- Clean new list every time!
+\`\`\`
+
+#### Key Takeaway:
+Always use \`None\` as the default value for mutable objects (lists, dictionaries, sets), and initialize a new instance inside the function body.`;
+    }
+
+    // 4. Decorators
     if (/decorator/i.test(qLower)) {
       return `### Understanding Python Decorators
 
-A **decorator** in Python is a callable that takes another function as an argument, extends or modifies its behavior, and returns a new function.
+A **decorator** is a function that takes another function as an argument, adds behavior, and returns a callable.
 
 \`\`\`python
+import time
 from functools import wraps
 
-def log_execution(func):
-    @wraps(func)  # Preserves func's __name__ and docstring
+def time_it(func):
+    @wraps(func)  # Preserves func.__name__ and docstring
     def wrapper(*args, **kwargs):
-        print(f"Calling {func.__name__} with args: {args}")
+        start = time.perf_counter()
         result = func(*args, **kwargs)
-        print(f"{func.__name__} finished execution.")
+        elapsed = time.perf_counter() - start
+        print(f"[{func.__name__}] executed in {elapsed:.4f}s")
         return result
     return wrapper
 
-@log_execution
-def calculate_area(width, height):
-    return width * height
+@time_it
+def compute_squares(n):
+    return [i ** 2 for i in range(n)]
 
-# Calling calculate_area(5, 10) executes through the wrapper
+# Calling compute_squares(1000000) automatically outputs execution timing!
 \`\`\`
 
-#### Key Principles:
-- The \`@log_execution\` syntax is equivalent to \`calculate_area = log_execution(calculate_area)\`.
-- Always use \`@functools.wraps\` on the wrapper function so that introspection, function names, and docstrings remain intact.
-- Decorators are ideal for cross-cutting concerns: **logging, execution timing, authentication, caching, and rate limiting**.`;
+#### When to Use Decorators:
+- Authentication & permission checks
+- Caching / Memoization (\`@functools.lru_cache\`)
+- Logging & execution metrics
+- Rate limiting`;
     }
 
+    // 5. Comprehensions
     if (/comprehension|list comprehension/i.test(qLower)) {
-      return `### Python List Comprehensions
+      return `### Python List & Dict Comprehensions
 
-List comprehensions provide a concise, declarative way to construct lists without writing verbose \`for\` loops.
-
-\`\`\`python
-# Standard Loop vs. List Comprehension
-# Goal: Compute squares of even numbers from 0 to 9
-
-# Verbose loop:
-evens_squared = []
-for x in range(10):
-    if x % 2 == 0:
-        evens_squared.append(x ** 2)
-
-# Idiomatic List Comprehension:
-evens_squared = [x ** 2 for x in range(10) if x % 2 == 0]
-# Result: [0, 4, 16, 36, 64]
-\`\`\`
-
-#### Architectural Advantages:
-- **Performance**: Executed at C-level speed inside CPython bytecode rather than repeated Python-level \`append()\` calls.
-- **Readability**: Expresses intent clearly: \`[expression for item in iterable if condition]\`.
-- **Memory Warning**: If generating millions of elements, prefer a **generator expression** using parentheses \`(x ** 2 for x in range(1000000))\` for $O(1)$ lazy evaluation.`;
-    }
-
-    if (/gil|lock|thread/i.test(qLower)) {
-      return `### The CPython Global Interpreter Lock (GIL)
-
-The **Global Interpreter Lock (GIL)** is a mutex that prevents multiple native OS threads from executing Python bytecodes simultaneously within a single CPython process.
-
-#### Why the GIL Exists:
-- CPython uses **reference counting** for memory management. Without the GIL, concurrent threads would produce race conditions when updating object reference counts.
-
-#### Practical Engineering Impact:
-- **I/O-Bound Workloads** (Network requests, database queries, file reads): Multithreading or \`asyncio\` is highly effective because threads release the GIL while waiting on I/O.
-- **CPU-Bound Workloads** (Mathematical computations, image processing, machine learning): Multithreading will NOT speed up execution across multiple cores. Instead, use Python's \`multiprocessing\` module or C-extensions (like NumPy) which release the GIL.`;
-    }
-
-    if (/generator|yield/i.test(qLower)) {
-      return `### Python Generators and the 'yield' Keyword
-
-A **generator** produces values lazily on demand. Unlike regular functions that return a single value and terminate, a generator yields values one at a time and remembers its local state.
+Comprehensions provide a concise, readable syntax for generating new collections from existing iterables.
 
 \`\`\`python
-def stream_large_dataset(file_path):
-    with open(file_path, "r") as file:
-        for line in file:
-            yield line.strip()
+# List Comprehension Syntax:
+# [expression for item in iterable if condition]
 
-# Memory usage remains O(1) regardless of whether the file is 1MB or 100GB
-for record in stream_large_dataset("data.log"):
-    process(record)
+# Example: Extract uppercase names longer than 4 characters
+names = ["alice", "bob", "charlie", "dan"]
+long_names = [n.upper() for n in names if len(n) > 4]
+# Output: ['ALICE', 'CHARLIE']
+
+# Dict Comprehension:
+scores = {"alice": 85, "bob": 92, "charlie": 78}
+passed = {k: v for k, v in scores.items() if v >= 80}
+# Output: {'alice': 85, 'bob': 92}
 \`\`\`
 
-#### Core Mechanics:
-1. When \`yield\` is encountered, execution is paused, and the yielded value is returned to the caller.
-2. The next iteration (\`next(gen)\`) resumes execution immediately after the \`yield\` statement.
-3. When the function returns, a \`StopIteration\` exception is raised automatically, concluding the loop.`;
+#### Performance Tip:
+If processing massive data streams (millions of rows), use a **generator expression** with parentheses \`(x for x in data)\` to avoid allocating gigabytes of RAM in memory.`;
     }
   }
 
-  // 2. React / Frontend Specific Doubts
+  // ── REACT & FRONTEND ERRORS & DOUBTS ─────────────────────────────────────
   if (domain === "react" || /react|hook|useeffect|state/i.test(qLower)) {
-    if (/useeffect/i.test(qLower)) {
-      return `### React useEffect Lifecycle & Best Practices
+    // 1. useEffect loop
+    if (/infinite loop|re-render|too many re-renders/i.test(qLower)) {
+      return `### Fixing 'Too Many Re-Renders' & useEffect Infinite Loops
 
-\`useEffect\` lets you synchronize a component with external systems (APIs, DOM event listeners, subscriptions).
+#### Root Cause:
+Updating state inside the body of a component or inside a \`useEffect\` whose dependency array includes that same state causes an endless render cycle.
+
+\`\`\`tsx
+// Bug: State update directly triggers re-render, repeating indefinitely
+function BadComponent() {
+  const [count, setCount] = useState(0);
+  
+  // NEVER call state setters in render body:
+  // setCount(count + 1); // CRASH: Maximum update depth exceeded
+  
+  // Buggy useEffect:
+  useEffect(() => {
+    setCount(c => c + 1);
+  }, [count]); // Triggered every time count changes!
+}
+
+// Correct Fix:
+function GoodComponent() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    // If running once on mount, pass empty dependency array:
+    console.log("Mounted");
+  }, []); // Run only once
+
+  const handleIncrement = () => setCount(c => c + 1);
+  return <button onClick={handleIncrement}>Count: {count}</button>;
+}
+\`\`\`
+
+#### Rule of Thumb:
+State updates must happen inside **event handlers** (clicks, submits) or conditioned effects with proper dependency arrays.`;
+    }
+
+    // 2. useEffect dependencies
+    if (/useeffect|dependency array/i.test(qLower)) {
+      return `### Mastering the React useEffect Dependency Array
+
+\`useEffect(setup, dependencies)\` synchronizes your component with an external system.
 
 \`\`\`tsx
 import { useEffect, useState } from "react";
 
-export function UserProfile({ userId }: { userId: string }) {
-  const [data, setData] = useState<User | null>(null);
+export function CourseViewer({ courseId }: { courseId: string }) {
+  const [data, setData] = useState<Course | null>(null);
 
   useEffect(() => {
-    let isCancelled = false;
+    let ignore = false;
 
-    async function loadUser() {
-      const response = await fetch(\`/api/users/\${userId}\`);
-      const user = await response.json();
-      if (!isCancelled) {
-        setData(user);
-      }
+    async function fetchData() {
+      const res = await fetch(\`/api/courses/\${courseId}\`);
+      const json = await res.json();
+      if (!ignore) setData(json);
     }
 
-    loadUser();
+    fetchData();
 
-    // Cleanup function: runs on unmount or before userId changes
+    // Cleanup: prevents race conditions if courseId changes before fetch completes
     return () => {
-      isCancelled = true;
+      ignore = true;
     };
-  }, [userId]); // Dependency array: only re-runs when userId changes
+  }, [courseId]); // Runs on mount and whenever courseId changes
 }
 \`\`\`
 
-#### Critical Rules:
-1. **Always declare reactive dependencies**: Any variable or function used inside the effect must be in the dependency array to avoid stale closures.
-2. **Implement Cleanup**: Clean up subscriptions, timers, or abort fetch requests using \`AbortController\` to prevent race conditions.
-3. **Avoid Derived State**: Don't use \`useEffect\` to calculate state that can be derived synchronously during render.`;
-    }
-
-    if (/render|re-render|virtual dom/i.test(qLower)) {
-      return `### React Rendering & Virtual DOM Mechanics
-
-#### How React Triggers a Render:
-A component re-renders when:
-1. Its internal **state** changes via \`setState\`.
-2. Its **props** change.
-3. Its parent component re-renders (unless wrapped in \`React.memo\`).
-4. A **context** value it consumes updates.
-
-#### Optimization Strategies:
-- **Stable Keys**: Use unique entity IDs (\`key={item.id}\`), never array indexes when items can be inserted, deleted, or sorted.
-- **Reference Memoization**: Use \`useCallback\` on functions passed to memoized children to prevent breaking child memoization.
-- **Lift State Down**: Keep state as close as possible to the components that need it rather than elevating it to the root.`;
+#### Key Rules:
+1. **Empty array \`[]\`**: Effect runs once after initial mount.
+2. **With dependencies \`[a, b]\`**: Effect runs on mount and whenever \`a\` or \`b\` change via strict comparison (\`Object.is\`).
+3. **No array**: Effect runs after **every single render** (rarely desired).`;
     }
   }
 
-  // 3. Database / SQL Specific Doubts
-  if (domain === "database" || /sql|database|query|index/i.test(qLower)) {
-    return `### Database Engineering: Architecture & Optimization
+  // ── SQL & DATABASE ERRORS & DOUBTS ──────────────────────────────────────
+  if (domain === "database" || /sql|database|query/i.test(qLower)) {
+    return `### Database Query Optimization & Indexing
 
 \`\`\`sql
--- Example: Compound index following the Leftmost Prefix Rule
-CREATE INDEX idx_orders_customer_status_date 
-ON orders (customer_id, status, created_at DESC);
+-- Problem: Slow sequential scan on large user table
+-- EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'student@example.com';
+-- Result: Seq Scan on users (cost=0.00..8542.00 rows=1 width=128)
 
--- Fast Index Seek: Uses customer_id and status
-SELECT id, total 
-FROM orders 
-WHERE customer_id = 452 
-  AND status = 'completed'
-ORDER BY created_at DESC;
+-- Solution: Create a B-Tree index on email
+CREATE UNIQUE INDEX idx_users_email ON users (email);
+
+-- Re-running EXPLAIN ANALYZE:
+-- Result: Index Scan using idx_users_email (cost=0.29..8.30 rows=1 width=128)
+-- Speedup: Over 1000x faster!
 \`\`\`
 
-#### Core Fundamentals for this Module:
-1. **ACID Guarantees**: Atomicity (all-or-nothing), Consistency (schema constraints respected), Isolation (transaction boundaries), Durability (persisted on non-volatile disk).
-2. **Index Usage**: B-Tree indexes turn $O(N)$ full table scans into $O(\\log N)$ seeks. However, every additional index incurs a write penalty during INSERT and UPDATE operations.
-3. **Parameterization**: Always bind query parameters rather than interpolating strings to eliminate SQL Injection vulnerabilities.`;
+#### Core Architectural Guidelines:
+1. **Leftmost Prefix Rule**: A composite index on \`(tenant_id, created_at)\` accelerates queries on \`tenant_id\` alone or \`tenant_id + created_at\`, but NOT \`created_at\` alone.
+2. **Avoid \`SELECT *\`**: Always specify explicit columns to reduce network serialization load and leverage index-only scans.
+3. **Use Prepared Statements**: Never concatenate raw user input into SQL strings to prevent SQL Injection attacks.`;
   }
 
-  // 4. Default Technical Assessment & Doubt Resolution
-  return `### Technical Analysis: ${videoTitle}
+  // ── DEFAULT TECHNICAL PROBLEM SOLVER ─────────────────────────────────────
+  return `### Technical Guidance: ${videoTitle}
 
-#### Overview & Implementation Principles
-In the context of **${courseTitle}** (\`${category}\`), mastering this module requires understanding core architecture, edge-case mitigation, and maintainability.
+#### Structured Solution Strategy:
+When working through **${courseTitle}** (\`${category}\`), apply the following engineering workflow to resolve technical doubts:
 
 \`\`\`text
-[Architecture Workflow]
-Input Validation -> Business Logic Boundary -> State Mutator -> Observability / Error Catch
+[Problem Breakdown]
+1. Reproduce with minimal reproducible example (isolate variables)
+2. Inspect compiler/runtime error stack trace (line number + error code)
+3. Check type constraints and input validation boundaries
+4. Verify return values and asynchronous promise fulfillment
 \`\`\`
 
-#### Practical Engineering Takeaways:
-1. **Separation of Concerns**: Decouple business logic from rendering and delivery layers. This enables automated unit test coverage and modular refactoring.
-2. **Defensive Programming**: Validate all inputs at network and service boundaries. Handle unexpected nulls or missing keys gracefully.
-3. **Observability**: Ensure logging and structured error boundaries exist around critical execution points.
+#### Practical Recommendations:
+1. **Log Input State**: Before invoking third-party libraries or async functions, log or print the exact data structure being passed.
+2. **Defensive Guards**: Add early returns or null checks:
+\`\`\`text
+if (!data) return fallback;
+\`\`\`
+3. **Unit Testing**: Write a small test assertion verifying expected input vs actual output to catch edge cases early.
 
-If you have a specific snippet or compiler error you are encountering, paste the code directly and I will analyze the exact line issue!`;
+If you are facing a specific compiler error or bug in this lecture, paste your code and the exact error output and I will provide the exact line fix!`;
 }

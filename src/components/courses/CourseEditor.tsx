@@ -357,6 +357,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     try {
       const validLessons: LessonInput[] = [];
       let completed = 0;
+      let skippedNonEducational = 0;
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i]!;
@@ -364,7 +365,18 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         if (videoId) {
           try {
             const res = await fetch(`/api/oembed?url=${encodeURIComponent(line)}`);
-            const data = (await res.json()) as { title?: string; thumbnailUrl?: string };
+            const data = (await res.json()) as {
+              title?: string;
+              thumbnailUrl?: string;
+              blocked?: boolean;
+              error?: string;
+            };
+
+            if (!res.ok || data.blocked) {
+              skippedNonEducational++;
+              continue;
+            }
+
             validLessons.push({
               tempId: `tmp-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
               youtubeId: videoId,
@@ -388,12 +400,21 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       }
 
       if (validLessons.length === 0) {
-        setUrlError("No valid YouTube URLs found. Please check your links.");
+        setUrlError(
+          skippedNonEducational > 0
+            ? "All submitted links were non-educational entertainment or music and were excluded."
+            : "No valid YouTube URLs found. Please check your links."
+        );
       } else {
         setLessons((prev) => [...prev, ...validLessons]);
         setBulkInput("");
         setImportMode("single");
         setBulkProgress("");
+        if (skippedNonEducational > 0) {
+          setUrlError(
+            `${skippedNonEducational} non-educational link(s) were excluded based on Vidcura academic policy.`
+          );
+        }
       }
     } catch {
       setUrlError("An error occurred during bulk import. Please try again.");
@@ -444,7 +465,6 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     }
 
     if (publishMode) {
-      if (!category) e.category = "Please select a category before publishing.";
       if (lessons.length === 0) e.lessons = "Please add at least one lesson before publishing.";
     }
 
@@ -688,33 +708,36 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           </p>
         </div>
 
-        {/* Category */}
+        {/* Academic Discipline / Field (Optional) */}
         <div>
-          <label
-            htmlFor="course-category"
-            className="block font-heading font-semibold text-sm mb-2 text-foreground"
-          >
-            Category
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label
+              htmlFor="course-category"
+              className="block font-heading font-semibold text-sm text-foreground"
+            >
+              Academic Discipline (Optional)
+            </label>
+            <span className="text-xs text-muted-foreground font-body">
+              All subjects are freely searchable
+            </span>
+          </div>
           <select
             id="course-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as Category)}
-            className={`input ${errors.category ? "error" : ""}`}
-            aria-describedby={errors.category ? "cat-error" : undefined}
+            className="input"
           >
-            <option value="">Select a category…</option>
+            <option value="">General / Open Curricula…</option>
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
             ))}
           </select>
-          {errors.category && (
-            <p id="cat-error" className="text-destructive text-xs mt-1.5" role="alert">
-              {errors.category}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground mt-1.5 font-body">
+            Categorization is flexible. Students can discover your masterclass using open keyword
+            search across all disciplines.
+          </p>
         </div>
 
         {/* Add video */}
@@ -1023,9 +1046,29 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           )}
 
           {urlError && (
-            <p id="url-error" className="text-destructive text-xs mt-3" role="alert">
-              {urlError}
-            </p>
+            <div
+              id="url-error"
+              className="mt-3.5 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-body flex items-start gap-2.5 animate-fade-in"
+              role="alert"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="flex-shrink-0 mt-0.5"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <div className="flex-1 leading-relaxed font-medium">{urlError}</div>
+            </div>
           )}
         </div>
 

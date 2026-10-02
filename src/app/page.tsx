@@ -378,24 +378,24 @@ export default function HomePage() {
       >
         <div className="container-page max-w-5xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            <span>Curated Disciplines</span>
+            <span>Dynamic Discovery</span>
           </div>
           <h2
             id="disciplines-title"
             className="font-heading font-black text-2xl sm:text-4xl text-foreground mb-4 tracking-tight"
           >
-            Daily Curated Learning Pathways &amp; Skill Tracks
+            Open Educational Disciplines &amp; Skill Tracks
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed">
-            Build an unstoppable daily habit. Dive into hand-picked curricula across 8 core
-            disciplines, curated with interactive quizzes and structured progression.
+            Build an unstoppable daily habit. Explore verified masterclasses across any academic
+            domain, curated with interactive lecture quizzes and structured progression.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 text-left">
             {topCategories.map((cat) => (
               <Link
                 key={cat.name}
-                href={`/explore?category=${encodeURIComponent(cat.name)}`}
+                href={`/explore?q=${encodeURIComponent(cat.name.replace("&", ""))}`}
                 className="p-4 rounded-2xl bg-card border border-border hover:border-teal-500 hover:shadow-md active:scale-[0.98] transition-all group flex flex-col justify-between min-h-[90px]"
               >
                 <div>

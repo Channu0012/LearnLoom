@@ -1,28 +1,56 @@
 // ---------------------------------------------------------------------------
-// Gemini AI Client & Academic Curriculum Intelligence System — Server-side only
+// AI Client & Academic Curriculum Intelligence System — Server-side only
 // Powers: Quiz Generation, AI Notes, Study Companion Chat
 // Strict Corporate & Executive Standard: 100% Emoji-Free, Academic Rigor
-// Features: Multi-model fallback with domain-trained curriculum knowledge engine
+// Features: Multi-model (Claude Sonnet 3.5/4.6, Gemini 2.0/1.5 Flash) with
+// domain-trained curriculum knowledge engine fallback
 // ---------------------------------------------------------------------------
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   detectDomain,
   getDomainQuestions,
   getDomainTutorResponse,
+  shuffleOptions,
   type QuizQuestion,
 } from "./curriculumEngine";
 
-const apiKey = process.env.GEMINI_API_KEY;
+const geminiApiKey = process.env.GEMINI_API_KEY;
+const claudeApiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
-if (!apiKey) {
-  console.warn("[Gemini] GEMINI_API_KEY not set — using domain-trained curriculum engine.");
-}
-
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
 
 // Primary and fallback models for high availability
 const PRIMARY_MODEL = "gemini-2.0-flash";
 const FALLBACK_MODEL = "gemini-1.5-flash";
+
+/**
+ * Call Anthropic Claude API if key is available.
+ */
+async function callClaude(prompt: string): Promise<string | null> {
+  if (!claudeApiKey) return null;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": claudeApiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 2500,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const content = data?.content?.[0]?.text;
+    return typeof content === "string" ? content : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Generate MCQ quiz questions from a video title and course context.
@@ -42,10 +70,6 @@ export async function generateQuiz(
   const questionCount =
     domain === "python" ? 10 : [7, 8, 9, 10][(lessonIndex + (totalLessons || 1)) % 4] || 8;
 
-  if (!genAI) {
-    return getDomainQuestions(domain, videoTitle, questionCount);
-  }
-
   const prompt = `You are a curriculum designer creating an academic assessment for Vidcura, modeled after Google and Coursera certification standards.
 
 Context:
@@ -59,7 +83,7 @@ CRITICAL DOMAIN DIRECTIVES:
 1. If the subject is Python, questions MUST evaluate Python language mechanics (e.g. list/dict comprehensions, mutability vs immutability, decorators, generators, GIL, dunder methods, *args/**kwargs, slicing, memory reference counting).
 2. If the subject is JavaScript/TypeScript or React, questions MUST evaluate modern ECMAScript/React mechanics (e.g. event loop microtasks, closures, useEffect dependencies, virtual DOM reconciliation, state immutability).
 3. If the subject is Database/SQL, questions MUST evaluate SQL syntax, indexing, ACID transactions, and query plans.
-4. Include authentic code snippets in questions and options where appropriate.
+4. Include authentic code snippets in questions and options where appropriate. Include diverse difficulties (Easy, Medium, Advanced Coding).
 5. DO NOT ask generic questions like "What is the primary focus of this video". Questions must evaluate actual technical competence.
 6. Each question must have exactly 4 choices (A, B, C, D) and exactly one correct answer.
 7. Include an analytical, educational explanation for the correct answer.
@@ -75,36 +99,68 @@ Return ONLY a valid JSON array with this exact structure (no markdown fences, no
   }
 ]`;
 
-  // Try primary model, then fallback model
-  for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
-    try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) continue;
-
-      const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
-      if (!Array.isArray(parsed) || parsed.length === 0) continue;
-
-      return parsed.slice(0, questionCount).map((q) => ({
-        question: stripEmojis(String(q.question || "")),
-        options: Array.isArray(q.options)
-          ? q.options.map((opt) => stripEmojis(String(opt))).slice(0, 4)
-          : [],
-        correctIndex:
-          typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4
-            ? q.correctIndex
-            : 0,
-        explanation: stripEmojis(String(q.explanation || "")),
-      }));
-    } catch {
-      // Continue to fallback model or domain generator
+  // 1. Try Claude if available
+  const claudeText = await callClaude(prompt);
+  if (claudeText) {
+    const jsonMatch = claudeText.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.slice(0, questionCount).map((q) =>
+            shuffleOptions({
+              question: stripEmojis(String(q.question || "")),
+              options: Array.isArray(q.options)
+                ? q.options.map((opt) => stripEmojis(String(opt))).slice(0, 4)
+                : [],
+              correctIndex:
+                typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4
+                  ? q.correctIndex
+                  : 0,
+              explanation: stripEmojis(String(q.explanation || "")),
+            })
+          );
+        }
+      } catch {
+        // Fall through
+      }
     }
   }
 
-  // Graceful, intelligent domain-specific fallback (Python -> 10 Python MCQs, React -> React MCQs)
-  return getDomainQuestions(domain, videoTitle, questionCount);
+  // 2. Try Gemini (Primary then Fallback)
+  if (genAI) {
+    for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) continue;
+
+        const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
+        if (!Array.isArray(parsed) || parsed.length === 0) continue;
+
+        return parsed.slice(0, questionCount).map((q) =>
+          shuffleOptions({
+            question: stripEmojis(String(q.question || "")),
+            options: Array.isArray(q.options)
+              ? q.options.map((opt) => stripEmojis(String(opt))).slice(0, 4)
+              : [],
+            correctIndex:
+              typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4
+                ? q.correctIndex
+                : 0,
+            explanation: stripEmojis(String(q.explanation || "")),
+          })
+        );
+      } catch {
+        // Continue to fallback model or domain generator
+      }
+    }
+  }
+
+  // 3. Graceful, intelligent domain-specific curriculum engine fallback (Python -> 10 Python MCQs, React -> React MCQs)
+  return getDomainQuestions(domain, videoTitle, questionCount, courseTitle);
 }
 
 /**
@@ -118,8 +174,7 @@ export async function generateNotes(
 ): Promise<string> {
   const domain = detectDomain(courseTitle, videoTitle, courseCategory);
 
-  if (genAI) {
-    const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform Vidcura.
+  const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform Vidcura.
 
 Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
@@ -144,6 +199,14 @@ A 2-3 paragraph breakdown explaining the theory, architecture, and practical exe
 
 STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere in the text. Maintain a refined, academic, and publication-ready standard.`;
 
+  // 1. Try Claude
+  const claudeText = await callClaude(prompt);
+  if (claudeText) {
+    return stripEmojis(claudeText);
+  }
+
+  // 2. Try Gemini
+  if (genAI) {
     for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
@@ -172,13 +235,12 @@ export async function askStudyCompanion(
 ): Promise<string> {
   const domain = detectDomain(courseTitle, videoTitle, courseCategory);
 
-  if (genAI) {
-    const historyContext = chatHistory
-      .slice(-6)
-      .map((m) => `${m.role === "user" ? "Student" : "Instructor"}: ${m.content}`)
-      .join("\n");
+  const historyContext = chatHistory
+    .slice(-6)
+    .map((m) => `${m.role === "user" ? "Student" : "Instructor"}: ${m.content}`)
+    .join("\n");
 
-    const prompt = `You are an elite Staff Engineer, Computer Science Professor, and Technical Mentor for Vidcura.
+  const prompt = `You are an elite Staff Engineer, Computer Science Professor, and Technical Mentor for Vidcura.
 You are directly mentoring a student working through an accredited course.
 
 Context:
@@ -198,6 +260,14 @@ Pedagogical Directives:
 5. Format with clean markdown headers (###), bullet points, and syntax-highlighted code blocks (\`\`\`python, \`\`\`tsx, \`\`\`sql).
 6. ABSOLUTE RULE: DO NOT USE ANY EMOJIS OR UNICODE PICTOGRAMS UNDER ANY CIRCUMSTANCES. Keep the tone dignified, professional, and clear.`;
 
+  // 1. Try Claude
+  const claudeText = await callClaude(prompt);
+  if (claudeText) {
+    return stripEmojis(claudeText);
+  }
+
+  // 2. Try Gemini
+  if (genAI) {
     for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
@@ -209,7 +279,7 @@ Pedagogical Directives:
     }
   }
 
-  // Domain-trained intelligent tutor resolves the student's actual doubt
+  // 3. Domain-trained intelligent tutor resolves the student's actual doubt
   return getDomainTutorResponse(question, videoTitle, courseTitle, courseCategory, chatHistory);
 }
 

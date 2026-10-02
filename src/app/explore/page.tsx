@@ -9,21 +9,19 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { CATEGORIES, PAGE_SIZE, type Category } from "@/lib/constants";
+import { POPULAR_TOPICS, PAGE_SIZE } from "@/lib/constants";
 import { parseQueryTerms, rankByRelevance } from "@/lib/keywords";
 import type { CourseDoc } from "@/lib/types";
 import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard";
 
 type DiscoveryFilter = "Fresh Mix" | "Trending" | "Newest";
 
-// ── Query Builder ──────────────────────────────────────────────────────────
-function buildQuery(selectedCategory: Category | "All", searchTerms: string[]) {
+const DISCOVERY_TOPICS = ["All", ...POPULAR_TOPICS] as const;
+
+// ── Query Builder (Open Educational Discovery) ───────────────────────────
+function buildQuery(searchTerms: string[]) {
   const base = collection(db, "courses");
   const constraints = [where("status", "==", "published")];
-
-  if (selectedCategory !== "All") {
-    constraints.push(where("category", "==", selectedCategory));
-  }
 
   if (searchTerms.length > 0) {
     constraints.push(where("keywords", "array-contains-any", searchTerms.slice(0, 10)));
@@ -43,7 +41,7 @@ function shuffleCourses<T>(array: T[]): T[] {
 }
 
 export default function ExplorePage() {
-  const [selectedCategory, setSelectedCategory] = useState<Category | "All">("All");
+  const [selectedTopic, setSelectedTopic] = useState<string>("All");
   const [discoveryFilter, setDiscoveryFilter] = useState<DiscoveryFilter>("Fresh Mix");
   const [searchInput, setSearchInput] = useState("");
   const [searchTerms, setSearchTerms] = useState<string[]>([]);
@@ -56,13 +54,26 @@ export default function ExplorePage() {
   const [fetchError, setFetchError] = useState("");
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Sync initial URL query param if present (?q=... or ?category=...)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q") || params.get("search") || params.get("category");
+    if (q) {
+      setSearchInput(q);
+      setSearchTerms(parseQueryTerms(q));
+      const match = DISCOVERY_TOPICS.find((t) => t.toLowerCase() === q.toLowerCase());
+      if (match) setSelectedTopic(match);
+    }
+  }, []);
+
   // ── Fetch courses from Firestore ─────────────────────────────────────────
   const fetchCourses = useCallback(async () => {
     setFetchError("");
     setLoading(true);
 
     try {
-      const q = buildQuery(selectedCategory, searchTerms);
+      const q = buildQuery(searchTerms);
       const snap = await getDocs(q);
       const fetched = snap.docs.map((d) => ({
         ...(d.data() as CourseDoc),
@@ -77,9 +88,9 @@ export default function ExplorePage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchTerms]);
+  }, [searchTerms]);
 
-  // Initial fetch and on category/search change
+  // Initial fetch and on search change
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
@@ -128,8 +139,22 @@ export default function ExplorePage() {
     setTimeout(() => setIsShuffling(false), 450);
   };
 
+  const handleTopicSelect = (topic: string) => {
+    setSelectedTopic(topic);
+    setCurrentPage(1);
+    if (topic === "All") {
+      setSearchInput("");
+      setSearchTerms([]);
+    } else {
+      setSearchInput(topic);
+      setSearchTerms(parseQueryTerms(topic));
+    }
+  };
+
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
+    const match = DISCOVERY_TOPICS.find((t) => t.toLowerCase() === value.trim().toLowerCase());
+    setSelectedTopic(match || (value.trim() ? "" : "All"));
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
       setSearchTerms(parseQueryTerms(value));
@@ -299,28 +324,25 @@ export default function ExplorePage() {
         ))}
       </div>
 
-      {/* Category Tabs */}
+      {/* Dynamic Topic Discovery Chips (YouTube Style) */}
       <div
         className="flex gap-2 overflow-x-auto pb-3 mb-8 max-w-full scrollbar-hide"
         role="tablist"
-        aria-label="Filter courses by category"
+        aria-label="Filter courses by educational topic"
       >
-        {(["All", ...CATEGORIES] as const).map((cat) => (
+        {DISCOVERY_TOPICS.map((topic) => (
           <button
-            key={cat}
+            key={topic}
             role="tab"
-            aria-selected={selectedCategory === cat}
-            onClick={() => {
-              setSelectedCategory(cat as Category | "All");
-              setCurrentPage(1);
-            }}
+            aria-selected={selectedTopic === topic}
+            onClick={() => handleTopicSelect(topic)}
             className={`flex-shrink-0 min-h-[40px] px-4 py-2 rounded-full text-xs font-heading font-semibold transition-all cursor-pointer inline-flex items-center justify-center ${
-              selectedCategory === cat
+              selectedTopic === topic
                 ? "bg-primary-500 text-white shadow-sm"
                 : "bg-card border border-border text-foreground/80 hover:border-primary-400 hover:text-foreground active:bg-muted"
             }`}
           >
-            {cat}
+            {topic}
           </button>
         ))}
       </div>
@@ -370,14 +392,14 @@ export default function ExplorePage() {
           <h2 className="font-heading font-bold text-xl mb-2 text-foreground">No courses found</h2>
           <p className="text-muted-foreground font-body text-sm mb-6 leading-relaxed">
             {searchTerms.length > 0
-              ? `No courses matched "${searchInput}". Try broader search terms or browse another category.`
-              : `No published courses in ${selectedCategory === "All" ? "this category" : selectedCategory} yet.`}
+              ? `No courses matched "${searchInput}". Try broader search terms or browse another topic.`
+              : `No published courses in ${selectedTopic === "All" ? "this topic" : selectedTopic} yet.`}
           </p>
           <button
             onClick={() => {
               setSearchInput("");
               setSearchTerms([]);
-              setSelectedCategory("All");
+              setSelectedTopic("All");
               setCurrentPage(1);
             }}
             className="btn-ghost text-xs px-4 py-2"
@@ -392,7 +414,7 @@ export default function ExplorePage() {
             <p className="text-xs sm:text-sm text-muted-foreground font-body" aria-live="polite">
               {searchTerms.length > 0
                 ? `Showing results for "${searchInput}"`
-                : `${discoveryFilter} · ${selectedCategory === "All" ? "All Disciplines" : selectedCategory} (${courses.length} courses)`}
+                : `${discoveryFilter} · ${selectedTopic === "All" ? "All Disciplines" : selectedTopic} (${courses.length} courses)`}
             </p>
             {totalPages > 1 && (
               <span className="text-xs text-muted-foreground font-heading font-semibold">

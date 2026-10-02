@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubeId } from "@/lib/constants";
+import { validateEducationalContent } from "@/lib/contentFilter";
 import type { OEmbedResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +80,19 @@ export async function GET(request: NextRequest) {
     }
 
     const data = (await response.json()) as OEmbedResponse;
+
+    // Academic integrity check: block commercial movies, songs, trailers, entertainment
+    const filter = validateEducationalContent(data.title ?? "", data.author_name);
+    if (filter.blocked) {
+      return NextResponse.json(
+        {
+          error: filter.reason,
+          blocked: true,
+          category: filter.category,
+        },
+        { status: 422 }
+      );
+    }
 
     return NextResponse.json({
       videoId,
