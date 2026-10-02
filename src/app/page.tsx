@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
-import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 
 export default function HomePage() {
   const topCategories = [
@@ -32,13 +31,13 @@ export default function HomePage() {
         />
 
         <div className="container-page relative z-10 text-center max-w-4xl mx-auto px-4">
-          {/* Institutional Credential Badge */}
+          {/* Institutional Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-foreground/90 text-xs font-heading font-bold mb-6 shadow-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <span className="text-muted-foreground">Accredited Micro-Credentials</span>
+            <span className="text-muted-foreground">Distraction-Free Learning</span>
             <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-            <span className="text-amber-600 dark:text-amber-400 font-extrabold">
-              SHA-256 HMAC Verified
+            <span className="text-teal-600 dark:text-teal-400 font-extrabold">
+              Interactive Curricula
             </span>
           </div>
 
@@ -56,8 +55,8 @@ export default function HomePage() {
           {/* Subtitle */}
           <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up">
             A distraction-free academic workspace. Complete mandatory lecture quizzes after each
-            module, maintain verified 7-day study streaks, and earn career credentials with 1-click
-            LinkedIn endorsement.
+            module, maintain verified 7-day study streaks, and build enduring skills at your own
+            pace.
           </p>
 
           {/* Hero CTA - Strictly Only Explore Show */}
@@ -117,8 +116,8 @@ export default function HomePage() {
             <div className="w-px h-4 bg-border hidden sm:block" aria-hidden="true" />
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="font-heading font-bold text-foreground">Vector PDF</span>
-              <span>A4 300 DPI Certificate</span>
+              <span className="font-heading font-bold text-foreground">7-Day Streaks</span>
+              <span>Daily habit</span>
             </div>
             <div className="w-px h-4 bg-border hidden sm:block" aria-hidden="true" />
             <div className="flex items-center gap-2">
@@ -130,111 +129,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 2. The Signature Credential Showcase (Current Update Live Mockup) ── */}
-      <section className="py-12 sm:py-20 relative" aria-labelledby="credential-showcase-title">
-        <div className="container-page max-w-5xl mx-auto px-4">
-          <div className="text-center mb-10 sm:mb-14">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-heading font-bold mb-3 border border-amber-500/20">
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <polyline points="9 12 11 14 15 10" />
-              </svg>
-              <span>Coursera &amp; Google Skills Standard</span>
-            </div>
-            <h2
-              id="credential-showcase-title"
-              className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight"
-            >
-              Earn Verified Credentials Through Academic Mastery
-            </h2>
-            <p className="font-body text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mt-2 leading-relaxed">
-              Complete every lecture without skipping, score 70%+ on all module assessments, and
-              receive your official cryptographically verified diploma.
-            </p>
-          </div>
-
-          {/* Classical Diploma Credential Replica Card */}
-          <OfficialCertificateView
-            recipientName="Sarah Jenkins"
-            courseTitle="Full-Stack Web Development & Cloud Systems Masterclass"
-            certificateId="VL-2026-F98B-E2A1"
-            issuedDate="October 02, 2026"
-            instructorName="Dr. Ronald Vance"
-            instructorTitle="Instructor"
-            managerName="Elena Rostova"
-            managerTitle="Training Manager"
-            isInteractive={false}
-          />
-
-          {/* Real Value Pillars Bar */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground font-body">
-            <div className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-teal-600"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              <span className="font-semibold text-foreground">
-                Print-Ready Vector PDF (A4 300 DPI)
-              </span>
-            </div>
-            <div className="w-1 h-1 rounded-full bg-border" />
-            <div className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-sky-600"
-              >
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                <rect x="2" y="9" width="4" height="12" />
-                <circle cx="4" cy="4" r="2" />
-              </svg>
-              <span className="font-semibold text-foreground">1-Click Direct LinkedIn Sync</span>
-            </div>
-            <div className="w-1 h-1 rounded-full bg-border" />
-            <div className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-emerald-600"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              <span className="font-semibold text-foreground">
-                Online Cryptographic Verification (SHA-256)
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. Compact Video Walkthrough ───────────────────────────────────── */}
+      {/* ── 2. Compact Video Walkthrough ───────────────────────────────────── */}
       <PlaylistGuideVideo />
 
-      {/* ── 4. The Academic Rigor Engine (Current Updates in 3 Interactive Pillars) */}
+      {/* ── 3. The Academic Rigor Engine (Current Updates in 3 Interactive Pillars) */}
       <section
         className="py-16 sm:py-24 bg-card/40 border-y border-border"
         aria-labelledby="rigor-title"
@@ -360,7 +258,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 5. Institutional Comparison: YouTube vs. Vidcura ────────────────── */}
+      {/* ── 4. Institutional Comparison: YouTube vs. Vidcura ────────────────── */}
       <section className="py-16 sm:py-24" aria-labelledby="comparison-title">
         <div className="container-page max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -430,7 +328,9 @@ export default function HomePage() {
               </div>
 
               <div className="grid grid-cols-2 p-4 sm:p-5 items-center hover:bg-muted/20 transition-colors">
-                <div className="text-muted-foreground pr-3">No certificate or proof of study</div>
+                <div className="text-muted-foreground pr-3">
+                  No assessment or comprehension checks
+                </div>
                 <div className="text-foreground font-semibold flex items-center gap-2">
                   <svg
                     width="15"
@@ -443,13 +343,13 @@ export default function HomePage() {
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>Printable Vector PDF + LinkedIn Sync</span>
+                  <span>Interactive Quizzes &amp; Immediate Feedback</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 p-4 sm:p-5 items-center hover:bg-muted/20 transition-colors">
                 <div className="text-muted-foreground pr-3">
-                  No verification for employers or universities
+                  No daily habit system or streak tracking
                 </div>
                 <div className="text-foreground font-semibold flex items-center gap-2">
                   <svg
@@ -463,7 +363,7 @@ export default function HomePage() {
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>SHA-256 HMAC Credential Registry</span>
+                  <span>Verified 7-Day Habit Streak Engine</span>
                 </div>
               </div>
             </div>
@@ -471,7 +371,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 6. Category Disciplines Quick Navigation ────────────────────────── */}
+      {/* ── 5. Category Disciplines Quick Navigation ────────────────────────── */}
       <section
         className="py-14 sm:py-20 border-t border-border"
         aria-labelledby="disciplines-title"
@@ -488,7 +388,7 @@ export default function HomePage() {
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed">
             Build an unstoppable daily habit. Dive into hand-picked curricula across 8 core
-            disciplines, curated with interactive quizzes and career credentials.
+            disciplines, curated with interactive quizzes and structured progression.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 text-left">
@@ -532,7 +432,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. Minimalist Master Call To Action (Strictly Only Explore Show) ─ */}
+      {/* ── 6. Minimalist Master Call To Action (Strictly Only Explore Show) ─ */}
       <section className="py-16 sm:py-24 border-t border-border bg-gradient-to-b from-card to-background">
         <div className="container-page max-w-4xl mx-auto px-4 text-center">
           <div className="w-16 h-16 rounded-3xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-6 shadow-sm">
@@ -553,8 +453,8 @@ export default function HomePage() {
             Start learning in flow.
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed">
-            Free forever. No login required to watch lectures. Complete quizzes and claim your
-            verifiable certificate anytime.
+            Free forever. No login required to watch lectures. Complete interactive quizzes and
+            build your daily knowledge streak anytime.
           </p>
 
           {/* Strictly Only Explore Button - No Competing Secondary Option */}
