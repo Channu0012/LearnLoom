@@ -9,10 +9,6 @@ export function PlaylistGuideVideo() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const samplePlaylistUrl =
-    "https://www.youtube.com/playlist?list=PLillGF-RfqbZ2ybcoEImsflr_iSm19k9y";
 
   // Synchronize fullscreen state with browser events
   useEffect(() => {
@@ -75,21 +71,9 @@ export function PlaylistGuideVideo() {
     }
   };
 
-  const copySampleLink = async () => {
-    try {
-      await navigator.clipboard.writeText(samplePlaylistUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Fallback
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
   return (
     <section
-      className="w-full py-16 sm:py-24 lg:py-28 relative overflow-hidden"
+      className="w-full py-8 sm:py-12 lg:py-14 relative overflow-hidden"
       aria-labelledby="guide-title"
     >
       {/* Background Ambient Glow */}
@@ -121,19 +105,25 @@ export function PlaylistGuideVideo() {
               >
                 {/* Cinema Top Status Bar */}
                 <div className="px-4 sm:px-5 py-3 bg-neutral-900/95 border-b border-white/10 flex items-center justify-between z-20">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="flex items-center gap-3">
+                    {/* macOS Window Controls */}
+                    <div className="flex items-center gap-1.5" aria-hidden="true">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]/90" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]/90" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F]/90" />
+                    </div>
+                    <span className="w-px h-3.5 bg-white/15" aria-hidden="true" />
                     <span className="text-xs font-heading font-bold text-neutral-200">
-                      Walkthrough Demo
+                      VeySkill Cinema Flow
                     </span>
                     <span className="hidden sm:inline-block text-[11px] text-neutral-400 font-body">
-                      · 1-Minute Setup
+                      · 1080p Ad-Free Masterclass
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-semibold text-neutral-300">
-                      1080p Full HD
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2.5 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-[10px] font-mono font-bold text-teal-400">
+                      LIVE DEMO
                     </span>
                     <button
                       type="button"
@@ -176,7 +166,7 @@ export function PlaylistGuideVideo() {
                     isFullscreen ? "max-h-[calc(100vh-60px)]" : ""
                   }`}
                   role="region"
-                  aria-label="How to copy playlist link and learn in Vidcura"
+                  aria-label="How to copy playlist link and learn in VeySkill"
                 >
                   <video
                     ref={videoRef}
@@ -358,7 +348,7 @@ export function PlaylistGuideVideo() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-heading font-bold text-base text-foreground">
-                    Paste into Vidcura
+                    Paste into VeySkill
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed">
                     Paste into Quick Watch. Modules load immediately, stripped of all ads, sponsor
@@ -384,103 +374,26 @@ export function PlaylistGuideVideo() {
               </div>
             </div>
 
-            {/* Quick Interactive Copy Sample Tool */}
+            {/* Direct Action CTA */}
             <div className="pt-2">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 rounded-2xl bg-muted/60 dark:bg-card border border-border">
-                <div className="flex items-center gap-2 flex-1 min-w-0 px-1 font-mono text-xs text-muted-foreground truncate">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    className="text-teal-600 flex-shrink-0"
-                  >
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                  </svg>
-                  <span className="truncate">youtube.com/playlist?list=PLillGF...</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={copySampleLink}
-                  className="px-3.5 py-1.5 rounded-xl bg-card hover:bg-muted border border-border text-foreground text-xs font-heading font-bold transition-all flex items-center justify-center gap-1.5 flex-shrink-0 shadow-sm"
-                >
-                  {copied ? (
-                    <>
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        className="text-emerald-500"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
-                        Link Copied!
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
-                      <span>Copy Sample Link</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Direct Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <Link
-                href="/quick-watch"
-                className="btn-primary text-sm px-7 py-3 min-h-[46px] inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl font-heading font-extrabold rounded-2xl transition-all"
+                href="/explore"
+                className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[48px] inline-flex items-center justify-center gap-2.5 shadow-xl shadow-teal-500/20 font-heading font-extrabold rounded-2xl active:scale-95 transition-all w-full sm:w-auto"
               >
-                <span>Try Quick Watch (Ad-Free)</span>
+                <span>Browse All Free Courses</span>
                 <svg
-                  width="15"
-                  height="15"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
-              </Link>
-
-              <Link
-                href="/explore"
-                className="px-6 py-3 min-h-[46px] rounded-2xl bg-card border border-border hover:border-teal-500/50 hover:bg-muted/40 text-foreground text-sm font-heading font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
-              >
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                </svg>
-                <span>Explore Curated Library</span>
               </Link>
             </div>
 

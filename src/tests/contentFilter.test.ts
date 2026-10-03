@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { validateEducationalContent, validateCourseEducation } from "@/lib/contentFilter";
+import {
+  validateEducationalContent,
+  validateCourseEducation,
+  validatePlaylistEducation,
+} from "@/lib/contentFilter";
 
 describe("validateEducationalContent", () => {
   describe("blocks commercial music and songs", () => {
@@ -216,5 +220,62 @@ describe("validateCourseEducation", () => {
     });
     expect(res.valid).toBe(false);
     expect(res.reason).toContain("at least one lesson");
+  });
+});
+
+describe("validatePlaylistEducation", () => {
+  it("approves genuine academic and technical playlists", () => {
+    const res = validatePlaylistEducation(
+      "Python for Beginners Tutorial Series",
+      "Programming with Mosh",
+      [
+        { title: "Lesson 1: Introduction to Python" },
+        { title: "Lesson 2: Variables & Types" },
+        { title: "Lesson 3: Control Flow" },
+      ]
+    );
+    expect(res.valid).toBe(true);
+  });
+
+  it("strictly rejects playlist if channel is a music record label", () => {
+    const res = validatePlaylistEducation("All Hits 2024", "T-Series", [{ title: "Hit Song 1" }]);
+    expect(res.valid).toBe(false);
+    expect(res.reason).toContain("commercial music label");
+  });
+
+  it("strictly rejects playlist if channel is a movie studio", () => {
+    const res = validatePlaylistEducation("Film Clips Collection", "Marvel Entertainment", [
+      { title: "Clip 1" },
+    ]);
+    expect(res.valid).toBe(false);
+    expect(res.reason).toContain("movie studio");
+  });
+
+  it("strictly rejects playlist if title is commercial music or songs", () => {
+    const res = validatePlaylistEducation("Top 100 Punjabi Songs Playlist", "IndependentCreator", [
+      { title: "Track 1" },
+      { title: "Track 2" },
+    ]);
+    expect(res.valid).toBe(false);
+    expect(res.reason).toContain("commercial entertainment, movie, or music");
+  });
+
+  it("strictly rejects playlist if ANY single video item is a music or movie video", () => {
+    const res = validatePlaylistEducation("Web Development Masterclass", "DevTuts", [
+      { title: "Lecture 1: HTML Basics" },
+      { title: "Taylor Swift - Blank Space (Official Music Video)" }, // non-educational!
+      { title: "Lecture 3: CSS Grid" },
+    ]);
+    expect(res.valid).toBe(false);
+    expect(res.reason).toContain("Item 2");
+    expect(res.offendingVideoIndex).toBe(1);
+  });
+
+  it("strictly rejects non-educational playlist with zero educational intent", () => {
+    const res = validatePlaylistEducation("Random Summer Hits Collection", "VibeZone", [
+      { title: "Summer Breeze" },
+      { title: "Ocean Waves" },
+    ]);
+    expect(res.valid).toBe(false);
   });
 });

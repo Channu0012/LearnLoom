@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       quizScore: quizScore != null ? Math.max(0, Math.min(100, Math.round(quizScore))) : null,
       issuedDate: formatDate(date),
       issuedTimestamp: date.toISOString(),
-      verifyUrl: `https://vidcura.vercel.app/verify/${certificateId}`,
-      platform: "Vidcura",
+      verifyUrl: `https://veyskill.in/verify/${certificateId}`,
+      platform: "VeySkill",
     };
 
     return NextResponse.json({ certificate }, { status: 200 });

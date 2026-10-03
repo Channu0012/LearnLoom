@@ -18,8 +18,8 @@ export function StreakDashboard() {
       setStreak(detail);
     };
 
-    window.addEventListener("vidcura:streak-updated", handleUpdate);
-    return () => window.removeEventListener("vidcura:streak-updated", handleUpdate);
+    window.addEventListener("veyskill:streak-updated", handleUpdate);
+    return () => window.removeEventListener("veyskill:streak-updated", handleUpdate);
   }, []);
 
   if (!streak) return null;

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { CertificateLookupClient } from "@/components/verify/CertificateLookupClient";
 
 export const metadata: Metadata = {
-  title: "Verify Academic Credential | Vidcura",
+  title: "Verify Academic Credential | VeySkill",
   description:
-    "Official cryptographic verification portal for Vidcura certificates. Enter any Credential ID to validate authenticity, student honors, and completion records.",
+    "Official cryptographic verification portal for VeySkill certificates. Enter any Credential ID to validate authenticity, student honors, and completion records.",
 };
 
 export default function VerifyPortalPage() {
@@ -29,11 +29,11 @@ export default function VerifyPortalPage() {
           <span>Cryptographic Credential Registry</span>
         </div>
         <h1 className="font-heading font-black text-3xl sm:text-5xl text-foreground tracking-tight mb-3">
-          Verify Vidcura Credential
+          Verify VeySkill Credential
         </h1>
         <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
           Validate the authenticity, issuance date, and mastery records of any graduate certificate
-          issued by Vidcura.
+          issued by VeySkill.
         </p>
       </div>
 

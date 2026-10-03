@@ -64,20 +64,20 @@ export function Header() {
         <Link
           href="/"
           className="flex items-center gap-2.5 hover:opacity-95 transition-opacity select-none group flex-shrink-0"
-          aria-label="Vidcura home"
+          aria-label="VeySkill home"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icon.png"
-            alt="Vidcura Logo"
+            alt="VeySkill Logo"
             width={34}
             height={34}
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
           <div className="flex flex-col leading-none">
             <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight">
-              <span className="text-foreground">vid</span>
-              <span className="text-[#FE5A50]">cura</span>
+              <span className="text-foreground">Vey</span>
+              <span className="text-[#14b8a6]">skill</span>
             </span>
             <span className="text-[10px] font-body font-medium text-muted-foreground hidden sm:block tracking-wide mt-0.5">
               Turn playlists into courses
@@ -239,7 +239,7 @@ export function Header() {
                     >
                       <div className="px-3 py-2.5 bg-muted/40 rounded-xl mb-1">
                         <p className="text-xs font-heading font-bold text-foreground truncate">
-                          {user.displayName ?? "Vidcura Scholar"}
+                          {user.displayName ?? "VeySkill Scholar"}
                         </p>
                         {user.email && (
                           <p className="text-[11px] text-muted-foreground font-body truncate">

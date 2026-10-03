@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Home page", () => {
   test("loads and shows hero section", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/Vidcura/i);
+    await expect(page).toHaveTitle(/VeySkill/i);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator("#cta-create")).toBeVisible();
     await expect(page.locator("#cta-explore")).toBeVisible();
@@ -34,9 +34,9 @@ test.describe("Explore page", () => {
 });
 
 test.describe("Navigation", () => {
-  test("header shows Vidcura logo", async ({ page }) => {
+  test("header shows VeySkill logo", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /Vidcura home/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /VeySkill home/i })).toBeVisible();
   });
 
   test("footer shows legal links", async ({ page }) => {

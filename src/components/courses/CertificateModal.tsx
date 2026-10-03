@@ -130,7 +130,7 @@ export function CertificateModal({
 
     const linkedInUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
       certificate.courseTitle
-    )}&organizationName=Vidcura&issueYear=${year}&issueMonth=${month}&certUrl=${encodeURIComponent(
+    )}&organizationName=VeySkill&issueYear=${year}&issueMonth=${month}&certUrl=${encodeURIComponent(
       certificate.verifyUrl
     )}&certId=${encodeURIComponent(certificate.id)}`;
 
@@ -163,7 +163,7 @@ export function CertificateModal({
   <rect x="34" y="34" width="892" height="572" rx="12" fill="none" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="1.2"/>
 
   <!-- Brand Header -->
-  <text x="480" y="85" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="4" fill="#D4AF37" text-anchor="middle">VIDCURA GLOBAL CREDENTIALING AUTHORITY</text>
+  <text x="480" y="85" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="4" fill="#D4AF37" text-anchor="middle">VEYSKILL GLOBAL CREDENTIALING AUTHORITY</text>
   <text x="480" y="105" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="2" fill="#94A3B8" text-anchor="middle">ACCREDITED CONTINUING COMPUTATIONAL EDUCATION</text>
   <text x="480" y="148" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="2" fill="#F8FAFC" text-anchor="middle">CERTIFICATE OF COMPLETION</text>
 
@@ -195,14 +195,14 @@ export function CertificateModal({
   <text x="140" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B">Verify Authenticity: ${certificate.verifyUrl}</text>
 
   <text x="820" y="550" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#10B981" text-anchor="end">STATUS: VERIFIED &amp; TAMPER-PROOF</text>
-  <text x="820" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B" text-anchor="end">Vidcura Academic Certification Authority</text>
+  <text x="820" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B" text-anchor="end">VeySkill Academic Certification Authority</text>
 </svg>`;
 
       const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Vidcura_Credential_${certificate.id}.svg`;
+      link.download = `VeySkill_Credential_${certificate.id}.svg`;
       link.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -213,12 +213,12 @@ export function CertificateModal({
 
   const handleShare = useCallback(async () => {
     if (!certificate) return;
-    const shareText = `[Vidcura Verified Credential]\n${effectiveName} has successfully completed the curriculum "${certificate.courseTitle}" (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#Vidcura #GoogleCareerCertificates #LifelongLearning`;
+    const shareText = `[VeySkill Verified Credential]\n${effectiveName} has successfully completed the curriculum "${certificate.courseTitle}" (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#VeySkill #GoogleCareerCertificates #LifelongLearning`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Vidcura Credential — ${certificate.courseTitle}`,
+          title: `VeySkill Credential — ${certificate.courseTitle}`,
           text: shareText,
         });
         return;
@@ -305,7 +305,7 @@ export function CertificateModal({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/icon.png"
-                    alt="Vidcura Logo"
+                    alt="VeySkill Logo"
                     className="w-7 h-7 object-contain rounded-lg"
                   />
                 </div>

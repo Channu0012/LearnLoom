@@ -4,7 +4,7 @@ export default function GlobalLoading() {
   return (
     <div className="container-page py-16 w-full flex items-center justify-center">
       <CourseraLoader
-        title="Loading Vidcura…"
+        title="Loading VeySkill…"
         subtitle="Curating free, distraction-free courses and interactive video lessons"
       />
     </div>

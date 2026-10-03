@@ -11,7 +11,7 @@ export interface StreakData {
   todayLessonsCompleted: number;
 }
 
-const STORAGE_KEY = "vidcura_streak_data_v1";
+const STORAGE_KEY = "veyskill_streak_data_v1";
 const LEGACY_STORAGE_KEY = "learnloom_streak_data_v1";
 
 const DEFAULT_STREAK: StreakData = {
@@ -127,7 +127,7 @@ export function recordStudyActivity(xpEarned = 10): ActivityResult {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     // Dispatch event so all components update reactively
-    window.dispatchEvent(new CustomEvent("vidcura:streak-updated", { detail: updated }));
+    window.dispatchEvent(new CustomEvent("veyskill:streak-updated", { detail: updated }));
   } catch {
     // Storage quota or restricted environment
   }

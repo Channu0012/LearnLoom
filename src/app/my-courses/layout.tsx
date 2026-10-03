@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "My Courses & Studio | Vidcura",
-  description: "Manage, publish, and edit your created courses on Vidcura.",
+  title: "My Courses & Studio | VeySkill",
+  description: "Manage, publish, and edit your created courses on VeySkill.",
   robots: {
     index: false,
     follow: false,

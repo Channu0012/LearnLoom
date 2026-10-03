@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const STORAGE_KEY = "vidcura_cookie_consent";
+const STORAGE_KEY = "veyskill_cookie_consent";
 const LEGACY_KEY = "learnloom_cookie_consent";
 
 export function CookieBanner() {

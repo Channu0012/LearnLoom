@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Takedown Request",
   description:
-    "Request removal of your content from Vidcura. We respect all original creators and process takedowns within 48 hours.",
+    "Request removal of your content from VeySkill. We respect all original creators and process takedowns within 48 hours.",
   alternates: {
     canonical: "/takedown",
   },
@@ -37,7 +37,7 @@ export default function TakedownPage() {
           We Respect YouTube Creators
         </h2>
         <p className="text-sm font-body text-foreground/80 leading-relaxed mb-3">
-          Vidcura is built to support and promote YouTube creators — not to exploit them. We
+          VeySkill is built to support and promote YouTube creators — not to exploit them. We
           understand that your content is your livelihood and your intellectual property.
         </p>
         <ul className="text-sm font-body text-foreground/80 space-y-2.5">
@@ -76,7 +76,7 @@ export default function TakedownPage() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              All views through Vidcura count towards{" "}
+              All views through VeySkill count towards{" "}
               <strong>your YouTube analytics and monetisation</strong>
             </span>
           </li>
@@ -163,8 +163,8 @@ export default function TakedownPage() {
           Important: Videos Are Hosted by YouTube
         </h2>
         <p className="text-sm font-body text-foreground/80 leading-relaxed">
-          Vidcura does <strong>not</strong> host any video content. All videos embedded in our
-          courses are hosted by YouTube. Vidcura only links to existing YouTube videos — we do not
+          VeySkill does <strong>not</strong> host any video content. All videos embedded in our
+          courses are hosted by YouTube. VeySkill only links to existing YouTube videos — we do not
           upload, store, cache, or distribute video files.
         </p>
         <p className="text-sm font-body text-foreground/80 leading-relaxed mt-3">
@@ -186,14 +186,14 @@ export default function TakedownPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">For YouTube Creators</h2>
           <p className="text-muted-foreground leading-relaxed">
-            If you are a YouTube creator and want your videos removed from any Vidcura course, we
+            If you are a YouTube creator and want your videos removed from any VeySkill course, we
             will honour your request immediately —{" "}
             <strong className="text-foreground">no proof of ownership required</strong> beyond being
             the channel owner. Simply email us with:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
             <li>Your YouTube channel name and link</li>
-            <li>The URL(s) of the Vidcura course(s) containing your content (if known)</li>
+            <li>The URL(s) of the VeySkill course(s) containing your content (if known)</li>
             <li>
               Whether you want specific videos removed or{" "}
               <strong className="text-foreground">all</strong> of your content removed from the
@@ -212,12 +212,12 @@ export default function TakedownPage() {
           <h2 className="font-heading font-bold text-xl mb-3">For Copyright Holders (DMCA)</h2>
           <p className="text-muted-foreground leading-relaxed">
             If you are a copyright owner (or authorised to act on behalf of one) and believe that
-            content in a Vidcura course infringes your rights, please provide the following
+            content in a VeySkill course infringes your rights, please provide the following
             information:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
             <li>Your full legal name and contact information</li>
-            <li>The URL of the Vidcura course or lesson you want removed</li>
+            <li>The URL of the VeySkill course or lesson you want removed</li>
             <li>The original copyrighted work being infringed (with URL if possible)</li>
             <li>
               A statement that you are the rights holder or are authorised to act on their behalf
@@ -233,7 +233,7 @@ export default function TakedownPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">For Content Abuse Reports</h2>
           <p className="text-muted-foreground leading-relaxed">
-            If you find a course on Vidcura that contains harmful, misleading, abusive, or
+            If you find a course on VeySkill that contains harmful, misleading, abusive, or
             inappropriate content, you can report it through:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4">
@@ -244,10 +244,10 @@ export default function TakedownPage() {
             <li>
               <strong className="text-foreground">Email</strong> — Send details to{" "}
               <a
-                href="mailto:takedown@vidcura.app"
+                href="mailto:takedown@veyskill.in"
                 className="text-primary-500 underline hover:no-underline font-semibold"
               >
-                takedown@vidcura.app
+                takedown@veyskill.in
               </a>
             </li>
           </ul>
@@ -264,10 +264,10 @@ export default function TakedownPage() {
             Send all takedown and content removal requests to:
           </p>
           <a
-            href="mailto:takedown@vidcura.app"
+            href="mailto:takedown@veyskill.in"
             className="text-primary-500 underline hover:no-underline font-heading font-bold text-lg"
           >
-            takedown@vidcura.app
+            takedown@veyskill.in
           </a>
           <p className="text-muted-foreground leading-relaxed mt-4">
             We aim to respond within <strong className="text-foreground">48 hours</strong> for all

@@ -390,7 +390,7 @@ export function StudyCompanion({
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1.5 text-center font-mono">
-          Vidcura Academic AI Engine · Verified Curriculum Context
+          VeySkill Academic AI Engine · Verified Curriculum Context
         </p>
       </div>
     </div>

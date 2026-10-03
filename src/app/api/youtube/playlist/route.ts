@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubePlaylistId } from "@/lib/constants";
-import { validateEducationalContent } from "@/lib/contentFilter";
+import { validatePlaylistEducation } from "@/lib/contentFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -189,44 +189,16 @@ export async function GET(request: NextRequest) {
       ytData?.metadata?.playlistMetadataRenderer?.ownerText?.runs?.[0]?.text ||
       "";
 
-    // 1. Academic integrity check: verify playlist title and channel
-    const playlistFilter = validateEducationalContent(playlistTitle, channelName);
-    if (playlistFilter.blocked) {
-      return NextResponse.json(
-        {
-          error: playlistFilter.reason,
-          blocked: true,
-          category: playlistFilter.category,
-        },
-        { status: 422 }
-      );
-    }
-
-    // 2. Strict educational verification across ALL video items
-    const verifiedEducationalVideos: PlaylistVideoItem[] = [];
-    let blockedCount = 0;
-    let sampleReason = "";
-
-    for (const v of videos) {
-      const vFilter = validateEducationalContent(v.title);
-      if (vFilter.blocked) {
-        blockedCount++;
-        sampleReason = vFilter.reason || sampleReason;
-      } else {
-        verifiedEducationalVideos.push(v);
-      }
-    }
-
-    if (
-      verifiedEducationalVideos.length === 0 ||
-      blockedCount >= Math.max(2, Math.floor(videos.length * 0.25))
-    ) {
+    // Academic integrity check: Zero-tolerance playlist educational verification
+    const playlistValidation = validatePlaylistEducation(playlistTitle, channelName, videos);
+    if (!playlistValidation.valid) {
       return NextResponse.json(
         {
           error:
-            sampleReason ||
-            "This playlist contains commercial music, movies, or entertainment videos that do not meet Vidcura's academic standards.",
+            playlistValidation.reason ||
+            "This playlist cannot be imported. It contains commercial music, movies, or entertainment videos that do not meet VeySkill's academic standards.",
           blocked: true,
+          offendingVideoTitle: playlistValidation.offendingVideoTitle,
         },
         { status: 422 }
       );
@@ -235,8 +207,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       playlistId,
       title: playlistTitle,
-      itemCount: verifiedEducationalVideos.length,
-      videos: verifiedEducationalVideos.slice(0, 150), // Supports massive playlists up to 150 lessons
+      channelTitle: channelName,
+      itemCount: videos.length,
+      videos: videos.slice(0, 150), // Supports massive playlists up to 150 lessons
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {

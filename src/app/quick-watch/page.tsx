@@ -1,7 +1,7 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// Vidcura Quick Watch — Zero-Data-Store Distraction-Free Theatre Player
+// VeySkill Quick Watch — Zero-Data-Store Distraction-Free Theatre Player
 // Seamlessly plays single videos and multi-video playlists ad-free.
 // Zero login required, zero tracking, zero algorithmic interruptions.
 // ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ function QuickWatchContent() {
   // Load history from localStorage on initial render
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("vidcura_quickwatch_history");
+      const stored = localStorage.getItem("veyskill_quickwatch_history");
       if (stored) {
         setHistory(JSON.parse(stored));
       }
@@ -106,14 +106,14 @@ function QuickWatchContent() {
 
   const saveToHistory = useCallback((item: HistoryItem) => {
     try {
-      const stored = localStorage.getItem("vidcura_quickwatch_history");
+      const stored = localStorage.getItem("veyskill_quickwatch_history");
       let list: HistoryItem[] = stored ? JSON.parse(stored) : [];
       // Remove duplicate
       list = list.filter((h) => h.id !== item.id);
       list.unshift(item);
       const trimmed = list.slice(0, 8);
       setHistory(trimmed);
-      localStorage.setItem("vidcura_quickwatch_history", JSON.stringify(trimmed));
+      localStorage.setItem("veyskill_quickwatch_history", JSON.stringify(trimmed));
     } catch {
       // LocalStorage unavailable
     }
@@ -122,7 +122,7 @@ function QuickWatchContent() {
   const clearHistory = () => {
     setHistory([]);
     try {
-      localStorage.removeItem("vidcura_quickwatch_history");
+      localStorage.removeItem("veyskill_quickwatch_history");
     } catch {
       // LocalStorage unavailable
     }
@@ -136,7 +136,7 @@ function QuickWatchContent() {
     }
     try {
       const saved =
-        localStorage.getItem(`vidcura_quick_notes_${activeVideoId}`) ||
+        localStorage.getItem(`veyskill_quick_notes_${activeVideoId}`) ||
         localStorage.getItem(`learnloom_quick_notes_${activeVideoId}`);
       setNotes(saved || "");
     } catch {
@@ -148,7 +148,7 @@ function QuickWatchContent() {
     setNotes(text);
     if (!activeVideoId) return;
     try {
-      localStorage.setItem(`vidcura_quick_notes_${activeVideoId}`, text);
+      localStorage.setItem(`veyskill_quick_notes_${activeVideoId}`, text);
     } catch {
       // LocalStorage fallback
     }

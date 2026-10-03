@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "My Learning Portal | Vidcura",
+  title: "My Learning Portal | VeySkill",
   description: "Track your in-progress courses, completed lessons, notes, and learning streaks.",
   robots: {
     index: false,

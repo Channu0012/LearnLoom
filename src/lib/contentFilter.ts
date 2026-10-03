@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Vidcura Educational Content Verification Engine
+// VeySkill Educational Content Verification Engine
 // Strictly enforces academic and educational integrity across courses and videos.
 // Automatically detects and blocks commercial movies, music tracks, pop songs,
 // trailers, teasers, film clips, entertainment streams, pranks, and memes,
@@ -89,9 +89,10 @@ const MUSIC_SIGNATURES = [
   /\b(original\s+soundtrack|soundtrack\s+ost|\bost\b|bgm\s+ringtone|background\s+score)\b/i,
   /\b(karaoke\s+version|karaoke\s+track|instrumental\s+track|type\s+beat|rap\s+beat)\b/i,
   /\b(live\s+in\s+concert|live\s+performance|acoustic\s+session|unplugged\s+version)\b/i,
-  /\b(lo-?fi\s+beats|lofi\s+hip\s+hop|chill\s+beats\s+to|beats\s+to\s+relax)\b/i,
+  /\b(lo-?fi\s+beats|lofi\s+hip\s+hop|chill\s+beats\s+to|beats\s+to\s+relax|study\s+beats)\b/i,
   /\b(music\s+video|\bmv\b|lyrical\s+video|title\s+track)\b/i,
   /\b(song\s+teaser|theme\s+song|punjabi\s+song|hindi\s+song|tamil\s+song|telugu\s+song)\b/i,
+  /\b(party\s+songs?|pop\s+songs?|love\s+songs?|dance\s+songs?)\b/i,
 ];
 
 // Record labels, distributor channels and keywords in channel name
@@ -219,14 +220,14 @@ export function validateEducationalContent(
     return { blocked: false };
   }
 
-  // 1. Check if uploaded by recognized university or verified educational publisher
+  // 1. Recognized university or verified educational publisher exemption
   const isAcademicPublisher =
     cleanAuthor && ACADEMIC_CHANNEL_EXEMPTIONS.some((ch) => cleanAuthor.includes(ch));
   if (isAcademicPublisher) {
     return { blocked: false };
   }
 
-  // 2. Check for gaming/prank/trailer/scene conflicts that can never be exempt
+  // 2. Strict non-exemptible entertainment markers
   const isGamingOrPrank = /\b(gameplay|let's\s+play|gaming|prank|roast|funny\s+moments)\b/i.test(
     cleanTitle
   );
@@ -239,69 +240,202 @@ export function validateEducationalContent(
       cleanTitle
     );
 
-  // 3. Check for genuine pedagogical intent
-  const hasPedagogicalIntent = EDUCATIONAL_EXEMPTIONS.some((term) => lowerTitle.includes(term));
-  if (hasPedagogicalIntent && !isGamingOrPrank && !isExplicitTrailer && !isMovieScene) {
-    return { blocked: false };
-  }
-
-  // 3. Check commercial music channel keywords
+  // 3. Check commercial music channel keywords FIRST (Labels can never be courses)
   if (cleanAuthor && MUSIC_CHANNEL_KEYWORDS.some((kw) => cleanAuthor.includes(kw))) {
     return {
       blocked: true,
       category: "music",
       reason:
-        "Commercial music tracks and record label releases cannot be imported. Vidcura is dedicated exclusively to academic lectures and technical masterclasses.",
+        "Commercial music tracks and record label releases cannot be imported. VeySkill is dedicated exclusively to academic lectures and technical masterclasses.",
     };
   }
 
-  // 4. Check commercial movie studio channel keywords
+  // 4. Check commercial movie studio channel keywords FIRST
   if (cleanAuthor && MOVIE_CHANNEL_KEYWORDS.some((kw) => cleanAuthor.includes(kw))) {
     return {
       blocked: true,
       category: "movie",
       reason:
-        "Commercial studio films, trailers, and entertainment clips cannot be imported. Vidcura is dedicated exclusively to academic curricula and verified coursework.",
+        "Commercial studio films, trailers, and entertainment clips cannot be imported. VeySkill is dedicated exclusively to academic curricula and verified coursework.",
     };
   }
 
-  // 5. Check music signatures in title
+  // 5. Check music signatures in title FIRST
   for (const pattern of MUSIC_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
         blocked: true,
         category: "music",
         reason:
-          "Commercial music videos and audio tracks cannot be imported. Vidcura is dedicated exclusively to academic lectures and technical masterclasses.",
+          "Commercial music videos and audio tracks cannot be imported. VeySkill is dedicated exclusively to academic lectures and technical masterclasses.",
       };
     }
   }
 
-  // 6. Check movie signatures in title
+  // 6. Check movie signatures in title FIRST
   for (const pattern of MOVIE_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
         blocked: true,
         category: "movie",
         reason:
-          "Commercial movies, trailers, and film clips cannot be imported. Vidcura is dedicated exclusively to academic curricula and verified coursework.",
+          "Commercial movies, trailers, and film clips cannot be imported. VeySkill is dedicated exclusively to academic curricula and verified coursework.",
       };
     }
   }
 
-  // 7. Check entertainment/meme/gaming signatures in title
+  // 7. Check entertainment/meme/gaming signatures in title FIRST
   for (const pattern of ENTERTAINMENT_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
         blocked: true,
         category: "entertainment",
         reason:
-          "Entertainment streams, reaction videos, and memes cannot be imported. Vidcura is dedicated exclusively to structured academic masterclasses.",
+          "Entertainment streams, reaction videos, and memes cannot be imported. VeySkill is dedicated exclusively to structured academic masterclasses.",
       };
     }
   }
 
+  // 8. If non-exemptible markers matched, block
+  if (isGamingOrPrank) {
+    return {
+      blocked: true,
+      category: "entertainment",
+      reason:
+        "Video gameplay walkthroughs and pranks are not permitted. Only educational coursework is allowed.",
+    };
+  }
+  if (isExplicitTrailer || isMovieScene) {
+    return {
+      blocked: true,
+      category: "movie",
+      reason:
+        "Movie trailers and film scenes are not permitted. Only educational coursework is allowed.",
+    };
+  }
+
+  // 9. Educational intent check for general titles
+  const hasPedagogicalIntent = EDUCATIONAL_EXEMPTIONS.some((term) => lowerTitle.includes(term));
+  if (hasPedagogicalIntent) {
+    return { blocked: false };
+  }
+
   return { blocked: false };
+}
+
+export interface PlaylistValidationResult {
+  valid: boolean;
+  reason?: string;
+  offendingVideoIndex?: number;
+  offendingVideoTitle?: string;
+}
+
+/**
+ * Strict Educational Playlist Validator.
+ * Zero-tolerance verification for playlists:
+ * 1. Rejects if channel is a record label or film studio.
+ * 2. Rejects if playlist title contains entertainment/movie/music keywords.
+ * 3. Rejects if ANY video in the playlist is detected as non-educational.
+ * 4. Requires affirmative educational/academic intent.
+ */
+export function validatePlaylistEducation(
+  playlistTitle: string,
+  channelName: string = "",
+  videos: Array<{ title: string; videoId?: string }> = []
+): PlaylistValidationResult {
+  const cleanTitle = (playlistTitle || "").trim();
+  const lowerTitle = cleanTitle.toLowerCase();
+  const cleanChannel = (channelName || "").trim().toLowerCase();
+
+  // 1. Check playlist publisher/channel
+  if (cleanChannel && MUSIC_CHANNEL_KEYWORDS.some((kw) => cleanChannel.includes(kw))) {
+    return {
+      valid: false,
+      reason:
+        "Playlist rejected: Hosted by a commercial music label or music artist. VeySkill is exclusively an educational and certification platform.",
+    };
+  }
+
+  if (cleanChannel && MOVIE_CHANNEL_KEYWORDS.some((kw) => cleanChannel.includes(kw))) {
+    return {
+      valid: false,
+      reason:
+        "Playlist rejected: Hosted by a movie studio or commercial entertainment channel. VeySkill is exclusively an educational and certification platform.",
+    };
+  }
+
+  // 2. Check playlist title for explicit non-educational intent
+  const playlistTitleRejections = [
+    /\b(songs?|tracks?|singles?|album|discography|jukebox|hits|soundtrack|\bost\b|bgm|remix|dj\s+mix|party\s+songs|bollywood\s+songs|punjabi\s+songs|lofi\s+beats)\b/i,
+    /\b(movies?|films?|cinema|trailers?|teasers?|movie\s+scenes?|film\s+clips?|climax|fight\s+scene|web\s+series|tv\s+serial|season\s+\d+|episodes?|kdrama|k-drama)\b/i,
+    /\b(pranks?|roasts?|funny\s+videos?|comedy\s+shows?|stand[\s-]?up|memes?|fails?|vlogs?|gameplay|lets\s+play|gaming)\b/i,
+  ];
+
+  for (const pattern of playlistTitleRejections) {
+    if (pattern.test(cleanTitle)) {
+      // Check if it's an authentic academic topic
+      const isAcademicCourse = [
+        "music theory",
+        "music production",
+        "sound engineering",
+        "composition",
+        "film directing",
+        "screenwriting",
+        "cinematography",
+        "video editing",
+        "film history",
+      ].some((term) => lowerTitle.includes(term));
+
+      if (!isAcademicCourse) {
+        return {
+          valid: false,
+          reason: `Playlist title ("${cleanTitle}") is identified as commercial entertainment, movie, or music. Only educational courses and masterclasses are permitted on VeySkill.`,
+        };
+      }
+    }
+  }
+
+  // 3. Strict verification of EVERY video in the playlist: ZERO tolerance
+  if (videos.length === 0) {
+    return {
+      valid: false,
+      reason: "Playlist contains no playable videos to verify.",
+    };
+  }
+
+  for (let i = 0; i < videos.length; i++) {
+    const v = videos[i]!;
+    const filter = validateEducationalContent(v.title, channelName);
+    if (filter.blocked) {
+      return {
+        valid: false,
+        reason: `Playlist rejected: Item ${i + 1} ("${v.title}") was flagged as ${filter.category || "non-educational"}. VeySkill strictly rejects playlists containing commercial movies, music, or entertainment.`,
+        offendingVideoIndex: i,
+        offendingVideoTitle: v.title,
+      };
+    }
+  }
+
+  // 4. Affirmative Educational Integrity
+  const hasEducationalPlaylistTitle = EDUCATIONAL_EXEMPTIONS.some((term) =>
+    lowerTitle.includes(term)
+  );
+
+  const educationalVideoCount = videos.filter((v) =>
+    EDUCATIONAL_EXEMPTIONS.some((term) => v.title.toLowerCase().includes(term))
+  ).length;
+
+  const hasEducationalVideos = educationalVideoCount > 0;
+
+  if (!hasEducationalPlaylistTitle && !hasEducationalVideos) {
+    return {
+      valid: false,
+      reason:
+        "Playlist rejected: Could not verify educational or instructional intent. VeySkill is exclusively an educational and certification platform.",
+    };
+  }
+
+  return { valid: true };
 }
 
 export interface CourseValidationResult {
@@ -342,20 +476,26 @@ export function validateCourseEducation(course: {
   ];
 
   for (const pattern of titleEntertainmentPatterns) {
-    // If it has educational keywords (e.g. "film analysis", "music theory"), allow it
-    const isExempt = EDUCATIONAL_EXEMPTIONS.some(
-      (term) => lowerTitle.includes(term) || lowerDesc.includes(term)
-    );
+    const isExempt = [
+      "film directing",
+      "film history",
+      "music theory",
+      "music production",
+      "sound engineering",
+      "screenwriting",
+      "cinematography",
+    ].some((term) => lowerTitle.includes(term) || lowerDesc.includes(term));
+
     if (!isExempt && pattern.test(cleanTitle)) {
       return {
         valid: false,
         reason:
-          "Course title cannot be about commercial movies, music videos, or entertainment. Only authentic academic courses and educational masterclasses are allowed on Vidcura.",
+          "Course title cannot be about commercial movies, music videos, or entertainment. Only authentic academic courses and educational masterclasses are allowed on VeySkill.",
       };
     }
   }
 
-  // 3. Validate every single lesson title in the curriculum
+  // 3. Validate every single lesson title in the curriculum: ZERO tolerance
   if (lessons.length === 0) {
     return {
       valid: false,
@@ -369,26 +509,27 @@ export function validateCourseEducation(course: {
     if (filter.blocked) {
       return {
         valid: false,
-        reason: `Lesson ${i + 1} ("${lesson.title}") was flagged as non-educational (${filter.category || "entertainment"}). Vidcura strictly permits academic lectures and technical coursework only.`,
+        reason: `Lesson ${i + 1} ("${lesson.title}") was flagged as non-educational (${filter.category || "entertainment"}). VeySkill strictly permits academic lectures and technical coursework only.`,
         offendingLessonIndex: i,
       };
     }
   }
 
   // 4. Positive Educational Intent Verification
-  // The course must contain at least one pedagogical, technical, or academic indicator in title or lessons
-  const hasAcademicSubject =
-    EDUCATIONAL_EXEMPTIONS.some((term) => lowerTitle.includes(term) || lowerDesc.includes(term)) ||
-    lessons.some((l) =>
-      EDUCATIONAL_EXEMPTIONS.some((term) => l.title.toLowerCase().includes(term))
-    ) ||
-    lessons.length >= 2; // Multi-lesson structured playlists typically have lecture structure
+  // The course must contain at least one pedagogical, technical, or academic indicator in title, description, or lessons
+  const hasAcademicInTitleOrDesc = EDUCATIONAL_EXEMPTIONS.some(
+    (term) => lowerTitle.includes(term) || lowerDesc.includes(term)
+  );
 
-  if (!hasAcademicSubject && cleanTitle.split(/\s+/).length < 2) {
+  const hasAcademicInLessons = lessons.some((l) =>
+    EDUCATIONAL_EXEMPTIONS.some((term) => l.title.toLowerCase().includes(term))
+  );
+
+  if (!hasAcademicInTitleOrDesc && !hasAcademicInLessons) {
     return {
       valid: false,
       reason:
-        "Please provide a descriptive educational course title (e.g., 'Introduction to Python', 'Calculus Masterclass', 'World History Overview').",
+        "Course rejected: Please provide a descriptive educational course title (e.g., 'Introduction to Python', 'Calculus Masterclass', 'World History Overview') or include instructional lecture modules. Only authentic educational courses can be published.",
     };
   }
 

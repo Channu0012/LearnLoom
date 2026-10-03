@@ -4,7 +4,7 @@ import { db } from "@/lib/firebase";
 import type { CourseDoc } from "@/lib/types";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vidcura.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
   const lastModified = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [

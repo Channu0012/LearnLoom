@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Explore Free Video Courses & Curated Playlists | Vidcura",
+  title: "Explore Free Video Courses & Curated Playlists | VeySkill",
   description:
     "Browse hundreds of free, distraction-free courses organized from online video playlists. Learn programming, design, business, sciences, and languages with zero ads.",
   keywords: [
@@ -11,22 +11,22 @@ export const metadata: Metadata = {
     "design courses",
     "free online learning",
     "distraction free study",
-    "Vidcura catalog",
+    "VeySkill catalog",
   ],
   alternates: {
     canonical: "/explore",
   },
   openGraph: {
-    title: "Explore Free Video Courses & Curated Playlists | Vidcura",
+    title: "Explore Free Video Courses & Curated Playlists | VeySkill",
     description:
       "Browse hundreds of free, distraction-free courses organized from online video playlists across Programming, Design, Business, and more.",
-    url: "https://vidcura.app/explore",
+    url: "https://veyskill.in/explore",
     type: "website",
-    images: [{ url: "/logo.png", width: 798, height: 220, alt: "Vidcura Explore Courses" }],
+    images: [{ url: "/logo.png", width: 798, height: 220, alt: "VeySkill Explore Courses" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Explore Free Video Courses | Vidcura",
+    title: "Explore Free Video Courses | VeySkill",
     description:
       "Browse hundreds of free, distraction-free courses organized from online video playlists.",
     images: ["/logo.png"],

@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Vidcura Privacy Policy — how we collect, use, protect your data, and protect creator content.",
+    "VeySkill Privacy Policy — how we collect, use, protect your data, and protect creator content.",
   alternates: {
     canonical: "/privacy",
   },
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">Our Privacy Commitment</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura is built on the principle of{" "}
+            VeySkill is built on the principle of{" "}
             <strong className="text-foreground">privacy by design</strong>. We collect only what is
             strictly necessary to provide our service. We do not sell, rent, trade, or monetise your
             personal data — now or ever. We do not run advertisements or tracking pixels. Your
@@ -68,13 +68,13 @@ export default function PrivacyPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">2. What We Do NOT Collect</h2>
           <p className="text-muted-foreground leading-relaxed mb-3">
-            Vidcura explicitly does not collect:
+            VeySkill explicitly does not collect:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-1.5">
             <li>Email addresses or phone numbers</li>
             <li>Location data or IP-based geolocation</li>
             <li>Device fingerprints or browser fingerprints</li>
-            <li>Browsing history outside of Vidcura</li>
+            <li>Browsing history outside of VeySkill</li>
             <li>Any financial information (no payments, no credit cards)</li>
             <li>Analytics or advertising trackers of any kind</li>
           </ul>
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
             4. YouTube &amp; Creator Protection
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-3">
-            Vidcura deeply respects YouTube creators and their content. Our platform is designed to
+            VeySkill deeply respects YouTube creators and their content. Our platform is designed to
             promote, credit, and protect creators — never to exploit them:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2">
@@ -140,7 +140,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-foreground">No monetisation of creator content</strong> —
-              Vidcura does not run ads, charge fees, or earn any revenue from embedded videos. We
+              VeySkill does not run ads, charge fees, or earn any revenue from embedded videos. We
               are a 100% free, non-commercial platform.
             </li>
             <li>
@@ -184,7 +184,7 @@ export default function PrivacyPage() {
             5. Zero-Abuse Guarantee
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-3">
-            Vidcura has a strict zero-tolerance policy against abuse of any kind:
+            VeySkill has a strict zero-tolerance policy against abuse of any kind:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2">
             <li>
@@ -222,7 +222,7 @@ export default function PrivacyPage() {
             6. YouTube Embeds &amp; Third-Party Data
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura embeds videos via{" "}
+            VeySkill embeds videos via{" "}
             <strong className="text-foreground">youtube-nocookie.com</strong> (YouTube&apos;s
             privacy-enhanced mode) to minimise cross-site tracking. When you watch a video, YouTube
             may still collect data according to{" "}
@@ -281,7 +281,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">8. Cookies</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura uses only{" "}
+            VeySkill uses only{" "}
             <strong className="text-foreground">strictly necessary functional cookies</strong>{" "}
             required for authentication (provided by Firebase). We do not use:
           </p>
@@ -304,7 +304,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">9. Children&apos;s Privacy</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura does not knowingly collect personal information from children under the age of
+            VeySkill does not knowingly collect personal information from children under the age of
             13. Anyone may browse and watch courses without signing in. To create courses or save
             progress, users must sign in with a Google account and be at least 13 years old, in
             compliance with COPPA (Children&apos;s Online Privacy Protection Act). If we discover
@@ -379,10 +379,10 @@ export default function PrivacyPage() {
           <p className="text-muted-foreground leading-relaxed mt-3">
             To exercise any of these rights, contact us at{" "}
             <a
-              href="mailto:privacy@vidcura.app"
+              href="mailto:privacy@veyskill.in"
               className="text-primary-500 underline hover:no-underline font-semibold"
             >
-              privacy@vidcura.app
+              privacy@veyskill.in
             </a>
             . We will respond within 30 days.
           </p>
@@ -409,7 +409,7 @@ export default function PrivacyPage() {
             12. Our Promise for the Future
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-3">
-            As Vidcura grows, we commit to these principles:
+            As VeySkill grows, we commit to these principles:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2">
             <li>
@@ -444,7 +444,7 @@ export default function PrivacyPage() {
           <p className="text-muted-foreground leading-relaxed">
             We may update this privacy policy from time to time. When we make material changes, we
             will update the &quot;Last updated&quot; date at the top of this page. Continued use of
-            Vidcura after changes constitutes your acceptance of the updated policy.
+            VeySkill after changes constitutes your acceptance of the updated policy.
           </p>
         </section>
 
@@ -475,10 +475,10 @@ export default function PrivacyPage() {
               <span>
                 Privacy:{" "}
                 <a
-                  href="mailto:privacy@vidcura.app"
+                  href="mailto:privacy@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  privacy@vidcura.app
+                  privacy@veyskill.in
                 </a>
               </span>
             </li>
@@ -501,10 +501,10 @@ export default function PrivacyPage() {
               <span>
                 Legal:{" "}
                 <a
-                  href="mailto:legal@vidcura.app"
+                  href="mailto:legal@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  legal@vidcura.app
+                  legal@veyskill.in
                 </a>
               </span>
             </li>
@@ -527,10 +527,10 @@ export default function PrivacyPage() {
               <span>
                 Takedowns:{" "}
                 <a
-                  href="mailto:takedown@vidcura.app"
+                  href="mailto:takedown@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  takedown@vidcura.app
+                  takedown@veyskill.in
                 </a>
               </span>
             </li>

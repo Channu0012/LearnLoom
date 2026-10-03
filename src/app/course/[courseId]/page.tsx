@@ -34,7 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { courseId } = await params;
   const data = await getCourseData(courseId);
-  if (!data) return { title: "Course | Vidcura" };
+  if (!data) return { title: "Course | VeySkill" };
 
   const { course } = data;
   const thumb = course.coverVideoId
@@ -43,14 +43,14 @@ export async function generateMetadata({
 
   return {
     title: course.title,
-    description: course.description || `Learn ${course.title} — a free curated course on Vidcura.`,
+    description: course.description || `Learn ${course.title} — a free curated course on VeySkill.`,
     alternates: {
       canonical: `/course/${courseId}`,
     },
     openGraph: {
       title: course.title,
-      description: course.description || `${course.lessonCount} video lessons free on Vidcura`,
-      url: `https://vidcura.app/course/${courseId}`,
+      description: course.description || `${course.lessonCount} video lessons free on VeySkill`,
+      url: `https://veyskill.in/course/${courseId}`,
       images: thumb
         ? [{ url: thumb, width: 480, height: 360, alt: `${course.title} course preview` }]
         : [],
@@ -59,7 +59,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: course.title,
-      description: `${course.lessonCount} lessons — free on Vidcura`,
+      description: `${course.lessonCount} lessons — free on VeySkill`,
       images: thumb ? [thumb] : [],
     },
   };
@@ -79,12 +79,12 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         description: data.course.description || `Learn ${data.course.title} online for free.`,
         provider: {
           "@type": "Organization",
-          name: "Vidcura",
-          sameAs: "https://vidcura.app",
+          name: "VeySkill",
+          sameAs: "https://veyskill.in",
         },
         instructor: {
           "@type": "Organization",
-          name: "Vidcura Community",
+          name: "VeySkill Community",
         },
         hasCourseInstance: {
           "@type": "CourseInstance",

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Vidcura Domain-Trained Curriculum Knowledge & Assessment Engine
+// VeySkill Domain-Trained Curriculum Knowledge & Assessment Engine
 // Provides authentic, subject-specific MCQ assessments and technical tutoring
 // across Python, JavaScript, TypeScript, React, SQL, Algorithms, DevOps, AI, and Science.
 // Strict Standard: 100% Emoji-Free, Production-Grade Technical Depth.

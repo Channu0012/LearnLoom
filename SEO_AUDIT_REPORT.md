@@ -1,6 +1,6 @@
-# 🔍 Vidcura — Comprehensive SEO Audit & Optimization Report
+# 🔍 VeySkill — Comprehensive SEO Audit & Optimization Report
 
-> **Platform**: [Vidcura](https://vidcura.app) (Production: [vidcura.vercel.app](https://vidcura.vercel.app))  
+> **Platform**: [VeySkill](https://veyskill.in) (Production: [veyskill.in](https://veyskill.in))  
 > **Audit Date**: September 30, 2026  
 > **Auditor**: Senior SEO Architect & Full-Stack Engineer  
 > **Status**: All Technical, On-Page, Accessibility, Security, and Core Web Vitals Audited & Resolved (A+ Grade)
@@ -63,26 +63,26 @@
 - **Dynamic Crawl Directives (`src/app/robots.ts`)**:
   - Allows all standard search engine bots (`Googlebot`, `Bingbot`, etc.) to crawl public discovery routes.
   - Automatically disallows private user and creator studio routes: `/admin`, `/my-courses`, `/my-learning`, `/edit/`, `/api/`.
-  - Links directly to `https://vidcura.app/sitemap.xml`.
+  - Links directly to `https://veyskill.in/sitemap.xml`.
 
 ### 3. Canonical Tags & URL Structure
 
-- **Root Layout (`src/app/layout.tsx`)**: Configured `alternates: { canonical: "./" }` with `metadataBase: new URL("https://vidcura.app")`.
+- **Root Layout (`src/app/layout.tsx`)**: Configured `alternates: { canonical: "./" }` with `metadataBase: new URL("https://veyskill.in")`.
 - **Subpages**:
-  - `/explore` ➔ Canonical: `https://vidcura.app/explore`
-  - `/quick-watch` ➔ Canonical: `https://vidcura.app/quick-watch`
-  - `/create` ➔ Canonical: `https://vidcura.app/create`
-  - `/terms` ➔ Canonical: `https://vidcura.app/terms`
-  - `/privacy` ➔ Canonical: `https://vidcura.app/privacy`
-  - `/cookies` ➔ Canonical: `https://vidcura.app/cookies`
-  - `/takedown` ➔ Canonical: `https://vidcura.app/takedown`
-  - `/course/[courseId]` ➔ Dynamic Canonical: `https://vidcura.app/course/{courseId}`
+  - `/explore` ➔ Canonical: `https://veyskill.in/explore`
+  - `/quick-watch` ➔ Canonical: `https://veyskill.in/quick-watch`
+  - `/create` ➔ Canonical: `https://veyskill.in/create`
+  - `/terms` ➔ Canonical: `https://veyskill.in/terms`
+  - `/privacy` ➔ Canonical: `https://veyskill.in/privacy`
+  - `/cookies` ➔ Canonical: `https://veyskill.in/cookies`
+  - `/takedown` ➔ Canonical: `https://veyskill.in/takedown`
+  - `/course/[courseId]` ➔ Dynamic Canonical: `https://veyskill.in/course/{courseId}`
 
 ### 4. Rich Structured Data (JSON-LD)
 
-- **WebSite Schema**: Embedded in `src/app/layout.tsx` with a `SearchAction` pointing to `https://vidcura.app/explore?q={search_term_string}` for Google Sitelinks Searchbox eligibility.
+- **WebSite Schema**: Embedded in `src/app/layout.tsx` with a `SearchAction` pointing to `https://veyskill.in/explore?q={search_term_string}` for Google Sitelinks Searchbox eligibility.
 - **Organization Schema**: Links logo, brand name, and URL for Google Knowledge Graph.
-- **WebApplication Schema**: Declares Vidcura as a free `EducationalApplication` with 0 USD pricing.
+- **WebApplication Schema**: Declares VeySkill as a free `EducationalApplication` with 0 USD pricing.
 - **Course Schema (`Course` + `CourseInstance`)**: Embedded on dynamic course pages (`src/app/course/[courseId]/page.tsx`) with provider, instructor, workload estimation, and online delivery mode.
 
 ### 5. Heading Structure & Semantic Hierarchy
@@ -137,9 +137,9 @@
 ### 2. High-Authority Backlink Acquisition
 
 1. **Developer & Student Community Directories**:
-   - Submit Vidcura to curated lists: _Awesome-Selfhosted_, _Awesome-Learning_, _AlternativeTo_ (under Coursera / YouTube alternatives), _Product Hunt_, and _Hacker News Show HN_.
+   - Submit VeySkill to curated lists: _Awesome-Selfhosted_, _Awesome-Learning_, _AlternativeTo_ (under Coursera / YouTube alternatives), _Product Hunt_, and _Hacker News Show HN_.
 2. **Creator Collaborations**:
-   - Reach out to popular tutorial educators with a pre-built Vidcura syllabus link of their playlist, inviting them to link it in their video descriptions as an _"Ad-free Interactive Syllabus for my viewers"_.
+   - Reach out to popular tutorial educators with a pre-built VeySkill syllabus link of their playlist, inviting them to link it in their video descriptions as an _"Ad-free Interactive Syllabus for my viewers"_.
 3. **University & Educational Resource Portals**:
    - Share open-access course tracks with student clubs, coding bootcamps, and digital literacy non-profits.
 

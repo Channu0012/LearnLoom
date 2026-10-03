@@ -183,7 +183,7 @@ export function OfficialCertificateView({
 
         {/* 5. Bottom Three-Column Layout Matching the Uploaded Standard */}
         <div className="grid grid-cols-3 items-end gap-2 sm:gap-6 pt-4 relative z-10 text-center">
-          {/* Left Column: Presented by Vidcura + Instructor Signature */}
+          {/* Left Column: Presented by VeySkill + Instructor Signature */}
           <div className="space-y-3">
             <div>
               <span className="text-[10px] sm:text-xs font-serif uppercase tracking-widest text-[#475569] block mb-1">
@@ -194,13 +194,13 @@ export function OfficialCertificateView({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/icon.png"
-                  alt="Vidcura Logo"
+                  alt="VeySkill Logo"
                   width={18}
                   height={18}
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain rounded-sm"
                 />
                 <span className="font-heading font-extrabold text-[11px] sm:text-sm tracking-tight text-white">
-                  vid<span className="text-[#FE5A50]">cura</span>
+                  Vey<span className="text-[#14b8a6]">skill</span>
                 </span>
               </div>
             </div>

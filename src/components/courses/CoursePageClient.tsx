@@ -1,7 +1,7 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// CoursePageClient — Vidcura's flagship learning experience
+// CoursePageClient — VeySkill's flagship learning experience
 // Features: Theatre player, Curriculum checklist, AI Quiz, AI Study Notes,
 // AI Study Companion, Streak Dashboard, Certificate System,
 // Ad & sponsor banner, Mobile responsive syllabus, and instant progress tracking.

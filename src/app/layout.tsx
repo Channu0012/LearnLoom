@@ -19,10 +19,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://vidcura.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in"),
   title: {
-    default: "Vidcura — Turn Playlists into Structured Courses",
-    template: "%s | Vidcura",
+    default: "VeySkill — Turn Playlists into Structured Courses",
+    template: "%s | VeySkill",
   },
   description:
     "Curate video playlists into clean, distraction-free courses. Share your knowledge with the world, free forever — no login required to watch.",
@@ -36,9 +36,9 @@ export const metadata: Metadata = {
     "curated learning tracks",
     "structured playlist player",
   ],
-  authors: [{ name: "Vidcura", url: "https://vidcura.app" }],
-  creator: "Vidcura",
-  publisher: "Vidcura",
+  authors: [{ name: "VeySkill", url: "https://veyskill.in" }],
+  creator: "VeySkill",
+  publisher: "VeySkill",
   category: "education",
   classification: "Educational Software",
   alternates: {
@@ -56,16 +56,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://vidcura.app",
-    siteName: "Vidcura",
-    title: "Vidcura — Turn Playlists into Structured Courses",
+    url: "https://veyskill.in",
+    siteName: "VeySkill",
+    title: "VeySkill — Turn Playlists into Structured Courses",
     description:
       "Create free courses from video playlists and share your knowledge with the world.",
-    images: [{ url: "/logo.png", width: 798, height: 220, alt: "Vidcura Logo" }],
+    images: [{ url: "/logo.png", width: 798, height: 220, alt: "VeySkill Logo" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vidcura — Turn Playlists into Structured Courses",
+    title: "VeySkill — Turn Playlists into Structured Courses",
     description: "Create free courses from video playlists.",
     images: ["/logo.png"],
   },
@@ -90,16 +90,16 @@ const jsonLdWebsite = {
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": "https://vidcura.app/#website",
-      url: "https://vidcura.app",
-      name: "Vidcura",
+      "@id": "https://veyskill.in/#website",
+      url: "https://veyskill.in",
+      name: "VeySkill",
       description: "Curate video playlists into clean, distraction-free courses.",
       potentialAction: [
         {
           "@type": "SearchAction",
           target: {
             "@type": "EntryPoint",
-            urlTemplate: "https://vidcura.app/explore?q={search_term_string}",
+            urlTemplate: "https://veyskill.in/explore?q={search_term_string}",
           },
           "query-input": "required name=search_term_string",
         },
@@ -107,21 +107,21 @@ const jsonLdWebsite = {
     },
     {
       "@type": "Organization",
-      "@id": "https://vidcura.app/#organization",
-      name: "Vidcura",
-      url: "https://vidcura.app",
+      "@id": "https://veyskill.in/#organization",
+      name: "VeySkill",
+      url: "https://veyskill.in",
       logo: {
         "@type": "ImageObject",
-        url: "https://vidcura.app/logo.png",
+        url: "https://veyskill.in/logo.png",
         width: 798,
         height: 220,
       },
     },
     {
       "@type": "WebApplication",
-      "@id": "https://vidcura.app/#webapp",
-      name: "Vidcura",
-      url: "https://vidcura.app",
+      "@id": "https://veyskill.in/#webapp",
+      name: "VeySkill",
+      url: "https://veyskill.in",
       applicationCategory: "EducationalApplication",
       operatingSystem: "All",
       offers: {

@@ -26,7 +26,11 @@ import {
   getCourse,
 } from "@/lib/firestore";
 import { serverTimestamp } from "firebase/firestore";
-import { validateEducationalContent, validateCourseEducation } from "@/lib/contentFilter";
+import {
+  validateEducationalContent,
+  validateCourseEducation,
+  validatePlaylistEducation,
+} from "@/lib/contentFilter";
 
 // ── Lesson row component ──────────────────────────────────────────────────
 
@@ -259,7 +263,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       if (!res.ok || data.blocked || data.error || !data.videoId) {
         setUrlError(
           data.error ||
-            "This video cannot be imported. Vidcura strictly permits authentic educational lectures and masterclasses only. Commercial music, movies, and entertainment are prohibited."
+            "This video cannot be imported. VeySkill strictly permits authentic educational lectures and masterclasses only. Commercial music, movies, and entertainment are prohibited."
         );
         return;
       }
@@ -335,19 +339,18 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
       }
 
-      // Filter out any non-educational videos from the playlist
-      const filteredVideos = (data.videos || []).filter(
-        (v) => !validateEducationalContent(v.title).blocked
-      );
+      // Academic integrity check: Zero-tolerance playlist verification
+      const playlistIntegrity = validatePlaylistEducation(data.title || "", "", data.videos || []);
 
-      if (filteredVideos.length === 0) {
+      if (!playlistIntegrity.valid) {
         setUrlError(
-          "All videos in this playlist were identified as commercial music, movies, or entertainment. Only authentic educational courses can be imported."
+          playlistIntegrity.reason ||
+            "Playlist rejected: Only verified educational courses and masterclasses are permitted. Commercial music, movies, or entertainment playlists cannot be imported."
         );
         return;
       }
 
-      const newLessons: LessonInput[] = filteredVideos.map((v, index) => ({
+      const newLessons: LessonInput[] = (data.videos || []).map((v, index) => ({
         tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
         youtubeId: v.videoId,
         title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
@@ -355,11 +358,8 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       }));
 
       setLessons((prev) => [...prev, ...newLessons]);
-      const skippedCount = (data.videos || []).length - filteredVideos.length;
       setPlaylistSuccessMsg(
-        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!${
-          skippedCount > 0 ? ` (${skippedCount} non-educational item(s) excluded)` : ""
-        }`
+        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
       );
       setPlaylistInput("");
     } catch {
@@ -449,7 +449,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         setBulkProgress("");
         if (skippedNonEducational > 0) {
           setUrlError(
-            `${skippedNonEducational} non-educational link(s) were excluded based on Vidcura academic policy.`
+            `${skippedNonEducational} non-educational link(s) were excluded based on VeySkill academic policy.`
           );
         }
       }
@@ -526,7 +526,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       if (!courseCheck.valid) {
         setSaveError(
           courseCheck.reason ||
-            "Course rejected: Only authentic educational coursework is allowed on Vidcura. Commercial movies, music videos, and entertainment are prohibited."
+            "Course rejected: Only authentic educational coursework is allowed on VeySkill. Commercial movies, music videos, and entertainment are prohibited."
         );
         setErrors((prev) => ({
           ...prev,
@@ -865,7 +865,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           {importMode === "playlist" && (
             <div>
               <p className="text-xs text-muted-foreground font-body mb-3">
-                Paste any public video playlist link. Vidcura will instantly import all lessons in
+                Paste any public video playlist link. VeySkill will instantly import all lessons in
                 sequence with titles and thumbnails, and auto-name your course in seconds!
               </p>
               <div className="flex flex-col sm:flex-row gap-2">

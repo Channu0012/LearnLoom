@@ -9,8 +9,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `Verify Credential ${id} | Vidcura`,
-    description: `Official cryptographic credential verification for certificate ${id} issued by Vidcura.`,
+    title: `Verify Credential ${id} | VeySkill`,
+    description: `Official cryptographic credential verification for certificate ${id} issued by VeySkill.`,
     robots: {
       index: false,
       follow: false,
@@ -86,7 +86,7 @@ export default async function VerifyCertificatePage({ params }: Props) {
                 Certificate of Completion
               </h1>
               <p className="font-body text-sm text-muted-foreground mt-2 max-w-lg mx-auto leading-relaxed">
-                This official credential was issued by Vidcura to recognize the verified completion
+                This official credential was issued by VeySkill to recognize the verified completion
                 of structured video curriculum and assessments.
               </p>
             </div>
@@ -100,7 +100,7 @@ export default async function VerifyCertificatePage({ params }: Props) {
               </div>
               <div className="flex justify-between items-center pb-2.5 border-b border-border/50">
                 <span className="text-muted-foreground">Issuing Authority</span>
-                <span className="font-semibold text-foreground">Vidcura Learning Platform</span>
+                <span className="font-semibold text-foreground">VeySkill Learning Platform</span>
               </div>
               <div className="flex justify-between items-center pb-2.5 border-b border-border/50">
                 <span className="text-muted-foreground">Authenticity Status</span>
@@ -153,7 +153,7 @@ export default async function VerifyCertificatePage({ params }: Props) {
                 href="/"
                 className="btn-primary px-6 py-2.5 text-xs font-heading font-bold inline-flex items-center gap-2"
               >
-                <span>Return to Vidcura</span>
+                <span>Return to VeySkill</span>
               </Link>
             </div>
           </>

@@ -99,8 +99,8 @@ export function CertificateLookupClient() {
       <div className="mt-8 pt-6 border-t border-border/60 text-xs text-muted-foreground font-body space-y-2">
         <p className="font-semibold text-foreground">Where do I find my Credential ID?</p>
         <p className="leading-relaxed">
-          The Credential ID is printed on the bottom footer of your official Vidcura Certificate PDF
-          and appears in your LinkedIn certification URL.
+          The Credential ID is printed on the bottom footer of your official VeySkill Certificate
+          PDF and appears in your LinkedIn certification URL.
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Vidcura Executive PDF Certificate Generator (A4 Landscape Classical Diploma)
+// VeySkill Executive PDF Certificate Generator (A4 Landscape Classical Diploma)
 // Produces vector-crisp, printable landscape A4 academic credentials matching
 // the ivory parchment, ornate gold border, navy titles, laurel crest, and
 // presented-by / certificate-no layout requested by the user.
@@ -131,7 +131,7 @@ export function createPdfCertificateDoc(options: CertificatePdfOptions): jsPDF {
   doc.text(`Training on ${issuedDate}`, pageWidth / 2, 106, { align: "center" });
 
   // 7. Bottom Three-Column Layout Matching User Reference Image
-  // Left Column: Presented by Vidcura
+  // Left Column: Presented by VeySkill
   // Center Column: Gold Laurel Wreath Crest with Star
   // Right Column: Certificate No + ID
 
@@ -144,13 +144,13 @@ export function createPdfCertificateDoc(options: CertificatePdfOptions): jsPDF {
   doc.setTextColor(71, 85, 105);
   doc.text("Presented by", leftX, bottomY, { align: "center" });
 
-  // Solid Navy Pill for Vidcura
+  // Solid Navy Pill for VeySkill
   doc.setFillColor(11, 37, 69);
   doc.roundedRect(leftX - 25, bottomY + 3, 50, 9, 2, 2, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.text("vidcura.app", leftX, bottomY + 8.5, { align: "center" });
+  doc.text("veyskill.in", leftX, bottomY + 8.5, { align: "center" });
 
   // Instructor Signature
   doc.setFont("times", "italic");
@@ -251,6 +251,6 @@ export function createPdfCertificateDoc(options: CertificatePdfOptions): jsPDF {
 
 export function generatePdfCertificate(options: CertificatePdfOptions): void {
   const doc = createPdfCertificateDoc(options);
-  const filename = `Vidcura_Certificate_${options.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+  const filename = `VeySkill_Certificate_${options.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
   doc.save(filename);
 }

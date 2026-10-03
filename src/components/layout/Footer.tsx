@@ -14,19 +14,19 @@ export function Footer() {
             <Link
               href="/"
               className="inline-flex items-center gap-2.5 hover:opacity-95 transition-opacity"
-              aria-label="Vidcura home"
+              aria-label="VeySkill home"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/icon.png"
-                alt="Vidcura Logo"
+                alt="VeySkill Logo"
                 width={28}
                 height={28}
                 className="w-7 h-7 object-contain rounded-lg"
               />
               <span className="font-heading font-extrabold text-lg tracking-tight">
-                <span className="text-foreground">vid</span>
-                <span className="text-[#FE5A50]">cura</span>
+                <span className="text-foreground">Vey</span>
+                <span className="text-[#14b8a6]">skill</span>
               </span>
             </Link>
             <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-sm">
@@ -98,9 +98,9 @@ export function Footer() {
         <hr className="border-border/70 my-8" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-body">
-          <p>© {year} Vidcura Educational Foundation. All rights reserved.</p>
+          <p>© {year} VeySkill Educational Foundation. All rights reserved.</p>
           <p className="text-muted-foreground/80 text-[11px]">
-            Vidcura is an independent open educational client. Video content belongs to its
+            VeySkill is an independent open educational client. Video content belongs to its
             respective copyright holders.
           </p>
         </div>

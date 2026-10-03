@@ -19,7 +19,7 @@ export function CourseNotes({
   courseCategory,
   activeLessonTitle,
 }: CourseNotesProps) {
-  const storageKey = `vidcura_notes_${courseId}`;
+  const storageKey = `veyskill_notes_${courseId}`;
   const legacyKey = `learnloom_notes_${courseId}`;
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);

@@ -5,7 +5,7 @@
 import crypto from "crypto";
 
 // Secret salt for HMAC verification (fallback to a hardcoded constant if env not set)
-const CERT_HMAC_SALT = process.env.CERT_SECRET_SALT || "vidcura_enterprise_sec_2026_salt_89xkp2";
+const CERT_HMAC_SALT = process.env.CERT_SECRET_SALT || "veyskill_enterprise_sec_2026_salt_89xkp2";
 
 // ── Rate Limiting (In-Memory Sliding Window) ──────────────────────────────
 interface RateLimitBucket {

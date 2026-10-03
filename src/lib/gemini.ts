@@ -70,7 +70,7 @@ export async function generateQuiz(
   const questionCount =
     domain === "python" ? 10 : [7, 8, 9, 10][(lessonIndex + (totalLessons || 1)) % 4] || 8;
 
-  const prompt = `You are a curriculum designer creating an academic assessment for Vidcura, modeled after Google and Coursera certification standards.
+  const prompt = `You are a curriculum designer creating an academic assessment for VeySkill, modeled after Google and Coursera certification standards.
 
 Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
@@ -174,7 +174,7 @@ export async function generateNotes(
 ): Promise<string> {
   const domain = detectDomain(courseTitle, videoTitle, courseCategory);
 
-  const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform Vidcura.
+  const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform VeySkill.
 
 Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
@@ -224,7 +224,7 @@ STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere i
 /**
  * AI Study Companion — answers questions and clears student doubts like a senior engineer/mentor.
  * Strict standard: No emojis, crystal-clear, structured answers with practical insights and code.
- * Highly trained for Vidcura: Fallback engine resolves real technical problems seamlessly.
+ * Highly trained for VeySkill: Fallback engine resolves real technical problems seamlessly.
  */
 export async function askStudyCompanion(
   question: string,
@@ -240,7 +240,7 @@ export async function askStudyCompanion(
     .map((m) => `${m.role === "user" ? "Student" : "Instructor"}: ${m.content}`)
     .join("\n");
 
-  const prompt = `You are an elite Staff Engineer, Computer Science Professor, and Technical Mentor for Vidcura.
+  const prompt = `You are an elite Staff Engineer, Computer Science Professor, and Technical Mentor for VeySkill.
 You are directly mentoring a student working through an accredited course.
 
 Context:

@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Vidcura Terms of Service — your rights, responsibilities, original creator protections, and content policies.",
+    "VeySkill Terms of Service — your rights, responsibilities, original creator protections, and content policies.",
   alternates: {
     canonical: "/terms",
   },
@@ -19,11 +19,11 @@ export default function TermsPage() {
       <div className="prose prose-sm max-w-none font-body text-foreground space-y-8">
         {/* ── 1. About ─────────────────────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">1. About Vidcura</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">1. About VeySkill</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura is a free, non-commercial, open educational platform that allows users to
+            VeySkill is a free, non-commercial, open educational platform that allows users to
             organise publicly available YouTube video links into structured, distraction-free
-            courses. Vidcura does <strong className="text-foreground">not</strong> host, download,
+            courses. VeySkill does <strong className="text-foreground">not</strong> host, download,
             store, cache, mirror, or redistribute any video content. All videos are embedded
             directly from YouTube using YouTube&apos;s official embed API and remain subject to
             YouTube&apos;s own Terms of Service and content policies.
@@ -32,7 +32,7 @@ export default function TermsPage() {
 
         {/* ── 2. Eligibility ───────────────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">2. Who Can Use Vidcura</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">2. Who Can Use VeySkill</h2>
           <p className="text-muted-foreground leading-relaxed">
             Anyone may browse and watch courses without an account. To create courses, save learning
             progress, or report content, you must sign in with a Google account. You must be at
@@ -59,7 +59,7 @@ export default function TermsPage() {
             3. YouTube Creator Rights &amp; Protection
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-3">
-            Vidcura is built to{" "}
+            VeySkill is built to{" "}
             <strong className="text-foreground">support and promote YouTube creators</strong>, not
             to exploit them. The following principles are non-negotiable:
           </p>
@@ -71,27 +71,27 @@ export default function TermsPage() {
             </li>
             <li>
               <strong className="text-foreground">All views benefit the creator</strong> — Views
-              through Vidcura embeds are counted by YouTube and contribute to the creator&apos;s
+              through VeySkill embeds are counted by YouTube and contribute to the creator&apos;s
               analytics, watch-time, and monetisation revenue.
             </li>
             <li>
-              <strong className="text-foreground">No content theft</strong> — Vidcura never
+              <strong className="text-foreground">No content theft</strong> — VeySkill never
               downloads, re-hosts, mirrors, transcodes, or redistributes video content. Videos are
               streamed directly from YouTube&apos;s servers.
             </li>
             <li>
-              <strong className="text-foreground">No monetisation of creator work</strong> — Vidcura
-              is 100% free and non-commercial. We do not charge fees, run ads, use affiliate links,
-              or generate any revenue from embedded creator content.
+              <strong className="text-foreground">No monetisation of creator work</strong> —
+              VeySkill is 100% free and non-commercial. We do not charge fees, run ads, use
+              affiliate links, or generate any revenue from embedded creator content.
             </li>
             <li>
               <strong className="text-foreground">Respect for embed settings</strong> — If a creator
-              disables embedding on their video, it will not play on Vidcura. We fully respect
+              disables embedding on their video, it will not play on VeySkill. We fully respect
               YouTube&apos;s embed restrictions.
             </li>
             <li>
               <strong className="text-foreground">Instant takedown rights</strong> — Any YouTube
-              creator can request the removal of their content from Vidcura courses at any time via
+              creator can request the removal of their content from VeySkill courses at any time via
               our{" "}
               <Link href="/takedown" className="text-primary-500 underline hover:no-underline">
                 takedown process
@@ -130,7 +130,7 @@ export default function TermsPage() {
             <li>Bulk-creating courses for SEO manipulation or link farming</li>
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-3">
-            Vidcura reserves the right to remove any course and suspend any account that violates
+            VeySkill reserves the right to remove any course and suspend any account that violates
             these policies, with or without prior notice.
           </p>
         </section>
@@ -139,11 +139,11 @@ export default function TermsPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">5. Copyright &amp; DMCA</h2>
           <p className="text-muted-foreground leading-relaxed">
-            All videos displayed on Vidcura are hosted by and remain the property of their
-            respective owners on YouTube. Vidcura does not claim any ownership of embedded content.
+            All videos displayed on VeySkill are hosted by and remain the property of their
+            respective owners on YouTube. VeySkill does not claim any ownership of embedded content.
           </p>
           <p className="text-muted-foreground leading-relaxed mt-3">
-            If you are a copyright owner and believe that a video embedded in a Vidcura course
+            If you are a copyright owner and believe that a video embedded in a VeySkill course
             infringes your rights:
           </p>
           <ol className="list-decimal list-inside text-muted-foreground space-y-1.5 mt-3">
@@ -160,7 +160,7 @@ export default function TermsPage() {
               </a>
             </li>
             <li>
-              <strong className="text-foreground">For the Vidcura course</strong> — Submit a{" "}
+              <strong className="text-foreground">For the VeySkill course</strong> — Submit a{" "}
               <Link href="/takedown" className="text-primary-500 underline hover:no-underline">
                 takedown request
               </Link>{" "}
@@ -190,9 +190,9 @@ export default function TermsPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">7. Intellectual Property</h2>
           <p className="text-muted-foreground leading-relaxed">
-            The Vidcura platform (design, code, and brand) is the intellectual property of Vidcura.
-            Course metadata you create (titles, descriptions, lesson ordering) belongs to you.
-            YouTube videos and thumbnails belong to their respective creators and are displayed
+            The VeySkill platform (design, code, and brand) is the intellectual property of
+            VeySkill. Course metadata you create (titles, descriptions, lesson ordering) belongs to
+            you. YouTube videos and thumbnails belong to their respective creators and are displayed
             under YouTube&apos;s embed licence.
           </p>
         </section>
@@ -221,7 +221,8 @@ export default function TermsPage() {
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">9. Platform Security</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura is built on Firebase/Google Cloud infrastructure with enterprise-grade security:
+            VeySkill is built on Firebase/Google Cloud infrastructure with enterprise-grade
+            security:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-1.5 mt-3">
             <li>HTTPS-only access with TLS 1.2+ encryption</li>
@@ -241,8 +242,8 @@ export default function TermsPage() {
             10. Disclaimer &amp; Limitation of Liability
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Vidcura is provided &quot;as is&quot; and &quot;as available&quot; without warranties of
-            any kind, express or implied. We are not responsible for the content, accuracy, or
+            VeySkill is provided &quot;as is&quot; and &quot;as available&quot; without warranties
+            of any kind, express or implied. We are not responsible for the content, accuracy, or
             availability of YouTube videos embedded in courses. We are not liable for any direct,
             indirect, incidental, or consequential loss or damage arising from the use of this
             service or any course content.
@@ -254,7 +255,7 @@ export default function TermsPage() {
           <h2 className="font-heading font-bold text-xl mb-3">11. Changes to These Terms</h2>
           <p className="text-muted-foreground leading-relaxed">
             We may update these terms at any time. When we make material changes, we will update the
-            &quot;Last updated&quot; date at the top of this page. Continued use of Vidcura after
+            &quot;Last updated&quot; date at the top of this page. Continued use of VeySkill after
             changes constitutes your acceptance of the updated terms. If changes are significant, we
             will provide advance notice when possible.
           </p>
@@ -286,10 +287,10 @@ export default function TermsPage() {
               <span>
                 Legal:{" "}
                 <a
-                  href="mailto:legal@vidcura.app"
+                  href="mailto:legal@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  legal@vidcura.app
+                  legal@veyskill.in
                 </a>
               </span>
             </li>
@@ -312,10 +313,10 @@ export default function TermsPage() {
               <span>
                 Takedowns:{" "}
                 <a
-                  href="mailto:takedown@vidcura.app"
+                  href="mailto:takedown@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  takedown@vidcura.app
+                  takedown@veyskill.in
                 </a>
               </span>
             </li>
@@ -338,10 +339,10 @@ export default function TermsPage() {
               <span>
                 Privacy:{" "}
                 <a
-                  href="mailto:privacy@vidcura.app"
+                  href="mailto:privacy@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  privacy@vidcura.app
+                  privacy@veyskill.in
                 </a>
               </span>
             </li>
