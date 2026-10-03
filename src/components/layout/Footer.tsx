@@ -1,20 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { RealtimeHomeStats } from "./RealtimeHomeStats";
 
 export function Footer() {
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
   const year = 2026;
 
   return (
     <footer className="border-t border-border bg-card mt-16 w-full overflow-x-hidden pb-20 md:pb-6">
       <div className="container-page py-12">
-        {/* Real-Time Database Metrics: Exclusively on Homepage */}
-        {isHomePage && <RealtimeHomeStats />}
-
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-3 sm:col-span-2">

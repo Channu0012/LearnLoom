@@ -431,55 +431,6 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-
-      {/* ── 6. Minimalist Master Call To Action (Strictly Only Explore Show) ─ */}
-      <section className="py-16 sm:py-24 border-t border-border bg-gradient-to-b from-card to-background">
-        <div className="container-page max-w-4xl mx-auto px-4 text-center">
-          <div className="w-16 h-16 rounded-3xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-6 shadow-sm">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-            </svg>
-          </div>
-
-          <h2 className="font-heading font-black text-3xl sm:text-5xl text-foreground mb-4 tracking-tight">
-            Start learning in flow.
-          </h2>
-          <p className="font-body text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed">
-            Free forever. No login required to watch lectures. Complete interactive quizzes and
-            build your daily knowledge streak anytime.
-          </p>
-
-          {/* Strictly Only Explore Button - No Competing Secondary Option */}
-          <div className="flex justify-center max-w-xs mx-auto">
-            <Link
-              href="/explore"
-              id="cta-explore-bottom"
-              className="btn-primary text-base px-8 py-3.5 min-h-[50px] w-full inline-flex items-center justify-center gap-2.5 shadow-lg hover:shadow-xl active:scale-95 transition-all font-heading font-bold rounded-2xl"
-            >
-              <span>Explore All Courses</span>
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
