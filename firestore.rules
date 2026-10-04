@@ -200,5 +200,21 @@ service cloud.firestore {
       // Only admins can update or delete reports
       allow update, delete: if isAdmin();
     }
+
+    // ── payments/{orderId} ───────────────────────────────────────────────────
+    match /payments/{orderId} {
+      // Users can read only their own payments; admins can read all
+      allow read: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
+      // Writes are strictly server-only via Firebase Admin SDK
+      allow write: if false;
+    }
+
+    // ── certificates/{certId} (Global Verification Registry) ─────────────────
+    match /certificates/{certId} {
+      // Anyone can read for instant public credential verification
+      allow read: if true;
+      // Writes are strictly server-only via Firebase Admin SDK
+      allow write: if false;
+    }
   }
 }

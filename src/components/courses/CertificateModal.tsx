@@ -8,6 +8,7 @@
 // Zero emojis — pure high-precision vector icons and executive typography.
 // ---------------------------------------------------------------------------
 import { useState, useRef, useCallback, useEffect } from "react";
+import QRCode from "qrcode";
 import { escapeXml } from "@/lib/security";
 import { generatePdfCertificate } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
@@ -30,6 +31,10 @@ interface CertificateModalProps {
   lessonCount: number;
   quizScore?: number | null;
   quizTotal?: number;
+  uid?: string;
+  courseId?: string;
+  orderId?: string;
+  onRequestPayment?: () => void;
 }
 
 export function CertificateModal({
@@ -40,11 +45,16 @@ export function CertificateModal({
   lessonCount,
   quizScore,
   quizTotal,
+  uid,
+  courseId,
+  orderId,
+  onRequestPayment,
 }: CertificateModalProps) {
   const [certificate, setCertificate] = useState<CertificateData | null>(null);
   const [recipientName, setRecipientName] = useState(userName || "Distinguished Scholar");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentRequired, setPaymentRequired] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -60,6 +70,7 @@ export function CertificateModal({
   const generateCertificate = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setPaymentRequired(false);
     try {
       const res = await fetch("/api/certificate", {
         method: "POST",
@@ -70,8 +81,17 @@ export function CertificateModal({
           lessonCount,
           quizScore:
             quizScore != null && quizTotal ? Math.round((quizScore / quizTotal) * 100) : null,
+          uid,
+          courseId,
+          orderId,
         }),
       });
+
+      if (res.status === 402) {
+        setPaymentRequired(true);
+        setError("Certificate unlock fee (₹29) required before official credential generation.");
+        return;
+      }
 
       if (!res.ok) throw new Error("Failed to generate certificate");
       const data = await res.json();
@@ -81,7 +101,17 @@ export function CertificateModal({
     } finally {
       setLoading(false);
     }
-  }, [recipientName, userName, courseTitle, lessonCount, quizScore, quizTotal]);
+  }, [
+    recipientName,
+    userName,
+    courseTitle,
+    lessonCount,
+    quizScore,
+    quizTotal,
+    uid,
+    courseId,
+    orderId,
+  ]);
 
   const [hasFetched, setHasFetched] = useState(false);
   if (isOpen && !hasFetched && !certificate && !loading) {
@@ -95,12 +125,12 @@ export function CertificateModal({
 
   const effectiveName = recipientName.trim() || certificate?.userName || "Distinguished Scholar";
 
-  const handleDownloadPdf = useCallback(() => {
+  const handleDownloadPdf = useCallback(async () => {
     if (!certificate) return;
     setDownloadingPdf(true);
 
     try {
-      generatePdfCertificate({
+      await generatePdfCertificate({
         id: certificate.id,
         userName: effectiveName,
         courseTitle: certificate.courseTitle,
@@ -146,56 +176,94 @@ export function CertificateModal({
       const safeId = escapeXml(certificate.id);
       const safeDate = escapeXml(certificate.issuedDate);
 
+      // Generate real QR data URL for SVG embedding
+      const qrDataUrl = await QRCode.toDataURL(certificate.verifyUrl, {
+        margin: 0,
+        width: 280,
+        color: { dark: "#FFFFFF", light: "#081B33" },
+      });
+
+      // Responsive font sizing for single-line recipient name
+      let nameFontSize = 38;
+      if (safeName.length > 20) nameFontSize = 30;
+      if (safeName.length > 32) nameFontSize = 24;
+      if (safeName.length > 44) nameFontSize = 18;
+
       const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B1120"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-  </defs>
+  <!-- Right White Canvas -->
+  <rect x="0" y="0" width="960" height="640" fill="#FFFFFF"/>
 
-  <!-- Background -->
-  <rect width="960" height="640" fill="url(#bg)"/>
+  <!-- Left Obsidian Navy Anchor Bar -->
+  <rect x="0" y="0" width="220" height="640" fill="#081B33"/>
 
-  <!-- Border Frames -->
-  <rect x="24" y="24" width="912" height="592" rx="16" fill="none" stroke="#D4AF37" stroke-width="2"/>
-  <rect x="34" y="34" width="892" height="572" rx="12" fill="none" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="1.2"/>
+  <!-- Left Bar: VeySkill Crest Logo -->
+  <polygon points="110,50 82,65 138,65" fill="#FFFFFF"/>
+  <polygon points="110,80 82,65 138,65" fill="#FFFFFF"/>
+  <polyline points="82,80 110,94 138,80" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <polyline points="82,92 110,106 138,92" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
 
-  <!-- Brand Header -->
-  <text x="480" y="85" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="4" fill="#D4AF37" text-anchor="middle">VEYSKILL GLOBAL CREDENTIALING AUTHORITY</text>
-  <text x="480" y="105" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="2" fill="#94A3B8" text-anchor="middle">ACCREDITED CONTINUING COMPUTATIONAL EDUCATION</text>
-  <text x="480" y="148" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="2" fill="#F8FAFC" text-anchor="middle">CERTIFICATE OF COMPLETION</text>
+  <!-- Left Bar: Brand Text -->
+  <text x="110" y="145" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="4" fill="#FFFFFF" text-anchor="middle">VEYSKILL</text>
+  <text x="110" y="165" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="2" fill="#CBD5E1" text-anchor="middle">ONLINE ACADEMY</text>
 
-  <!-- Divider -->
-  <line x1="380" y1="168" x2="580" y2="168" stroke="#D4AF37" stroke-width="2"/>
+  <!-- Left Bar: Real Scannable QR Code -->
+  <image href="${qrDataUrl}" x="45" y="450" width="130" height="130"/>
+  <text x="110" y="605" font-family="'Courier New', monospace" font-size="9" font-weight="700" letter-spacing="2" fill="#CBD5E1" text-anchor="middle">SCAN TO VERIFY</text>
 
-  <!-- Recipient Section -->
-  <text x="480" y="212" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#94A3B8" text-anchor="middle">THIS OFFICIAL CREDENTIAL IS PROUDLY CONFERRED UPON</text>
-  <text x="480" y="260" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="800" fill="#FFFFFF" text-anchor="middle">${safeName}</text>
-  <line x1="280" y1="280" x2="680" y2="280" stroke="#475569" stroke-width="1"/>
+  <!-- Right Canvas: Subtle Guilloche Wave Watermark -->
+  <g stroke="#F1F5F9" stroke-width="1.2" fill="none">
+    <path d="M 220,120 C 400,40 600,200 960,120"/>
+    <path d="M 220,140 C 400,60 600,220 960,140"/>
+    <path d="M 220,160 C 400,80 600,240 960,160"/>
+    <path d="M 220,340 C 500,200 700,480 960,340"/>
+    <path d="M 220,360 C 500,220 700,500 960,360"/>
+    <circle cx="850" cy="500" r="160" stroke-width="0.8"/>
+    <circle cx="850" cy="500" r="120" stroke-width="0.8"/>
+  </g>
 
-  <!-- Course Title -->
-  <text x="480" y="325" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#94A3B8" text-anchor="middle">FOR DEMONSTRATING ACADEMIC MASTERY AND COMPLETION OF</text>
-  <text x="480" y="365" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#38BDF8" text-anchor="middle">"${safeTitle}"</text>
+  <!-- Right Canvas: Title Block -->
+  <text x="270" y="95" font-family="'Helvetica Neue', Arial, sans-serif" font-size="44" font-weight="900" letter-spacing="1" fill="#0F172A">CERTIFICATE</text>
+  <text x="270" y="125" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="3" fill="#1E293B">OF COMPLETION</text>
 
-  <!-- Metrics Grid -->
-  <text x="320" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC" text-anchor="middle">${certificate.lessonCount} Modules</text>
-  <text x="320" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">CURRICULUM COMPLETED</text>
+  <!-- Top Right: Gold Award Medallion with Ribbons -->
+  <!-- Ribbons -->
+  <polygon points="868,75 852,145 870,135 882,145" fill="#081B33"/>
+  <polygon points="882,75 870,135 882,145 898,135 882,75" fill="#081B33"/>
+  <!-- Gold Core -->
+  <circle cx="875" cy="75" r="42" fill="#D4AF37"/>
+  <circle cx="875" cy="75" r="38" fill="#F3E5AB"/>
+  <circle cx="875" cy="75" r="34" fill="#ECC867"/>
+  <!-- Stars -->
+  <text x="875" y="65" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#855806" text-anchor="middle">★ ★ ★</text>
+  <text x="875" y="82" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="900" fill="#523602" text-anchor="middle">2026</text>
+  <text x="875" y="94" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" font-weight="800" letter-spacing="1" fill="#6E4703" text-anchor="middle">AWARDED</text>
 
-  <text x="480" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="800" fill="#10B981" text-anchor="middle">${certificate.quizScore != null ? `${certificate.quizScore}%` : "100%"}</text>
-  <text x="480" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">ASSESSMENT GRADE</text>
+  <!-- Recipient Intro -->
+  <text x="270" y="215" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="500" fill="#64748B">We proudly present this certificate to</text>
 
-  <text x="640" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC" text-anchor="middle">${safeDate}</text>
-  <text x="640" y="460" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#64748B" text-anchor="middle">ISSUANCE DATE</text>
+  <!-- Recipient Name (Auto-Scaled Single Line) -->
+  <text x="270" y="270" font-family="'Helvetica Neue', Arial, sans-serif" font-size="${nameFontSize}" font-weight="900" fill="#0F172A">${safeName}</text>
+  <line x1="270" y1="290" x2="890" y2="290" stroke="#E2E8F0" stroke-width="1.5"/>
 
-  <!-- Security Seal / Footnote -->
-  <line x1="120" y1="510" x2="840" y2="510" stroke="#334155" stroke-width="1"/>
-  <text x="140" y="550" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#94A3B8">CREDENTIAL ID: ${safeId}</text>
-  <text x="140" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B">Verify Authenticity: ${certificate.verifyUrl}</text>
+  <!-- Course Statement -->
+  <text x="270" y="335" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#475569">honouring completion of the curriculum: <tspan font-weight="800" fill="#0F172A">"${safeTitle}"</tspan></text>
+  <text x="270" y="360" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#475569">For demonstrating academic mastery across ${certificate.lessonCount} comprehensive modules${certificate.quizScore != null ? `, with a passing grade of ${certificate.quizScore}%` : ""}.</text>
 
-  <text x="820" y="550" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#10B981" text-anchor="end">STATUS: VERIFIED &amp; TAMPER-PROOF</text>
-  <text x="820" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#64748B" text-anchor="end">VeySkill Academic Certification Authority</text>
+  <!-- Bottom Divider Line -->
+  <line x1="270" y1="470" x2="890" y2="470" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- Left Signature -->
+  <text x="270" y="520" font-family="'Brush Script MT', cursive, Georgia, serif" font-size="28" font-style="italic" fill="#0F172A">Jane Kane</text>
+  <text x="270" y="545" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#0F172A">Jane Kane</text>
+  <text x="270" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1" fill="#64748B">CURRICULUM DIRECTOR</text>
+  <text x="270" y="582" font-family="'Courier New', monospace" font-size="11" font-weight="600" fill="#64748B">${safeDate}</text>
+
+  <!-- Right Signature -->
+  <text x="600" y="520" font-family="'Brush Script MT', cursive, Georgia, serif" font-size="28" font-style="italic" fill="#0F172A">Thomson Loewe</text>
+  <text x="600" y="545" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#0F172A">Thomson Loewe</text>
+  <text x="600" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1" fill="#64748B">HEAD OF ACADEMIC CREDENTIALS</text>
+  <text x="600" y="582" font-family="'Courier New', monospace" font-size="10" font-weight="700" fill="#64748B">${safeId}</text>
 </svg>`;
 
       const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
@@ -322,15 +390,39 @@ export function CertificateModal({
           )}
 
           {error && (
-            <div className="text-center py-8">
-              <p className="text-xs text-destructive">{error}</p>
-              <button
-                type="button"
-                onClick={generateCertificate}
-                className="btn-primary text-xs px-4 py-2 mt-3 font-heading font-bold"
-              >
-                Retry Issuance
-              </button>
+            <div className="text-center py-8 space-y-3">
+              <p className="text-xs text-destructive font-semibold">{error}</p>
+              {paymentRequired && onRequestPayment ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onRequestPayment();
+                  }}
+                  className="btn-primary text-xs px-5 py-2.5 font-heading font-extrabold inline-flex items-center gap-2 shadow-lg cursor-pointer"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                    <line x1="1" y1="10" x2="23" y2="10" />
+                  </svg>
+                  <span>Pay ₹29 &amp; Unlock Official Certificate</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={generateCertificate}
+                  className="btn-primary text-xs px-4 py-2 font-heading font-bold cursor-pointer"
+                >
+                  Retry Issuance
+                </button>
+              )}
             </div>
           )}
 
@@ -375,6 +467,53 @@ export function CertificateModal({
                 </div>
               </div>
 
+              {/* Verified Credential ID & Quick Verification Action Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-muted/40 border border-border/80 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-muted-foreground font-body text-[11px] sm:text-xs">
+                    Official Credential ID:
+                  </span>
+                  <span className="font-mono font-bold text-foreground bg-card px-2.5 py-0.5 rounded-lg border border-border text-[11px] sm:text-xs tracking-wide">
+                    {certificate.id}
+                  </span>
+                </div>
+                <a
+                  href={`/verify/${certificate.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost text-[11px] font-heading font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all cursor-pointer"
+                  title="Verify authenticity of this certificate in official registry"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <polyline points="9 12 11 14 15 10" />
+                  </svg>
+                  <span>Verify</span>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </a>
+              </div>
+
               {/* Official Classical Diploma Preview matching user standard */}
               <div ref={certRef} className="w-full">
                 <OfficialCertificateView
@@ -382,10 +521,13 @@ export function CertificateModal({
                   courseTitle={certificate.courseTitle}
                   certificateId={certificate.id}
                   issuedDate={certificate.issuedDate}
-                  instructorName="Dr. Ronald Vance"
-                  instructorTitle="Instructor"
-                  managerName="Elena Rostova"
-                  managerTitle="Training Manager"
+                  lessonCount={certificate.lessonCount}
+                  quizScore={certificate.quizScore}
+                  verifyUrl={certificate.verifyUrl}
+                  instructorName="Jane Kane"
+                  instructorTitle="CURRICULUM DIRECTOR"
+                  managerName="Thomson Loewe"
+                  managerTitle="HEAD OF ACADEMIC CREDENTIALS"
                   isInteractive={false}
                 />
               </div>
@@ -524,6 +666,31 @@ export function CertificateModal({
                   </svg>
                   <span>Share Link</span>
                 </button>
+
+                {/* 5. Verify Authenticity (Official Registry) */}
+                <a
+                  href={`/verify/${certificate.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[46px] border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                  title="Verify cryptographic authenticity in official registry"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <polyline points="9 12 11 14 15 10" />
+                  </svg>
+                  <span>Verify</span>
+                </a>
               </div>
             </>
           )}

@@ -17,17 +17,52 @@ export default function TermsPage() {
       <p className="text-muted-foreground font-body text-sm mb-8">Last updated: September 2026</p>
 
       <div className="prose prose-sm max-w-none font-body text-foreground space-y-8">
-        {/* ── 1. About ─────────────────────────────────────────── */}
+        {/* ── 1. About & YouTube API Services ─────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">1. About VeySkill</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            VeySkill is a free, non-commercial, open educational platform that allows users to
-            organise publicly available YouTube video links into structured, distraction-free
-            courses. VeySkill does <strong className="text-foreground">not</strong> host, download,
-            store, cache, mirror, or redistribute any video content. All videos are embedded
-            directly from YouTube using YouTube&apos;s official embed API and remain subject to
-            YouTube&apos;s own Terms of Service and content policies.
+          <h2 className="font-heading font-bold text-xl mb-3">
+            1. About VeySkill &amp; YouTube API Services
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-3">
+            VeySkill is an open educational platform that allows users to organise publicly
+            available YouTube video links into structured, distraction-free courses. VeySkill does{" "}
+            <strong className="text-foreground">not</strong> host, download, store, cache, mirror,
+            or redistribute any video content. All videos are streamed directly from YouTube using
+            official YouTube API Services and standard iframe embed players.
           </p>
+          <div className="p-4 rounded-xl bg-teal-500/10 border border-teal-500/20 text-xs text-muted-foreground leading-relaxed">
+            <strong className="text-foreground block mb-1">
+              Mandatory YouTube API Services Disclosure:
+            </strong>
+            By accessing or using VeySkill, you agree to be bound by the{" "}
+            <a
+              href="https://www.youtube.com/t/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 dark:text-primary-400 underline font-medium"
+            >
+              YouTube Terms of Service
+            </a>{" "}
+            and acknowledge the{" "}
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 dark:text-primary-400 underline font-medium"
+            >
+              Google Privacy Policy
+            </a>
+            . You may inspect or revoke VeySkill&apos;s access to your Google account permissions at
+            any time via the{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 dark:text-primary-400 underline font-medium"
+            >
+              Google Security Settings Page
+            </a>
+            .
+          </div>
         </section>
 
         {/* ── 2. Eligibility ───────────────────────────────────── */}
@@ -80,9 +115,13 @@ export default function TermsPage() {
               streamed directly from YouTube&apos;s servers.
             </li>
             <li>
-              <strong className="text-foreground">No monetisation of creator work</strong> —
-              VeySkill is 100% free and non-commercial. We do not charge fees, run ads, use
-              affiliate links, or generate any revenue from embedded creator content.
+              <strong className="text-foreground">
+                No paywalls or monetization of creator video streams
+              </strong>{" "}
+              — Course playback, video viewing, scratchpad notes, and quizzes are 100% free with
+              zero paywalls. VeySkill never charges users to view YouTube videos, never blocks or
+              alters in-stream creator ads, and generates zero advertising revenue from creator
+              media.
             </li>
             <li>
               <strong className="text-foreground">Respect for embed settings</strong> — If a creator
@@ -225,21 +264,57 @@ export default function TermsPage() {
             security:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-1.5 mt-3">
-            <li>HTTPS-only access with TLS 1.2+ encryption</li>
+            <li>HTTPS-only access with TLS 1.2+ encryption across all endpoints</li>
             <li>Server-side security rules enforced at the database level</li>
             <li>No server-side logging of personal or behavioural data</li>
             <li>Regular security reviews of Firestore rules and access patterns</li>
             <li>
-              Minimal attack surface — no custom backend servers, no file uploads, no payment
-              processing
+              PCI-DSS Level 1 compliant payment processing via Cashfree Payments. VeySkill never
+              handles or stores raw debit/credit card numbers or UPI credentials.
             </li>
           </ul>
         </section>
 
-        {/* ── 10. Disclaimer ───────────────────────────────────── */}
+        {/* ── 10. Credential Fees & Refund Policy ───────────────── */}
+        <section className="clay-card p-6 border-border">
+          <h2 className="font-heading font-bold text-xl mb-3">
+            10. Verifiable Credentials &amp; Payment Terms
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-3">
+            All course video viewing, personal notes, and interactive quizzes remain 100% free of
+            charge. Upon 100% syllabus completion, learners may optionally choose to issue an
+            official, tamper-proof Verifiable Credential for an administrative fee of{" "}
+            <strong className="text-foreground">₹29 INR</strong> (inclusive of applicable taxes).
+          </p>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1.5 text-sm">
+            <li>
+              <strong className="text-foreground">Immediate Digital Fulfillment:</strong> Verifiable
+              credential checksums and permanent hosting records on{" "}
+              <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">/verify/[id]</code>{" "}
+              are generated and committed immediately upon payment confirmation.
+            </li>
+            <li>
+              <strong className="text-foreground">No Subscriptions:</strong> VeySkill charges zero
+              recurring membership fees. All credential issuances are one-time per course.
+            </li>
+            <li>
+              <strong className="text-foreground">Refunds &amp; Cancellations:</strong> Because
+              cryptographic credentials and public verification records cannot be retracted once
+              minted, successfully generated credentials are non-refundable. Transactions where
+              funds were deducted but credentials were not generated, or duplicate charges, are 100%
+              refunded in full pursuant to our{" "}
+              <Link href="/refund" className="text-primary-500 underline font-medium">
+                Refund &amp; Cancellation Policy
+              </Link>
+              .
+            </li>
+          </ul>
+        </section>
+
+        {/* ── 11. Disclaimer ───────────────────────────────────── */}
         <section>
           <h2 className="font-heading font-bold text-xl mb-3">
-            10. Disclaimer &amp; Limitation of Liability
+            11. Disclaimer &amp; Limitation of Liability
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             VeySkill is provided &quot;as is&quot; and &quot;as available&quot; without warranties
@@ -250,9 +325,9 @@ export default function TermsPage() {
           </p>
         </section>
 
-        {/* ── 11. Changes ──────────────────────────────────────── */}
+        {/* ── 12. Changes ──────────────────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">11. Changes to These Terms</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">12. Changes to These Terms</h2>
           <p className="text-muted-foreground leading-relaxed">
             We may update these terms at any time. When we make material changes, we will update the
             &quot;Last updated&quot; date at the top of this page. Continued use of VeySkill after
@@ -261,11 +336,17 @@ export default function TermsPage() {
           </p>
         </section>
 
-        {/* ── 12. Contact ──────────────────────────────────────── */}
+        {/* ── 13. Contact & Grievance ──────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">12. Contact</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Questions about these terms? Reach out to us:
+          <h2 className="font-heading font-bold text-xl mb-3">
+            13. Contact &amp; Grievance Redressal
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-3">
+            Questions about these terms or our services? Visit our dedicated{" "}
+            <Link href="/contact" className="text-primary-500 underline font-medium">
+              Contact &amp; Grievance Redressal Page
+            </Link>{" "}
+            or email us directly:
           </p>
           <ul className="list-none text-muted-foreground space-y-2 mt-3">
             <li className="flex items-center gap-2">

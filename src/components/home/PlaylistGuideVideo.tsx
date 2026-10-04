@@ -117,7 +117,7 @@ export function PlaylistGuideVideo() {
                       VeySkill Cinema Flow
                     </span>
                     <span className="hidden sm:inline-block text-[11px] text-neutral-400 font-body">
-                      · 1080p Ad-Free Masterclass
+                      · 1080p Distraction-Free Masterclass
                     </span>
                   </div>
 
@@ -318,7 +318,7 @@ export function PlaylistGuideVideo() {
                 </span>
               </h2>
               <p className="font-body text-base text-muted-foreground mt-3 leading-relaxed">
-                Transform any scattered YouTube lecture playlist into an organized, ad-free
+                Transform any scattered YouTube lecture playlist into an organized, distraction-free
                 masterclass with interactive quizzes and streak accountability.
               </p>
             </div>

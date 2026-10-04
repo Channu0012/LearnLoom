@@ -23,6 +23,11 @@ function initAdmin() {
   });
 }
 
+export const isFirebaseAdminConfigured = Boolean(
+  (process.env.FIREBASE_ADMIN_CLIENT_EMAIL && process.env.FIREBASE_ADMIN_PRIVATE_KEY) ||
+  process.env.GOOGLE_APPLICATION_CREDENTIALS
+);
+
 const adminApp = initAdmin();
 
 export const adminDb = getFirestore(adminApp);

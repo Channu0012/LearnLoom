@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   keywords: [
     "distraction free video player",
     "theatre mode video player",
-    "ad-free lecture player",
+    "focus lecture player",
     "video scratchpad notes",
     "focus video learning",
     "VeySkill quick watch",

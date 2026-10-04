@@ -182,7 +182,7 @@ export function CourseNotes({
         onChange={(e) => handleChange(e.target.value)}
         rows={10}
         placeholder={`Jot down architectural takeaways, code snippets, or formulas while watching…\n\nTip: Click "AI Technical Summary" to synthesize a structured brief for this lesson.\n\nExample:\n- Core architectural invariant\n- Edge cases and error handling`}
-        className="w-full p-4 rounded-xl border border-border bg-background text-foreground font-body text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed font-mono"
+        className="w-full p-4 rounded-xl border border-border bg-background text-foreground font-mono text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 leading-relaxed"
       />
     </div>
   );

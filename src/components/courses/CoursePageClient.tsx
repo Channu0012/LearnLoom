@@ -15,6 +15,7 @@ import {
   getProgress,
   enrollOrStartCourse,
   markLessonComplete,
+  markLessonExempt,
   saveQuizScore,
   createReport,
   serializeCourse,
@@ -29,6 +30,7 @@ import { recordStudyActivity } from "@/lib/streak";
 import { QuizModal } from "@/components/courses/QuizModal";
 import { StudyCompanion } from "@/components/courses/StudyCompanion";
 import { CertificateModal } from "@/components/courses/CertificateModal";
+import { PaymentGate } from "@/components/courses/PaymentGate";
 import { StreakDashboard } from "@/components/courses/StreakDashboard";
 
 interface CoursePageClientProps {
@@ -202,11 +204,93 @@ function CoursePlayerContent({
   // AI & Certificate Feature States
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isPaymentGateOpen, setIsPaymentGateOpen] = useState(false);
+  const [hasPaidCertificate, setHasPaidCertificate] = useState(false);
+  const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
   const [isCompanionOpen, setIsCompanionOpen] = useState(false);
   const [quizScores, setQuizScores] = useState<Map<string, { score: number; total: number }>>(
     new Map()
   );
   const [showCourseComplete, setShowCourseComplete] = useState(false);
+  const [exemptIds, setExemptIds] = useState<Set<string>>(new Set());
+  const [videoError, setVideoError] = useState<{
+    lessonId: string;
+    errorCode: number;
+    message: string;
+  } | null>(null);
+  const [certificateRecipientName, setCertificateRecipientName] = useState<string>(
+    user?.displayName ?? "Learner"
+  );
+  const [isCredibilityModalOpen, setIsCredibilityModalOpen] = useState(false);
+
+  // Sync recipient name if user signs in or profile updates
+  useEffect(() => {
+    if (user?.displayName) {
+      setCertificateRecipientName(user.displayName);
+    }
+  }, [user?.displayName]);
+
+  // Check if user already paid for this certificate
+  useEffect(() => {
+    if (!user?.uid || !courseId) return;
+    let isCancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/payment/check?uid=${encodeURIComponent(user.uid)}&courseId=${encodeURIComponent(courseId)}`
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!isCancelled && data.hasPaid) {
+          setHasPaidCertificate(true);
+          setPaidOrderId(data.orderId);
+        }
+      } catch (err) {
+        console.error("Failed to check certificate payment status:", err);
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user?.uid, courseId]);
+
+  // Handle return from Cashfree checkout redirect
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderIdParam = urlParams.get("order_id");
+
+    if (orderIdParam) {
+      // Clean query params from URL without reload
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+
+      // Verify payment with server
+      (async () => {
+        try {
+          const res = await fetch("/api/payment/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: orderIdParam,
+              uid: user?.uid,
+              courseId,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.isPaid) {
+            setHasPaidCertificate(true);
+            setPaidOrderId(orderIdParam);
+            setIsCertificateOpen(true);
+          }
+        } catch (err) {
+          console.error("Auto payment verification failed:", err);
+        }
+      })();
+    }
+  }, [user?.uid, courseId]);
 
   // Lesson Pagination State (10 lessons per page)
   const LESSONS_PER_PAGE = 10;
@@ -338,6 +422,7 @@ function CoursePlayerContent({
         if (prog) {
           setIsEnrolled(true);
           setCompletedIds(new Set(prog.completedLessonIds || []));
+          setExemptIds(new Set(prog.exemptLessonIds || []));
           if (prog.lastLessonId && lessons.find((l) => l.id === prog.lastLessonId)) {
             setActiveLessonId(prog.lastLessonId);
           }
@@ -395,6 +480,8 @@ function CoursePlayerContent({
   const handleSelectLesson = useCallback(
     (lessonId: string) => {
       cancelAutoAdvance();
+      setVideoError(null);
+      setIsCredibilityModalOpen(false);
       if (lessonId === activeLessonId && !isVideoLoading) return;
       setLoadingLessonId(lessonId);
       setIsVideoLoading(true);
@@ -460,7 +547,7 @@ function CoursePlayerContent({
     }, 350);
   }, []);
 
-  // Real YouTube Video Tracking (ended state = 0)
+  // Real YouTube Video Tracking (ended state = 0 and onError handler)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
@@ -487,6 +574,22 @@ function CoursePlayerContent({
             setIsQuizOpen(true);
           }
         }
+
+        // data.event === "onError" indicates YouTube player encountered an issue
+        // Codes: 100 (private/deleted), 101/150 (embed disabled), 2 (invalid ID), 5 (HTML5 error)
+        if (data.event === "onError") {
+          const code = Number(data.info);
+          let message = "This video is restricted or unavailable on external players.";
+          if (code === 100)
+            message = "This lecture was removed or marked private by the YouTube creator.";
+          else if (code === 101 || code === 150)
+            message = "Embedding was restricted by the YouTube creator.";
+          else if (code === 2) message = "Invalid YouTube video link.";
+
+          if (activeLesson) {
+            setVideoError({ lessonId: activeLesson.id, errorCode: code, message });
+          }
+        }
       } catch {
         // Non-JSON iframe message
       }
@@ -498,12 +601,74 @@ function CoursePlayerContent({
     };
   }, [activeLesson, activeIdx, lessons, user, courseId, triggerAutoAdvance]);
 
-  // Mark current lesson complete and auto advance to next with 3s countdown
+  // Next & Previous lesson
+  const goToNext = useCallback(() => {
+    if (activeIdx < lessons.length - 1) {
+      handleSelectLesson(lessons[activeIdx + 1]!.id);
+    }
+  }, [activeIdx, lessons, handleSelectLesson]);
+
+  const goToPrev = useCallback(() => {
+    if (activeIdx > 0) {
+      handleSelectLesson(lessons[activeIdx - 1]!.id);
+    }
+  }, [activeIdx, lessons, handleSelectLesson]);
+
+  // Mark privatized or broken lesson as exempt so learner is never stuck
+  const handleMarkLessonExempt = useCallback(async () => {
+    if (!activeLesson) return;
+
+    if (!user) {
+      openAuthModal("signin");
+      return;
+    }
+
+    try {
+      await markLessonExempt(user.uid, courseId, activeLesson.id);
+      setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
+      setExemptIds((prev) => new Set([...prev, activeLesson.id]));
+      setVideoError(null);
+      setIsCredibilityModalOpen(false);
+
+      const activity = recordStudyActivity(5);
+      setXpToast({
+        xp: activity.xpGained,
+        streak: activity.streak,
+        streakIncreased: activity.streakIncreased,
+      });
+      setTimeout(() => setXpToast(null), 4500);
+
+      goToNext();
+    } catch (err) {
+      console.error("Failed to mark lesson exempt:", err);
+    }
+  }, [activeLesson, user, courseId, openAuthModal, goToNext]);
+
+  // Mark current lesson complete and auto advance to next with credibility verification
   const handleMarkComplete = useCallback(async () => {
     if (!activeLesson) return;
 
     if (!user) {
       openAuthModal("signin");
+      return;
+    }
+
+    // If already completed, simply jump to next lesson
+    if (completedIds.has(activeLesson.id)) {
+      goToNext();
+      return;
+    }
+
+    // If video error occurred or exempt, mark exempt and advance
+    if (videoError?.lessonId === activeLesson.id || exemptIds.has(activeLesson.id)) {
+      await handleMarkLessonExempt();
+      return;
+    }
+
+    // Anti-cheat credibility check: prompt quiz if not yet taken
+    const hasTakenQuiz = quizScores.has(activeLesson.id);
+    if (!hasTakenQuiz) {
+      setIsCredibilityModalOpen(true);
       return;
     }
 
@@ -522,25 +687,22 @@ function CoursePlayerContent({
       });
       setTimeout(() => setXpToast(null), 4500);
 
-      // Coursera / Google standard: Prompt module assessment immediately
-      setIsQuizOpen(true);
+      goToNext();
     } finally {
       setIsMarkingComplete(false);
     }
-  }, [user, courseId, activeLesson, openAuthModal]);
-
-  // Next & Previous lesson
-  const goToNext = () => {
-    if (activeIdx < lessons.length - 1) {
-      handleSelectLesson(lessons[activeIdx + 1]!.id);
-    }
-  };
-
-  const goToPrev = () => {
-    if (activeIdx > 0) {
-      handleSelectLesson(lessons[activeIdx - 1]!.id);
-    }
-  };
+  }, [
+    user,
+    courseId,
+    activeLesson,
+    completedIds,
+    videoError,
+    exemptIds,
+    quizScores,
+    openAuthModal,
+    goToNext,
+    handleMarkLessonExempt,
+  ]);
 
   const handleTabChange = (tab: "overview" | "notes" | "quiz" | "report") => {
     setTabTransitioning(tab);
@@ -559,9 +721,21 @@ function CoursePlayerContent({
       });
       if (user) {
         saveQuizScore(user.uid, courseId, activeLesson.id, score, total);
+        if (!completedIds.has(activeLesson.id)) {
+          markLessonComplete(user.uid, courseId, activeLesson.id).catch(() => {});
+          setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
+          setIsEnrolled(true);
+          const activity = recordStudyActivity(10);
+          setXpToast({
+            xp: activity.xpGained,
+            streak: activity.streak,
+            streakIncreased: activity.streakIncreased,
+          });
+          setTimeout(() => setXpToast(null), 4500);
+        }
       }
     },
-    [activeLesson, user, courseId]
+    [activeLesson, user, courseId, completedIds]
   );
 
   // Open YouTube-style rich Share modal
@@ -884,6 +1058,56 @@ function CoursePlayerContent({
             </div>
           )}
 
+          {/* Privatized / Restricted Video Fallback Alert */}
+          {activeLesson &&
+            (videoError?.lessonId === activeLesson.id || exemptIds.has(activeLesson.id)) && (
+              <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-heading font-bold text-foreground">
+                      {exemptIds.has(activeLesson.id)
+                        ? "Module Marked Exempt (Video Restricted)"
+                        : videoError?.message ||
+                          "This video is restricted or unavailable on external players."}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                      {exemptIds.has(activeLesson.id)
+                        ? "This module is exempt from your course requirements so your learning streak and diploma qualification remain intact."
+                        : "The original creator may have privatized or restricted embeds. You won't get stuck! Mark this lesson exempt to advance your course."}
+                    </p>
+                  </div>
+                </div>
+
+                {!exemptIds.has(activeLesson.id) ? (
+                  <button
+                    type="button"
+                    onClick={handleMarkLessonExempt}
+                    className="btn-primary text-xs px-4 py-2 flex-shrink-0 w-full sm:w-auto shadow-md"
+                  >
+                    Mark Exempt &amp; Proceed
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={goToNext}
+                    className="btn-ghost text-xs px-3.5 py-2 flex-shrink-0 w-full sm:w-auto text-amber-600 dark:text-amber-400 font-semibold"
+                  >
+                    Next Lesson →
+                  </button>
+                )}
+              </div>
+            )}
+
           {/* Player Controls & Action Bar */}
           {activeLesson && (
             <div className="clay-card p-4 sm:p-5 bg-card border border-border rounded-2xl mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -970,6 +1194,29 @@ function CoursePlayerContent({
                 </button>
 
                 <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+                  {/* Module Assistance / Video Issue Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsCredibilityModalOpen(true)}
+                    className="btn-ghost text-xs px-2.5 py-2 min-h-[44px] inline-flex items-center gap-1.5 text-muted-foreground hover:text-amber-500 cursor-pointer active:scale-95 transition-all"
+                    title="Video issue or knowledge check"
+                    aria-label="Module Help and Knowledge Check"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span className="hidden sm:inline">Module Help</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={goToPrev}
@@ -1270,11 +1517,11 @@ function CoursePlayerContent({
                         </svg>
                         <span>Certificate Locked (Need 70%)</span>
                       </button>
-                    ) : (
+                    ) : hasPaidCertificate ? (
                       <button
                         type="button"
                         onClick={() => setIsCertificateOpen(true)}
-                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg"
+                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg cursor-pointer"
                       >
                         <svg
                           width="14"
@@ -1287,7 +1534,32 @@ function CoursePlayerContent({
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                           <polyline points="9 12 11 14 15 10" />
                         </svg>
-                        <span>Claim Verified Certificate</span>
+                        <span>View Verified Certificate</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!user) {
+                            openAuthModal("signin");
+                            return;
+                          }
+                          setIsPaymentGateOpen(true);
+                        }}
+                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <polyline points="9 12 11 14 15 10" />
+                        </svg>
+                        <span>Claim Verified Certificate — ₹29</span>
                       </button>
                     )}
                   </div>
@@ -1889,6 +2161,89 @@ function CoursePlayerContent({
         </div>
       )}
 
+      {/* Credibility & Assessment Modal */}
+      {isCredibilityModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="clay-card p-6 bg-card border border-border rounded-3xl max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-heading font-extrabold text-base text-foreground">
+                  Knowledge &amp; Credibility Check
+                </h3>
+                <p className="text-[11px] text-muted-foreground font-body line-clamp-1">
+                  Lesson {activeIdx + 1}: {activeLesson?.title}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground font-body leading-relaxed">
+              VeySkill credentials are verifiable by employers and corporate recruiters. To ensure
+              high credibility, please complete this lecture by passing the quick 3-question
+              knowledge check or finishing the video.
+            </p>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCredibilityModalOpen(false);
+                  setIsQuizOpen(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl btn-primary text-xs font-heading font-bold shadow-md cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Take 3-Question Knowledge Check</span>
+                <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">
+                  +10 XP
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCredibilityModalOpen(false);
+                  handleMarkLessonExempt();
+                }}
+                className="w-full py-2 px-3 rounded-xl btn-ghost text-xs text-muted-foreground hover:text-amber-500 cursor-pointer"
+              >
+                Video broken or restricted? Mark Exempt &amp; Next
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsCredibilityModalOpen(false);
+                  setIsMarkingComplete(true);
+                  try {
+                    if (user && activeLesson) {
+                      await markLessonComplete(user.uid, courseId, activeLesson.id);
+                    }
+                    if (activeLesson) {
+                      setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
+                    }
+                    goToNext();
+                  } finally {
+                    setIsMarkingComplete(false);
+                  }
+                }}
+                className="w-full py-1.5 text-[11px] text-muted-foreground/80 hover:text-foreground underline cursor-pointer"
+              >
+                I already completed this lecture · Mark Done &amp; Next →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* YouTube-style Rich Share Modal */}
       <ShareModal
         isOpen={isShareModalOpen}
@@ -1909,15 +2264,46 @@ function CoursePlayerContent({
         onQuizComplete={handleQuizComplete}
       />
 
+      {/* Payment Gate Modal for ₹29 Certificate Unlock */}
+      <PaymentGate
+        isOpen={isPaymentGateOpen}
+        onClose={() => setIsPaymentGateOpen(false)}
+        onPaymentSuccess={(orderId, confirmedName) => {
+          setHasPaidCertificate(true);
+          setPaidOrderId(orderId);
+          if (confirmedName) {
+            setCertificateRecipientName(confirmedName);
+          }
+          setIsPaymentGateOpen(false);
+          setIsCertificateOpen(true);
+        }}
+        courseId={courseId}
+        courseTitle={course.title}
+        user={
+          user
+            ? {
+                uid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+              }
+            : null
+        }
+      />
+
       {/* Certificate Modal */}
       <CertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}
-        userName={user?.displayName ?? "Learner"}
+        userName={certificateRecipientName || user?.displayName || "Learner"}
         courseTitle={course.title}
         lessonCount={lessons.length}
         quizScore={totalQuizScore > 0 ? totalQuizScore : undefined}
         quizTotal={totalQuizTotal > 0 ? totalQuizTotal : undefined}
+        uid={user?.uid}
+        courseId={courseId}
+        orderId={paidOrderId ?? undefined}
+        onRequestPayment={() => setIsPaymentGateOpen(true)}
       />
 
       {/* AI Study Companion — Floating Chat */}

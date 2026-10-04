@@ -75,7 +75,12 @@ export default function PrivacyPage() {
             <li>Location data or IP-based geolocation</li>
             <li>Device fingerprints or browser fingerprints</li>
             <li>Browsing history outside of VeySkill</li>
-            <li>Any financial information (no payments, no credit cards)</li>
+            <li>
+              Raw financial or banking information — VeySkill never handles or stores debit/credit
+              card numbers, CVVs, netbanking passwords, or UPI PINs. All optional credential
+              verification fees are securely processed by Cashfree Payments (PCI-DSS Level 1
+              Certified).
+            </li>
             <li>Analytics or advertising trackers of any kind</li>
           </ul>
         </section>
@@ -139,9 +144,12 @@ export default function PrivacyPage() {
               towards the original creator&apos;s YouTube analytics and monetisation.
             </li>
             <li>
-              <strong className="text-foreground">No monetisation of creator content</strong> —
-              VeySkill does not run ads, charge fees, or earn any revenue from embedded videos. We
-              are a 100% free, non-commercial platform.
+              <strong className="text-foreground">
+                No paywalls or monetisation of creator video streams
+              </strong>{" "}
+              — All course lecture playback, notes, and interactive quizzes are 100% free with zero
+              paywalls. VeySkill does not run ads on videos, charge to watch videos, or monetize
+              creator media.
             </li>
             <li>
               <strong className="text-foreground">Immediate takedown on request</strong> — Any
@@ -152,9 +160,36 @@ export default function PrivacyPage() {
               , and we will comply promptly.
             </li>
             <li>
-              <strong className="text-foreground">YouTube API compliance</strong> — We use only
-              official YouTube oEmbed/embed endpoints and comply fully with YouTube&apos;s Terms of
-              Service and API Terms of Service.
+              <strong className="text-foreground">YouTube API Services &amp; Google Privacy</strong>{" "}
+              — We use official YouTube API Services and standard iframe embed players. By using
+              VeySkill, users agree to be bound by the{" "}
+              <a
+                href="https://www.youtube.com/t/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-500 underline font-medium"
+              >
+                YouTube Terms of Service
+              </a>{" "}
+              and acknowledge the{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-500 underline font-medium"
+              >
+                Google Privacy Policy
+              </a>
+              . Users can revoke access to their Google account data at any time via the{" "}
+              <a
+                href="https://myaccount.google.com/permissions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-500 underline font-medium"
+              >
+                Google Security Settings
+              </a>
+              .
             </li>
             <li>
               <strong className="text-foreground">No circumvention of YouTube features</strong> — We

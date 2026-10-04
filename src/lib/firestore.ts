@@ -309,6 +309,25 @@ export async function markLessonComplete(
   );
 }
 
+/** Mark a privatized/broken YouTube video as exempt so learners are never stuck */
+export async function markLessonExempt(
+  uid: string,
+  courseId: string,
+  lessonId: string
+): Promise<void> {
+  await setDoc(
+    doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.PROGRESS, courseId),
+    {
+      courseId,
+      completedLessonIds: arrayUnion(lessonId),
+      exemptLessonIds: arrayUnion(lessonId),
+      lastLessonId: lessonId,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
 /** Persist real-time MCQ assessment scores for a lesson under user progress */
 export async function saveQuizScore(
   uid: string,

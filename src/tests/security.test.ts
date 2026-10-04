@@ -57,7 +57,7 @@ describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
   describe("Cryptographic Certificate Checksum & Verification", () => {
     it("generates a valid certificate ID with correct format", () => {
       const certId = generateSecureCertificateId();
-      expect(certId).toMatch(/^VC-[A-HJ-NP-Z2-9]{8}$/);
+      expect(certId).toMatch(/^(VS|VC)-[A-HJ-NP-Z2-9]{8}$/);
     });
 
     it("verifies an authentic generated certificate ID as valid", () => {
@@ -78,9 +78,29 @@ describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
       expect(result.reason).toContain("checksum mismatch");
     });
 
-    it("rejects malformed IDs", () => {
+    it("detects and normalizes pasted URLs and unhyphenated codes", () => {
+      const validFromUrl = verifyCertificateId("https://veyskill.in/verify/VS-9A3F1B8E2C");
+      expect(validFromUrl.isValid).toBe(true);
+      expect(validFromUrl.normalizedId).toBe("VS-9A3F1B8E2C");
+
+      const validFromDemo = verifyCertificateId("vc-demo");
+      expect(validFromDemo.isValid).toBe(true);
+      expect(validFromDemo.normalizedId).toBe("VC-DEMO");
+
+      const validUnhyphenated = verifyCertificateId("vs9a3f1b8e2c");
+      expect(validUnhyphenated.isValid).toBe(true);
+      expect(validUnhyphenated.normalizedId).toBe("VS-9A3F1B8E2C");
+
+      const validPadded = verifyCertificateId("   VS-9A3F1B8E2C   \n");
+      expect(validPadded.isValid).toBe(true);
+      expect(validPadded.normalizedId).toBe("VS-9A3F1B8E2C");
+    });
+
+    it("rejects malformed and forged IDs", () => {
       expect(verifyCertificateId("invalid-id").isValid).toBe(false);
       expect(verifyCertificateId("").isValid).toBe(false);
+      expect(verifyCertificateId("FAKE-12345678").isValid).toBe(false);
+      expect(verifyCertificateId("VS-FAKECERT12").isValid).toBe(false);
     });
   });
 

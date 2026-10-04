@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
     const lessonCount = Number(body?.lessonCount) || 0;
     const quizScore = body?.quizScore != null ? Number(body.quizScore) : null;
     const completedDate = body?.completedDate;
+    const uid = typeof body?.uid === "string" ? body.uid.trim() : "";
+    const courseId = typeof body?.courseId === "string" ? body.courseId.trim() : "";
+    const orderId = typeof body?.orderId === "string" ? body.orderId.trim() : "";
 
     const userName = sanitizeInput(rawUserName, 100);
     const courseTitle = sanitizeInput(rawCourseTitle, 200);
@@ -57,7 +60,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Generate Cryptographically Tamper-Proof Certificate ID
+    // 3. Server-Side Payment Verification (Cashfree ₹29 Fee)
+    // If Cashfree keys are configured in production/sandbox, verify that payment is completed.
+    const isCashfreeConfigured = Boolean(
+      process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY
+    );
+
+    if (isCashfreeConfigured && uid && courseId) {
+      const { adminDb } = await import("@/lib/firebase-admin");
+      let isVerified = false;
+
+      // Check specific orderId first if provided
+      if (orderId) {
+        const orderDoc = await adminDb.collection("payments").doc(orderId).get();
+        if (orderDoc.exists) {
+          const p = orderDoc.data();
+          if (p?.isPaid === true && p?.uid === uid && p?.courseId === courseId) {
+            isVerified = true;
+          }
+        }
+      }
+
+      // Check user's paid records for this course
+      if (!isVerified) {
+        const snap = await adminDb
+          .collection("payments")
+          .where("uid", "==", uid)
+          .where("courseId", "==", courseId)
+          .where("isPaid", "==", true)
+          .limit(1)
+          .get();
+
+        if (!snap.empty) {
+          isVerified = true;
+        }
+      }
+
+      if (!isVerified) {
+        return NextResponse.json(
+          {
+            error:
+              "Payment required. Please complete the ₹29 certificate fee to unlock your official credential.",
+            paymentRequired: true,
+          },
+          { status: 402 }
+        );
+      }
+    }
+
+    // 4. Generate Cryptographically Tamper-Proof Certificate ID
     const certificateId = generateSecureCertificateId();
     const date = completedDate ? new Date(completedDate) : new Date();
 
@@ -72,6 +123,25 @@ export async function POST(request: NextRequest) {
       verifyUrl: `https://veyskill.in/verify/${certificateId}`,
       platform: "VeySkill",
     };
+
+    // 5. Save Immutable Credential to Firestore Registry (if configured)
+    try {
+      const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
+      if (isFirebaseAdminConfigured) {
+        await adminDb
+          .collection("certificates")
+          .doc(certificateId)
+          .set({
+            ...certificate,
+            uid: uid || null,
+            courseId: courseId || null,
+            orderId: orderId || null,
+            createdAt: date.toISOString(),
+          });
+      }
+    } catch (saveErr) {
+      console.warn("[API] Certificate record save notice:", saveErr);
+    }
 
     return NextResponse.json({ certificate }, { status: 200 });
   } catch (error) {

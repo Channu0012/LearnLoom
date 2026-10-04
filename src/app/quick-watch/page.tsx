@@ -2,7 +2,7 @@
 
 // ---------------------------------------------------------------------------
 // VeySkill Quick Watch — Zero-Data-Store Distraction-Free Theatre Player
-// Seamlessly plays single videos and multi-video playlists ad-free.
+// Seamlessly plays single videos and multi-video playlists in distraction-free cinema mode.
 // Zero login required, zero tracking, zero algorithmic interruptions.
 // ---------------------------------------------------------------------------
 import { useState, useEffect, useRef, Suspense, useCallback } from "react";
@@ -1143,7 +1143,8 @@ function QuickWatchContent() {
                   Try with Popular Masterclasses
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1">
-                  Click any lecture below to experience immediate ad-free cinema mode in one click:
+                  Click any lecture below to experience immediate distraction-free cinema mode in
+                  one click:
                 </p>
               </div>
 

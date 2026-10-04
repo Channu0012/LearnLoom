@@ -50,6 +50,7 @@ export const COLLECTIONS = {
   REPORTS: "reports",
   QUIZ_RESULTS: "quizResults",
   CERTIFICATES: "certificates",
+  PAYMENTS: "payments",
 } as const;
 
 /** Report statuses */
