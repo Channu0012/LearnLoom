@@ -17,7 +17,7 @@ import {
   signOut as fbSignOut,
   type User,
 } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, getFreshGoogleProvider, googleProvider } from "@/lib/firebase";
 import { createUserDoc, getUser } from "@/lib/firestore";
 import type { UserDoc } from "@/lib/types";
 import { LIMITS } from "@/lib/constants";
@@ -146,26 +146,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthSuccess(null);
 
     try {
-      await signInWithPopup(auth, googleProvider);
+      const provider = getFreshGoogleProvider();
+      await signInWithPopup(auth, provider);
       setIsAuthModalOpen(false);
     } catch (err: unknown) {
       const fbErr = err as { code?: string; message?: string };
 
       if (fbErr?.code === "auth/popup-blocked") {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return;
-        } catch {
-          setAuthError(
-            "The Google sign-in popup was blocked by your browser. Please allow popups for this site or use the redirect option below."
-          );
-        }
+        setAuthError(
+          "Your browser blocked the sign-in popup. Click 'Continue with Full-Page Google Sign-In' below to choose your email."
+        );
       } else if (
         fbErr?.code === "auth/cancelled-popup-request" ||
         fbErr?.code === "auth/popup-closed-by-user"
       ) {
         setAuthError(
-          "Google sign-in was closed or cancelled. Click 'Continue with Google' when you're ready to proceed."
+          "Google sign-in window was closed. Click 'Continue with Google' and pick your Google account to proceed."
         );
       } else if (fbErr?.code === "auth/account-exists-with-different-credential") {
         setAuthError(
@@ -207,10 +203,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsSigningIn(true);
     setAuthError(null);
     try {
-      await signInWithRedirect(auth, googleProvider);
+      const provider = getFreshGoogleProvider();
+      await signInWithRedirect(auth, provider);
     } catch (err: unknown) {
-      const fbErr = err as { message?: string };
-      setAuthError(fbErr?.message ?? "Failed to redirect for Google Sign-In.");
+      const fbErr = err as { code?: string; message?: string };
+      if (fbErr?.code === "auth/unauthorized-domain") {
+        const host = typeof window !== "undefined" ? window.location.hostname : "this domain";
+        setAuthError(
+          `Domain not authorized in Firebase (${host}). Please add '${host}' to Firebase Console > Authentication > Settings > Authorized domains.`
+        );
+      } else {
+        setAuthError(fbErr?.message ?? "Failed to redirect for Google Sign-In.");
+      }
       setIsSigningIn(false);
     }
   };

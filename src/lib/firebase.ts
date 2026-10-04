@@ -49,10 +49,18 @@ function getFirestoreInstance() {
 }
 
 export const db = getFirestoreInstance();
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: "select_account",
-});
+
+export function getFreshGoogleProvider(): GoogleAuthProvider {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: "select_account",
+  });
+  provider.addScope("email");
+  provider.addScope("profile");
+  return provider;
+}
+
+export const googleProvider = getFreshGoogleProvider();
 
 // Connect to emulators in development (when env var is set)
 if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" && typeof window !== "undefined") {

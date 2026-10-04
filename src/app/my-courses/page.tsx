@@ -23,11 +23,10 @@ export default function MyCoursesPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user && !loading) {
-      router.push("/");
+    if (!user) {
+      setFetching(false);
       return;
     }
-    if (!user) return;
     let isMounted = true;
     getCoursesByCreator(user.uid)
       .then((data) => {
@@ -39,7 +38,7 @@ export default function MyCoursesPage() {
     return () => {
       isMounted = false;
     };
-  }, [user, loading, router]);
+  }, [user]);
 
   // Analytics computation
   const stats = useMemo(() => {
@@ -105,33 +104,48 @@ export default function MyCoursesPage() {
   if (!user) {
     return (
       <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="clay-card p-8 bg-card border border-border text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600">
+        <div className="clay-card p-8 bg-card border border-border text-center rounded-3xl shadow-xl">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-primary-100 dark:bg-primary-950/60 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm">
             <svg
-              width="28"
-              height="28"
+              width="30"
+              height="30"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <h1 className="font-heading font-extrabold text-2xl text-foreground mb-2">
-            Creator Studio
+          <div className="inline-block px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground font-mono text-[11px] font-bold uppercase tracking-wider mb-3">
+            Creator Studio Access
+          </div>
+          <h1 className="font-heading font-black text-2xl sm:text-3xl text-foreground mb-2">
+            My Courses & Studio
           </h1>
-          <p className="font-body text-sm text-muted-foreground mb-6">
-            Sign in to create, manage, and monitor your online courses.
+          <p className="font-body text-xs sm:text-sm text-muted-foreground mb-6 leading-relaxed max-w-xs mx-auto">
+            Sign in to create, publish, and monitor your courses, student analytics, and curriculum
+            chapters.
           </p>
-          <button
-            type="button"
-            onClick={() => openAuthModal("signin")}
-            className="btn-primary w-full py-3"
-          >
-            Sign in to Continue
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => openAuthModal("signin")}
+              className="btn-primary w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold shadow-md cursor-pointer"
+            >
+              Sign In to Studio
+            </button>
+            <button
+              type="button"
+              onClick={() => openAuthModal("signup")}
+              className="btn-secondary w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold cursor-pointer"
+            >
+              Create Account
+            </button>
+          </div>
         </div>
       </div>
     );
