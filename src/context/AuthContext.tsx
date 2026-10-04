@@ -17,7 +17,7 @@ import {
   signOut as fbSignOut,
   type User,
 } from "firebase/auth";
-import { auth, getFreshGoogleProvider, googleProvider } from "@/lib/firebase";
+import { auth, getFreshGoogleProvider } from "@/lib/firebase";
 import { createUserDoc, getUser } from "@/lib/firestore";
 import type { UserDoc } from "@/lib/types";
 import { LIMITS } from "@/lib/constants";

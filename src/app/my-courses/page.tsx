@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getCoursesByCreator, deleteCourse } from "@/lib/firestore";
 import type { CourseDoc } from "@/lib/types";
@@ -10,7 +9,6 @@ import { CourseraLoader } from "@/components/ui/CourseraLoader";
 
 export default function MyCoursesPage() {
   const { user, loading, openAuthModal } = useAuth();
-  const router = useRouter();
   const [courses, setCourses] = useState<CourseDoc[]>([]);
   const [fetching, setFetching] = useState(true);
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
