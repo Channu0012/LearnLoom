@@ -81,7 +81,10 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "RjVJKECu9rCbm6ruh5G3gWgoIVqvn6SGE_DtDlnhOpo",
+    google: [
+      "JlfgG8cnAE0cj0FbQT992-_QTHNEAdIQ91J6-sR4je0",
+      "RjVJKECu9rCbm6ruh5G3gWgoIVqvn6SGE_DtDlnhOpo",
+    ],
   },
 };
 
@@ -137,6 +140,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="overflow-x-hidden w-full" suppressHydrationWarning>
       <head>
+        <meta
+          name="google-site-verification"
+          content="JlfgG8cnAE0cj0FbQT992-_QTHNEAdIQ91J6-sR4je0"
+        />
         <meta
           name="google-site-verification"
           content="RjVJKECu9rCbm6ruh5G3gWgoIVqvn6SGE_DtDlnhOpo"
