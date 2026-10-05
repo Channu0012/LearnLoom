@@ -53,7 +53,10 @@ export async function POST(request: NextRequest) {
     const orderId = generateOrderId(uid, courseId);
 
     // 4. Build return URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("learnloom-zeta")
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : "https://veyskill.in";
     const returnUrl = `${appUrl}/course/${courseId}?payment_status=success&order_id={order_id}`;
 
     // 5. Create order via Cashfree API

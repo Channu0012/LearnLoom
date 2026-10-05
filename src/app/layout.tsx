@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in"),
+  metadataBase: new URL("https://veyskill.in"),
   title: {
     default: "VeySkill — Turn Playlists into Structured Courses",
     template: "%s | VeySkill",
