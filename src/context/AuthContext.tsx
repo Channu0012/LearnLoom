@@ -145,6 +145,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null);
     setAuthSuccess(null);
 
+    const isMobile =
+      typeof window !== "undefined" &&
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      try {
+        const provider = getFreshGoogleProvider();
+        await signInWithRedirect(auth, provider);
+        return;
+      } catch (err: unknown) {
+        const fbErr = err as { code?: string; message?: string };
+        setAuthError(fbErr?.message ?? "Failed to initialize Google Sign-In on mobile.");
+        setIsSigningIn(false);
+        return;
+      }
+    }
+
     try {
       const provider = getFreshGoogleProvider();
       await signInWithPopup(auth, provider);
@@ -162,6 +179,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ) {
         setAuthError(
           "Google sign-in window was closed. Click 'Continue with Google' and pick your Google account to proceed."
+        );
+      } else if (
+        fbErr?.code === "auth/web-storage-unsupported" ||
+        fbErr?.message?.includes("third-party cookies")
+      ) {
+        setAuthError(
+          "Third-party cookies or web storage are restricted. Click 'Use direct sign-in' below to authenticate via Google redirect."
         );
       } else if (fbErr?.code === "auth/account-exists-with-different-credential") {
         setAuthError(
