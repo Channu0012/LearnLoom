@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { startPageLoading } from "@/components/layout/NavigationProgress";
 
 export function HeroConverterBar() {
   const router = useRouter();
@@ -49,10 +50,12 @@ export function HeroConverterBar() {
 
     setError(null);
     setIsSubmitting(true);
+    startPageLoading();
     router.push(`/create?url=${encodeURIComponent(trimmed)}`);
   };
 
   const handleChipClick = (query: string) => {
+    startPageLoading();
     router.push(`/explore?q=${encodeURIComponent(query)}`);
   };
 
