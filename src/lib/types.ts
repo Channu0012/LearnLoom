@@ -64,6 +64,10 @@ export interface ProgressDoc {
   exemptLessonIds?: string[];
   lastLessonId: string | null;
   quizScores?: Record<string, { score: number; total: number }>;
+  certificateIssued?: boolean;
+  certificateId?: string;
+  hasPaidCertificate?: boolean;
+  started?: boolean;
   updatedAt: Timestamp;
 }
 

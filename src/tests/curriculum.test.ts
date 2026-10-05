@@ -105,4 +105,33 @@ describe("Curriculum Engine & Domain Intelligence", () => {
     // Strictly zero emojis
     expect(response).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
   });
+
+  it("accurately detects certificate eligibility for full masterclasses vs short roadmaps", async () => {
+    const { checkCertificateEligibility } = await import("@/lib/curriculumEngine");
+
+    // Short roadmap or 1-video career advice should NOT be eligible
+    const roadmapCheck = checkCertificateEligibility({
+      title: "Frontend Developer Roadmap 2026",
+      description: "Complete study plan and guidance for beginner developers",
+      lessonCount: 1,
+    });
+    expect(roadmapCheck.eligible).toBe(false);
+    expect(roadmapCheck.label).toBe("Educational Roadmap");
+
+    const singleVideoCheatSheet = checkCertificateEligibility({
+      title: "Python in 10 Minutes - Quick Cheat Sheet",
+      description: "Quick summary of basic syntax",
+      lessonCount: 1,
+    });
+    expect(singleVideoCheatSheet.eligible).toBe(false);
+
+    // Multi-module comprehensive masterclass SHOULD be eligible
+    const masterclassCheck = checkCertificateEligibility({
+      title: "Complete Python Mastery & Cloud Architecture",
+      description: "Comprehensive multi-lesson course covering data structures and concurrency",
+      lessonCount: 24,
+    });
+    expect(masterclassCheck.eligible).toBe(true);
+    expect(masterclassCheck.label).toBe("Accredited Masterclass");
+  });
 });

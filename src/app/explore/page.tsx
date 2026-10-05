@@ -230,7 +230,7 @@ export default function ExplorePage() {
                 type="search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search video masterclasses (e.g. Python, React, DSA, System Design)..."
+                placeholder="Search..."
                 className="w-full py-3.5 sm:py-4 pr-12 text-base sm:text-lg bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none font-body"
                 aria-label="Search masterclasses"
               />

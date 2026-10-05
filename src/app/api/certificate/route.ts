@@ -62,6 +62,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 2b. Educational Roadmap / Informative Video Check
+    const { checkCertificateEligibility } = await import("@/lib/curriculumEngine");
+    const eligibility = checkCertificateEligibility({
+      title: sanitizedTitle,
+      lessonCount,
+    });
+    if (!eligibility.eligible) {
+      return NextResponse.json(
+        {
+          error: eligibility.reason,
+          notEligible: true,
+        },
+        { status: 400 }
+      );
+    }
+
     // 3. Server-Side Payment Verification (Cashfree ₹29 Fee)
     // If Cashfree keys are configured in production/sandbox, verify that payment is completed.
     const isCashfreeConfigured = Boolean(

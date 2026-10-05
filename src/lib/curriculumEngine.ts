@@ -1329,3 +1329,76 @@ if (!data) return fallback;
 
 If you are facing a specific compiler error or bug in this lecture, paste your code and the exact error output and I will provide the exact line fix!`;
 }
+
+// ===========================================================================
+// 8. INTELLIGENT CERTIFICATE ELIGIBILITY DETECTOR
+// Automatically distinguishes accredited Masterclasses from brief educational
+// roadmaps, career overviews, and single-video summaries.
+// ===========================================================================
+
+export function checkCertificateEligibility(
+  courseOrTitle:
+    | {
+        title: string;
+        description?: string;
+        lessonCount?: number;
+      }
+    | string,
+  maybeLessonCount?: number,
+  maybeDesc?: string
+): { eligible: boolean; reason: string; label: string } {
+  let rawTitle = "";
+  let rawDesc = "";
+  let lessonCount = 1;
+
+  if (typeof courseOrTitle === "object" && courseOrTitle !== null) {
+    rawTitle = courseOrTitle.title || "";
+    rawDesc = courseOrTitle.description || "";
+    lessonCount = typeof courseOrTitle.lessonCount === "number" ? courseOrTitle.lessonCount : 1;
+  } else {
+    rawTitle = courseOrTitle || "";
+    rawDesc = maybeDesc || "";
+    lessonCount = typeof maybeLessonCount === "number" ? maybeLessonCount : 1;
+  }
+
+  const title = rawTitle.toLowerCase();
+  const desc = rawDesc.toLowerCase();
+
+  // Roadmap & single-video informational overview patterns
+  const isRoadmapKeyword =
+    /\b(roadmap|road map|cheat\s*sheet|overview|summary|what is|how to learn|career path|interview tips|study plan|syllabus|in 10 minutes|in 5 minutes|guide for beginners|quick guide|quick tips)\b/i.test(
+      `${title} ${desc}`
+    );
+
+  // If course has only 1 lesson and matches roadmap/brief overview keywords
+  if (lessonCount <= 1 && isRoadmapKeyword) {
+    return {
+      eligible: false,
+      label: "Educational Roadmap",
+      reason:
+        "This is an educational guide or roadmap. Verified credentials are exclusively awarded for multi-module technical masterclasses.",
+    };
+  }
+
+  // If single video with no structured curriculum depth (1 lesson only)
+  if (lessonCount <= 1) {
+    // If title explicitly claims full masterclass or complete bootcamps, allow, otherwise mark as open guide
+    const isFullCourse =
+      /\b(full course|bootcamp|masterclass|complete course|complete guide)\b/i.test(title);
+    if (!isFullCourse) {
+      return {
+        eligible: false,
+        label: "Informational Video Guide",
+        reason:
+          "This is an open educational guide. Verified credentials require a multi-lesson structured curriculum.",
+      };
+    }
+  }
+
+  return {
+    eligible: true,
+    label: "Accredited Masterclass",
+    reason:
+      "Comprehensive curriculum verified for cryptographic diploma and verified credential issuance.",
+  };
+}

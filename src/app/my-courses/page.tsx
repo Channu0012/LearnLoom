@@ -19,6 +19,18 @@ export default function MyCoursesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".menu-trigger-container")) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -437,12 +449,12 @@ export default function MyCoursesPage() {
                 </div>
               </div>
 
-              {/* Right: Actions */}
-              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap border-t sm:border-t-0 pt-3 sm:pt-0 border-border">
-                {course.status === "published" && (
+              {/* Right: Quick Action + Sleek 3-Dot Actions Menu */}
+              <div className="relative menu-trigger-container flex items-center gap-2 flex-shrink-0 self-end sm:self-center border-t sm:border-t-0 pt-3 sm:pt-0 w-full sm:w-auto justify-end border-border">
+                {course.status === "published" ? (
                   <Link
                     href={`/course/${course.id}`}
-                    className="btn-primary text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[44px]"
+                    className="btn-primary text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[42px] font-heading font-bold shadow-sm active:scale-95"
                     aria-label={`View live ${course.title}`}
                   >
                     <svg
@@ -458,72 +470,150 @@ export default function MyCoursesPage() {
                     </svg>
                     <span>View Live</span>
                   </Link>
+                ) : (
+                  <Link
+                    href={`/edit/${course.id}`}
+                    className="btn-primary text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[42px] font-heading font-bold shadow-sm active:scale-95"
+                    aria-label={`Edit ${course.title}`}
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                    <span>Continue Edit</span>
+                  </Link>
                 )}
 
-                <Link
-                  href={`/edit/${course.id}`}
-                  className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center gap-1.5 min-h-[44px]"
-                  aria-label={`Edit ${course.title}`}
-                >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
-                  <span>Edit</span>
-                </Link>
-
-                {course.status === "published" && (
+                {/* 3-Dot Dropdown Options Trigger */}
+                <div className="relative">
                   <button
                     type="button"
-                    onClick={() => handleCopyLink(course.id)}
-                    className="btn-ghost text-xs px-3 py-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
-                    title="Copy direct share link"
-                    aria-label="Copy course link"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === course.id ? null : course.id);
+                    }}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
+                      openMenuId === course.id
+                        ? "bg-muted border-primary-500 text-foreground shadow-sm scale-105"
+                        : "bg-card border-border hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95"
+                    }`}
+                    aria-label="Course options menu"
+                    title="Course Options"
                   >
-                    {copiedId === course.id ? (
-                      <span className="text-emerald-600 font-bold">Copied!</span>
-                    ) : (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
-                    )}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="2.2" />
+                      <circle cx="12" cy="12" r="2.2" />
+                      <circle cx="12" cy="19" r="2.2" />
+                    </svg>
                   </button>
-                )}
 
-                <button
-                  type="button"
-                  onClick={() => setCourseToDelete(course)}
-                  className="btn-destructive text-xs px-3 py-2 inline-flex items-center gap-1.5 ml-auto sm:ml-0 min-h-[44px]"
-                  aria-label={`Delete ${course.title}`}
-                >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                  <span>Delete</span>
-                </button>
+                  {/* Dropdown Menu Popover */}
+                  {openMenuId === course.id && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-card/95 dark:bg-card/95 backdrop-blur-xl border border-border/90 rounded-2xl shadow-2xl p-1.5 z-40 animate-fade-in divide-y divide-border/50">
+                      <div className="space-y-0.5 pb-1">
+                        {course.status === "published" && (
+                          <Link
+                            href={`/course/${course.id}`}
+                            onClick={() => setOpenMenuId(null)}
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors"
+                          >
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              className="text-teal-500"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span>View Live Course</span>
+                          </Link>
+                        )}
+
+                        <Link
+                          href={`/edit/${course.id}`}
+                          onClick={() => setOpenMenuId(null)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className="text-primary-500"
+                          >
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                          </svg>
+                          <span>Edit Curriculum</span>
+                        </Link>
+
+                        {course.status === "published" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleCopyLink(course.id);
+                              setOpenMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors text-left cursor-pointer"
+                          >
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              className="text-amber-500"
+                            >
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                            <span>
+                              {copiedId === course.id ? "Link Copied!" : "Copy Share Link"}
+                            </span>
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCourseToDelete(course);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-heading font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                          <span>Delete Course</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -361,6 +361,16 @@ export async function getUserProgress(uid: string): Promise<ProgressDoc[]> {
   }
 }
 
+/** Remove/drop a course from user's My Learning progress */
+export async function deleteUserProgress(uid: string, courseId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.PROGRESS, courseId));
+  } catch (err) {
+    console.error("Failed to delete user progress:", err);
+    throw err;
+  }
+}
+
 // ── Report helpers ─────────────────────────────────────────────────────────
 
 export async function createReport(

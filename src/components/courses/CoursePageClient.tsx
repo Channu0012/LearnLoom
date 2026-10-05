@@ -32,6 +32,7 @@ import { StudyCompanion } from "@/components/courses/StudyCompanion";
 import { CertificateModal } from "@/components/courses/CertificateModal";
 import { PaymentGate } from "@/components/courses/PaymentGate";
 import { StreakDashboard } from "@/components/courses/StreakDashboard";
+import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -222,6 +223,44 @@ function CoursePlayerContent({
     user?.displayName ?? "Learner"
   );
   const [isCredibilityModalOpen, setIsCredibilityModalOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isAutoplay, setIsAutoplay] = useState(true);
+
+  const certEligibility = checkCertificateEligibility(course.title, lessons.length);
+
+  // Listen to fullscreen changes
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+
+  // Keyboard navigation shortcuts: F for Big Screen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        const el = document.getElementById("theatre-player");
+        if (!el) return;
+        if (!document.fullscreenElement) {
+          el.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Sync recipient name if user signs in or profile updates
   useEffect(() => {
@@ -487,6 +526,7 @@ function CoursePlayerContent({
   // Trigger 3-second auto-advance countdown for playlist
   const triggerAutoAdvance = useCallback(
     (nextLesson: LessonDoc) => {
+      if (!isAutoplay) return;
       if (countdownTimerRef.current) {
         clearInterval(countdownTimerRef.current);
         countdownTimerRef.current = null;
@@ -510,7 +550,7 @@ function CoursePlayerContent({
         }
       }, 1000);
     },
-    [handleSelectLesson]
+    [handleSelectLesson, isAutoplay]
   );
 
   const playNextNow = useCallback(() => {
@@ -1102,133 +1142,171 @@ function CoursePlayerContent({
               </div>
             )}
 
-          {/* Player Controls & Action Bar */}
+          {/* Player Controls & Action Deck (Coursera / Big Company Grade) */}
           {activeLesson && (
-            <div className="clay-card p-4 sm:p-5 bg-card border border-border rounded-2xl mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[11px] font-heading font-extrabold uppercase tracking-wider text-primary-600 dark:text-primary-400">
-                    Lesson {activeIdx + 1} of {lessons.length}
-                  </span>
-                  {isEnrolled && (
-                    <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+            <div className="clay-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl mb-6 shadow-sm space-y-4">
+              {/* Row 1: Lesson Meta + Big Screen + Autoplay Pill */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-[11px] font-heading font-extrabold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-500/10 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                      Lesson {activeIdx + 1} of {lessons.length}
+                    </span>
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      {Math.round(((activeIdx + 1) / lessons.length) * 100)}% through
+                    </span>
+                    {isEnrolled && (
+                      <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <svg
+                          width="10"
+                          height="10"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          aria-hidden="true"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>Enrolled</span>
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="font-heading font-bold text-base sm:text-lg text-foreground line-clamp-1">
+                    {activeLesson.title}
+                  </h2>
+                </div>
+
+                {/* Right controls: Big Screen + Autoplay Toggle */}
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  {/* Big Screen / Theater Fullscreen Button */}
+                  <button
+                    type="button"
+                    onClick={handleToggleFullscreen}
+                    className={`text-xs px-3.5 py-2 min-h-[40px] rounded-xl font-heading font-bold inline-flex items-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm ${
+                      isFullscreen
+                        ? "bg-teal-500 text-white shadow-teal-500/20"
+                        : "bg-muted/80 hover:bg-muted text-foreground border border-border/80"
+                    }`}
+                    title={isFullscreen ? "Exit Big Screen (F)" : "Watch on Big Screen (F)"}
+                    aria-label={isFullscreen ? "Exit Big Screen" : "Watch on Big Screen"}
+                  >
+                    {isFullscreen ? (
                       <svg
-                        width="10"
-                        height="10"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
+                        strokeWidth="2.5"
                       >
-                        <polyline points="20 6 9 17 4 12" />
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
                       </svg>
-                      <span>In My Learning</span>
+                    ) : (
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                      </svg>
+                    )}
+                    <span>{isFullscreen ? "Exit Big Screen" : "Big Screen"}</span>
+                    <span className="hidden md:inline text-[10px] opacity-60 font-mono px-1 py-0.5 rounded bg-black/10 dark:bg-white/10">
+                      F
                     </span>
-                  )}
-                </div>
-                <h2 className="font-heading font-bold text-base sm:text-xl text-foreground line-clamp-1">
-                  {activeLesson.title}
-                </h2>
-              </div>
+                  </button>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
-                {/* Big Screen / Fullscreen Option */}
-                <button
-                  type="button"
-                  onClick={handleToggleFullscreen}
-                  className="btn-ghost text-xs px-3 py-2 min-h-[44px] active:scale-95 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                  title="Watch on Big Screen"
-                  aria-label="Watch on Big Screen"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                  </svg>
-                  <span className="hidden xs:inline sm:inline">Big Screen</span>
-                </button>
-
-                {/* Mobile Curriculum Jump Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    document
-                      .getElementById("course-curriculum-panel")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="btn-ghost text-xs px-2.5 py-2 min-h-[44px] lg:hidden inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
-                  title="View Course Syllabus"
-                  aria-label="View Course Syllabus"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <line x1="8" y1="6" x2="21" y2="6" />
-                    <line x1="8" y1="12" x2="21" y2="12" />
-                    <line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                    <line x1="3" y1="18" x2="3.01" y2="18" />
-                  </svg>
-                  <span>Syllabus</span>
-                </button>
-
-                <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
-                  {/* Module Assistance / Video Issue Button */}
+                  {/* Autoplay Toggle Switch */}
                   <button
                     type="button"
-                    onClick={() => setIsCredibilityModalOpen(true)}
-                    className="btn-ghost text-xs px-2.5 py-2 min-h-[44px] inline-flex items-center gap-1.5 text-muted-foreground hover:text-amber-500 cursor-pointer active:scale-95 transition-all"
-                    title="Video issue or knowledge check"
-                    aria-label="Module Help and Knowledge Check"
+                    onClick={() => setIsAutoplay((prev) => !prev)}
+                    className={`text-xs px-3 py-2 min-h-[40px] rounded-xl font-heading font-semibold inline-flex items-center gap-1.5 transition-all border cursor-pointer active:scale-95 ${
+                      isAutoplay
+                        ? "bg-primary-500/10 text-primary-600 dark:text-primary-400 border-primary-500/30"
+                        : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
+                    }`}
+                    title={isAutoplay ? "Continuous playback enabled" : "Autoplay paused"}
+                    aria-label="Toggle Autoplay"
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isAutoplay ? "bg-primary-500 animate-pulse" : "bg-muted-foreground/40"
+                      }`}
+                    />
+                    <span>Autoplay: {isAutoplay ? "ON" : "OFF"}</span>
+                  </button>
+
+                  {/* Mobile Syllabus Drawer Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document
+                        .getElementById("course-curriculum-panel")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="btn-ghost text-xs px-2.5 py-2 min-h-[40px] lg:hidden inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    title="View Course Syllabus"
+                    aria-label="View Course Syllabus"
                   >
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                     >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                      <line x1="8" y1="6" x2="21" y2="6" />
+                      <line x1="8" y1="12" x2="21" y2="12" />
+                      <line x1="8" y1="18" x2="21" y2="18" />
+                      <line x1="3" y1="6" x2="3.01" y2="6" />
+                      <line x1="3" y1="12" x2="3.01" y2="12" />
+                      <line x1="3" y1="18" x2="3.01" y2="18" />
                     </svg>
-                    <span className="hidden sm:inline">Module Help</span>
+                    <span>Syllabus</span>
                   </button>
+                </div>
+              </div>
 
+              {/* Row 2: Playback Controls (Prev, Complete & Advance, Next) + Quick Study Tools */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
+                {/* Left: Prev / Complete / Next Navigation Trio */}
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  {/* Prev Button */}
                   <button
                     type="button"
                     onClick={goToPrev}
                     disabled={activeIdx === 0 || isVideoLoading}
-                    className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] disabled:opacity-40 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
+                    className="btn-ghost text-xs px-3.5 py-2.5 min-h-[42px] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 hover:bg-muted font-heading font-semibold"
                     aria-label="Previous lesson"
                   >
-                    ← Prev
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    <span>Prev</span>
                   </button>
 
+                  {/* Primary Complete & Advance Button */}
                   <button
                     type="button"
                     onClick={handleMarkComplete}
                     disabled={isMarkingComplete}
-                    className={`text-xs px-4 py-2 min-h-[44px] font-heading font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer ${
+                    className={`flex-1 md:flex-initial text-xs px-5 py-2.5 min-h-[42px] font-heading font-bold rounded-xl transition-all inline-flex items-center justify-center gap-2 active:scale-95 cursor-pointer shadow-md ${
                       completedIds.has(activeLesson.id)
-                        ? "bg-emerald-600 text-white shadow-sm"
-                        : "btn-primary"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                        : "btn-primary shadow-primary-500/20"
                     }`}
                   >
                     {isMarkingComplete ? (
@@ -1254,7 +1332,7 @@ function CoursePlayerContent({
                         </svg>
                         <span>Saving…</span>
                       </>
-                    ) : (
+                    ) : completedIds.has(activeLesson.id) ? (
                       <>
                         <svg
                           width="14"
@@ -1266,21 +1344,125 @@ function CoursePlayerContent({
                         >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        <span>
-                          {completedIds.has(activeLesson.id) ? "Next →" : "Complete & Next"}
-                        </span>
+                        <span>Completed ✓</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>Complete &amp; Advance</span>
                       </>
                     )}
                   </button>
 
+                  {/* Next Button */}
                   <button
                     type="button"
                     onClick={goToNext}
                     disabled={activeIdx === lessons.length - 1 || isVideoLoading}
-                    className="btn-ghost text-xs px-3.5 py-2 min-h-[44px] disabled:opacity-40 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
+                    className="btn-ghost text-xs px-3.5 py-2.5 min-h-[42px] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 hover:bg-muted font-heading font-semibold"
                     aria-label="Next lesson"
                   >
-                    Next →
+                    <span>Next</span>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Right: Quick Study Suite (AI Companion, Notes, Knowledge Check, Share) */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 md:pt-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsCompanionOpen((o) => !o)}
+                    className="btn-ghost text-xs px-3 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:bg-primary-500/10 cursor-pointer active:scale-95 font-heading font-bold"
+                    title="Open Coursera-grade AI study companion"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+                    </svg>
+                    <span>AI Coach</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange("notes")}
+                    className="btn-ghost text-xs px-3 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 font-heading font-semibold"
+                    title="Take AI-assisted study notes"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    <span>Notes</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCredibilityModalOpen(true)}
+                    className="btn-ghost text-xs px-3 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1.5 text-muted-foreground hover:text-amber-500 cursor-pointer active:scale-95 font-heading font-semibold"
+                    title="Knowledge assessment or report video issue"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>Quiz / Help</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="btn-ghost text-xs px-2.5 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer active:scale-95"
+                    title="Share this lesson"
+                    aria-label="Share lesson"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -1440,63 +1622,78 @@ function CoursePlayerContent({
               <CourseAdBanner category={course.category} />
 
               {/* Course Completion & Coursera-Grade Credential Unlock */}
-              {isCompleted && (
-                <div className="clay-card p-6 bg-muted/40 border-2 border-primary-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/30 flex items-center justify-center">
-                    <svg
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      <polyline points="9 12 11 14 15 10" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="inline-block px-3 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
-                      Curriculum Complete · {lessons.length} Modules
-                    </span>
-                    <h3 className="font-heading font-black text-lg text-foreground">
-                      Course Curriculum Finished
-                    </h3>
-                    <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
-                      {totalQuizTotal > 0 &&
-                      Math.round((totalQuizScore / totalQuizTotal) * 100) < 70
-                        ? `Google & Coursera certification standard: Minimum 70% passing grade required. Your current average is ${Math.round((totalQuizScore / totalQuizTotal) * 100)}%. Retake assessments to unlock your certificate.`
-                        : `You have completed all video modules with verified competence. Claim your official verified credential.`}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-3 pt-1 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuizOpen(true)}
-                      className="btn-ghost text-xs px-4 py-2.5 font-heading font-bold inline-flex items-center gap-2"
-                    >
+              {isCompleted &&
+                (!certEligibility.eligible ? (
+                  <div className="clay-card p-6 bg-muted/40 border border-teal-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/30 flex items-center justify-center">
                       <svg
-                        width="12"
-                        height="12"
+                        width="28"
+                        height="28"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2.5"
+                        strokeWidth="2.2"
                       >
-                        <polyline points="23 4 23 10 17 10" />
-                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
                       </svg>
-                      <span>Take Module Assessment</span>
-                    </button>
+                    </div>
+                    <div>
+                      <span className="inline-block px-3 py-0.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                        Open Educational Guide · Completed
+                      </span>
+                      <h3 className="font-heading font-black text-lg text-foreground">
+                        Guide Completed
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
+                        {certEligibility.reason ||
+                          "This is a single-module roadmap or informational guide. Verified completion certificates are reserved exclusively for multi-module accredited masterclasses."}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 pt-1">
+                      <Link
+                        href="/explore"
+                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold shadow-md"
+                      >
+                        Explore Masterclass Courses →
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="clay-card p-6 bg-muted/40 border-2 border-primary-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/30 flex items-center justify-center">
+                      <svg
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <polyline points="9 12 11 14 15 10" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="inline-block px-3 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                        Curriculum Complete · {lessons.length} Modules
+                      </span>
+                      <h3 className="font-heading font-black text-lg text-foreground">
+                        Course Curriculum Finished
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
+                        {totalQuizTotal > 0 &&
+                        Math.round((totalQuizScore / totalQuizTotal) * 100) < 70
+                          ? `Google & Coursera certification standard: Minimum 70% passing grade required. Your current average is ${Math.round((totalQuizScore / totalQuizTotal) * 100)}%. Retake assessments to unlock your certificate.`
+                          : `You have completed all video modules with verified competence. Claim your official verified credential.`}
+                      </p>
+                    </div>
 
-                    {totalQuizTotal > 0 &&
-                    Math.round((totalQuizScore / totalQuizTotal) * 100) < 70 ? (
+                    <div className="flex items-center justify-center gap-3 pt-1 flex-wrap">
                       <button
                         type="button"
-                        disabled
-                        className="btn-primary text-xs px-5 py-2.5 opacity-50 cursor-not-allowed font-heading font-bold inline-flex items-center gap-2"
-                        title="Attain at least 70% assessment score to unlock certificate"
+                        onClick={() => setIsQuizOpen(true)}
+                        className="btn-ghost text-xs px-4 py-2.5 font-heading font-bold inline-flex items-center gap-2"
                       >
                         <svg
                           width="12"
@@ -1506,59 +1703,81 @@ function CoursePlayerContent({
                           stroke="currentColor"
                           strokeWidth="2.5"
                         >
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          <polyline points="23 4 23 10 17 10" />
+                          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                         </svg>
-                        <span>Certificate Locked (Need 70%)</span>
+                        <span>Take Module Assessment</span>
                       </button>
-                    ) : hasPaidCertificate ? (
-                      <button
-                        type="button"
-                        onClick={() => setIsCertificateOpen(true)}
-                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg cursor-pointer"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
+
+                      {totalQuizTotal > 0 &&
+                      Math.round((totalQuizScore / totalQuizTotal) * 100) < 70 ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="btn-primary text-xs px-5 py-2.5 opacity-50 cursor-not-allowed font-heading font-bold inline-flex items-center gap-2"
+                          title="Attain at least 70% assessment score to unlock certificate"
                         >
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <polyline points="9 12 11 14 15 10" />
-                        </svg>
-                        <span>View Verified Certificate</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!user) {
-                            openAuthModal("signin");
-                            return;
-                          }
-                          setIsPaymentGateOpen(true);
-                        }}
-                        className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                          <span>Certificate Locked (Need 70%)</span>
+                        </button>
+                      ) : hasPaidCertificate ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsCertificateOpen(true)}
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg cursor-pointer"
                         >
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <polyline points="9 12 11 14 15 10" />
-                        </svg>
-                        <span>Claim Verified Certificate — ₹29</span>
-                      </button>
-                    )}
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                          >
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            <polyline points="9 12 11 14 15 10" />
+                          </svg>
+                          <span>View Verified Certificate</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!user) {
+                              openAuthModal("signin");
+                              return;
+                            }
+                            setIsPaymentGateOpen(true);
+                          }}
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                          >
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            <polyline points="9 12 11 14 15 10" />
+                          </svg>
+                          <span>Claim Verified Certificate — ₹29</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
             </div>
           )}
 

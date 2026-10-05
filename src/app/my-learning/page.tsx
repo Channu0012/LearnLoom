@@ -20,7 +20,11 @@ export default function MyLearningPage() {
   const { user, loading, openAuthModal } = useAuth();
   const [items, setItems] = useState<CourseWithProgress[]>([]);
   const [fetching, setFetching] = useState(true);
-  const [filter, setFilter] = useState<"all" | "in_progress" | "completed">("all");
+  const [filter, setFilter] = useState<"all" | "in_progress" | "completed" | "certificates">("all");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [courseToRemove, setCourseToRemove] = useState<CourseWithProgress | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [paidCourseIds, setPaidCourseIds] = useState<Set<string>>(new Set());
 
   // Certificate Modal State
   const [selectedCertCourse, setSelectedCertCourse] = useState<CourseWithProgress | null>(null);
@@ -42,6 +46,17 @@ export default function MyLearningPage() {
     };
   } | null>(null);
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".mylearning-menu-container")) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, []);
+
   useEffect(() => {
     if (!user) {
       setFetching(false);
@@ -56,7 +71,14 @@ export default function MyLearningPage() {
         for (const prog of progressList) {
           const course = await getCourse(prog.courseId);
           if (course && course.status === "published") {
-            results.push({ course, progress: prog });
+            // Only show courses the user has actually started learning or enrolled in
+            const hasStarted =
+              (prog.completedLessonIds?.length || 0) > 0 ||
+              Boolean(prog.started) ||
+              Boolean(prog.lastLessonId);
+            if (hasStarted) {
+              results.push({ course, progress: prog });
+            }
           }
         }
 
@@ -68,6 +90,36 @@ export default function MyLearningPage() {
         });
 
         if (isMounted) setItems(results);
+
+        // Check payment status for completed courses
+        const paidSet = new Set<string>();
+        for (const item of results) {
+          const isDone =
+            (item.progress.completedLessonIds?.length || 0) >= (item.course.lessonCount || 1) &&
+            (item.course.lessonCount || 0) > 0;
+          if (isDone) {
+            if (
+              item.progress.certificateIssued ||
+              item.progress.hasPaidCertificate ||
+              item.progress.certificateId
+            ) {
+              paidSet.add(item.course.id);
+            } else {
+              try {
+                const res = await fetch(
+                  `/api/payment/check?uid=${user.uid}&courseId=${item.course.id}`
+                );
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.hasPaid) paidSet.add(item.course.id);
+                }
+              } catch {
+                // Ignore fetch error
+              }
+            }
+          }
+        }
+        if (isMounted) setPaidCourseIds(paidSet);
       } catch {
         if (isMounted) setItems([]);
       } finally {
@@ -83,14 +135,46 @@ export default function MyLearningPage() {
   const inProgressItems = items.filter(
     (item) => (item.progress.completedLessonIds?.length || 0) < (item.course.lessonCount || 1)
   );
+
   const completedItems = items.filter(
     (item) =>
       (item.progress.completedLessonIds?.length || 0) >= (item.course.lessonCount || 1) &&
       (item.course.lessonCount || 0) > 0
   );
 
+  // Certificates tab ONLY shows courses that are completed AND paid/issued
+  const certificateItems = completedItems.filter(
+    (item) =>
+      paidCourseIds.has(item.course.id) ||
+      Boolean(item.progress.certificateIssued) ||
+      Boolean(item.progress.hasPaidCertificate) ||
+      Boolean(item.progress.certificateId)
+  );
+
   const displayedItems =
-    filter === "in_progress" ? inProgressItems : filter === "completed" ? completedItems : items;
+    filter === "in_progress"
+      ? inProgressItems
+      : filter === "completed"
+        ? completedItems
+        : filter === "certificates"
+          ? certificateItems
+          : items;
+
+  // Handle course removal from dashboard
+  const handleConfirmRemove = async () => {
+    if (!user || !courseToRemove) return;
+    setIsRemoving(true);
+    try {
+      const { deleteUserProgress } = await import("@/lib/firestore");
+      await deleteUserProgress(user.uid, courseToRemove.course.id);
+      setItems((prev) => prev.filter((i) => i.course.id !== courseToRemove.course.id));
+      setCourseToRemove(null);
+    } catch (err) {
+      console.error("Failed to remove course from My Learning:", err);
+    } finally {
+      setIsRemoving(false);
+    }
+  };
 
   // Open Quick Verify for a specific completed course
   const handleOpenVerifyForCourse = (item: CourseWithProgress) => {
@@ -244,8 +328,8 @@ export default function MyLearningPage() {
         </div>
       </div>
 
-      {/* Earned Credentials Highlight Banner (When completed courses exist) */}
-      {completedItems.length > 0 && (
+      {/* Earned Credentials Highlight Banner (ONLY in Certificates tab when earned certificates exist) */}
+      {filter === "certificates" && certificateItems.length > 0 && (
         <div className="clay-card p-5 sm:p-6 mb-8 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-card border border-emerald-500/30 shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3.5">
@@ -270,15 +354,15 @@ export default function MyLearningPage() {
                     ACCREDITED HONORS
                   </span>
                   <span className="text-xs font-mono text-muted-foreground">
-                    {completedItems.length} Available
+                    {certificateItems.length} Issued
                   </span>
                 </div>
                 <h2 className="font-heading font-extrabold text-base sm:text-lg text-foreground mt-0.5">
                   Academic Certificates &amp; Tamper-Proof Credentials
                 </h2>
                 <p className="font-body text-xs text-muted-foreground mt-0.5 max-w-xl">
-                  You have successfully completed 100% curriculum requirements. View and download
-                  official vector PDF diplomas, share to LinkedIn, or verify cryptographic IDs.
+                  You have successfully completed and unlocked official vector PDF diplomas with
+                  scannable QR codes and verifiable IDs.
                 </p>
               </div>
             </div>
@@ -286,7 +370,7 @@ export default function MyLearningPage() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 type="button"
-                onClick={() => setSelectedCertCourse(completedItems[0] || null)}
+                onClick={() => setSelectedCertCourse(certificateItems[0] || null)}
                 className="btn-primary text-xs font-heading font-bold px-4 py-2.5 inline-flex items-center gap-1.5 shadow-md cursor-pointer"
               >
                 <svg
@@ -300,27 +384,7 @@ export default function MyLearningPage() {
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
-                <span>View Certificate</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleOpenVerifyForCourse(completedItems[0] || null)}
-                className="btn-ghost text-xs font-heading font-bold px-3 py-2.5 inline-flex items-center gap-1 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-                title="Strict cryptographic verification check"
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <polyline points="9 12 11 14 15 10" />
-                </svg>
-                <span>Verify</span>
+                <span>View Diploma</span>
               </button>
             </div>
           </div>
@@ -357,12 +421,35 @@ export default function MyLearningPage() {
             onClick={() => setFilter("completed")}
             className={`px-4 py-2 min-h-[44px] rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
               filter === "completed"
-                ? "bg-emerald-600 text-white shadow-sm"
+                ? "bg-primary-600 text-white shadow-sm"
                 : "bg-card border border-border text-foreground hover:bg-muted"
             }`}
           >
             <span>Completed</span>
             <span>({completedItems.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("certificates")}
+            className={`px-4 py-2 min-h-[44px] rounded-xl text-xs sm:text-sm font-heading font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
+              filter === "certificates"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-card border border-border text-foreground hover:bg-muted"
+            }`}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+            >
+              <circle cx="12" cy="8" r="7" />
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+            </svg>
+            <span>Certificates</span>
+            <span>({certificateItems.length})</span>
           </button>
         </div>
       )}
@@ -400,12 +487,16 @@ export default function MyLearningPage() {
           <p className="font-heading font-bold text-base text-foreground mb-2">
             {filter === "completed"
               ? "No completed courses yet"
-              : "No courses currently in progress"}
+              : filter === "certificates"
+                ? "No unlocked certificates yet"
+                : "No courses currently in progress"}
           </p>
           <p className="text-xs text-muted-foreground font-body mb-4">
             {filter === "completed"
               ? "Finish watching all lessons in any course to unlock your official verified certificate."
-              : "All your active courses have been finished!"}
+              : filter === "certificates"
+                ? "Complete a course and verify curriculum requirements to claim and display your accredited diploma here."
+                : "All your active courses have been finished!"}
           </p>
           <button
             type="button"
@@ -423,14 +514,21 @@ export default function MyLearningPage() {
             const totalCount = Math.max(1, course.lessonCount || 1);
             const pct = Math.min(100, Math.max(0, Math.round((completedCount / totalCount) * 100)));
             const isFinished = pct === 100;
+            const isCertUnlocked =
+              paidCourseIds.has(course.id) ||
+              Boolean(progress.certificateIssued) ||
+              Boolean(progress.hasPaidCertificate) ||
+              Boolean(progress.certificateId);
 
             return (
               <div
                 key={course.id}
-                className={`clay-card p-5 flex flex-col justify-between bg-card border rounded-2xl transition-all shadow-sm hover:shadow-md ${
-                  isFinished
+                className={`clay-card p-5 flex flex-col justify-between bg-card border rounded-2xl transition-all shadow-sm hover:shadow-md relative ${
+                  filter === "certificates" || isCertUnlocked
                     ? "border-emerald-500/50 hover:border-emerald-500 shadow-emerald-500/5"
-                    : "border-border hover:border-primary-400/60"
+                    : isFinished
+                      ? "border-teal-500/40 hover:border-teal-500"
+                      : "border-border hover:border-primary-400/60"
                 }`}
               >
                 <div>
@@ -466,30 +564,110 @@ export default function MyLearningPage() {
                     </Link>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                        <span className="badge-primary text-[10px] font-heading font-bold inline-block">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="badge-primary text-[10px] font-heading font-bold inline-block truncate max-w-[150px]">
                           {course.creatorName ? `By ${course.creatorName}` : "Enrolled Masterclass"}
                         </span>
-                        {isFinished && (
-                          <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                            <svg
-                              width="11"
-                              height="11"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
+
+                        {/* 3-Dot Dropdown Menu Trigger */}
+                        <div className="relative mylearning-menu-container flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(openMenuId === course.id ? null : course.id);
+                            }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                            aria-label="Course actions"
+                            title="Course options"
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                              <circle cx="12" cy="5" r="2.2" />
+                              <circle cx="12" cy="12" r="2.2" />
+                              <circle cx="12" cy="19" r="2.2" />
                             </svg>
-                            <span>100% Completed</span>
-                          </span>
-                        )}
+                          </button>
+
+                          {/* 3-Dot Options Dropdown */}
+                          {openMenuId === course.id && (
+                            <div className="absolute right-0 top-full mt-1.5 w-48 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-xl p-1 z-30 animate-fade-in divide-y divide-border/50">
+                              <div className="space-y-0.5 pb-1">
+                                <Link
+                                  href={`/course/${course.id}?start=true`}
+                                  onClick={() => setOpenMenuId(null)}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors"
+                                >
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    className="text-teal-500"
+                                  >
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                  </svg>
+                                  <span>{isFinished ? "Review Course" : "Continue Learning"}</span>
+                                </Link>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const url = `${window.location.origin}/course/${course.id}`;
+                                    navigator.clipboard.writeText(url);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors text-left cursor-pointer"
+                                >
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    className="text-amber-500"
+                                  >
+                                    <circle cx="18" cy="5" r="3" />
+                                    <circle cx="6" cy="12" r="3" />
+                                    <circle cx="18" cy="19" r="3" />
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                  </svg>
+                                  <span>Share Course</span>
+                                </button>
+                              </div>
+
+                              <div className="pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCourseToRemove(item);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
+                                >
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  </svg>
+                                  <span>Remove from Learning</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <Link href={`/course/${course.id}?start=true`} className="group">
+
+                      <Link href={`/course/${course.id}?start=true`} className="group block">
                         <h3 className="font-heading font-bold text-sm sm:text-base text-foreground line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors">
                           {course.title}
                         </h3>
@@ -500,110 +678,163 @@ export default function MyLearningPage() {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="mb-2">
-                    <div className="flex justify-between text-xs font-body mb-1">
-                      <span className="text-muted-foreground">
-                        {completedCount} of {course.lessonCount} lessons completed
-                      </span>
-                      <span
-                        className={`font-heading font-black ${
-                          isFinished
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-primary-600 dark:text-primary-400"
-                        }`}
-                      >
-                        {pct}%
-                      </span>
-                    </div>
-                    <div
-                      className="h-2 rounded-full overflow-hidden bg-muted"
-                      role="progressbar"
-                      aria-valuenow={pct}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                    >
+                  {/* Progress Bar (Hidden in pure certificates view to keep it clean) */}
+                  {filter !== "certificates" && (
+                    <div className="mb-2">
+                      <div className="flex justify-between text-xs font-body mb-1">
+                        <span className="text-muted-foreground">
+                          {completedCount} of {course.lessonCount} lessons completed
+                        </span>
+                        <span
+                          className={`font-heading font-black ${
+                            isFinished
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-primary-600 dark:text-primary-400"
+                          }`}
+                        >
+                          {pct}%
+                        </span>
+                      </div>
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isFinished ? "bg-emerald-500" : "bg-primary-500"
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
+                        className="h-2 rounded-full overflow-hidden bg-muted"
+                        role="progressbar"
+                        aria-valuenow={pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isFinished ? "bg-emerald-500" : "bg-primary-500"
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                {/* Footer Action Area */}
+                {/* Footer Action Area — Contextual to Selected Tab */}
                 <div className="pt-3 border-t border-border mt-3 space-y-2">
-                  {/* Completed Course Certificate Actions */}
-                  {isFinished ? (
-                    <div className="flex items-center gap-2">
-                      {/* 1. Main Get / View Certificate Button */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedCertCourse(item)}
-                        className="btn-primary flex-1 py-2 px-3 text-xs font-heading font-extrabold inline-flex items-center justify-center gap-1.5 shadow-sm min-h-[38px] cursor-pointer"
-                        title="View and download your official certificate"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                  {/* Case 1: In Certificates Tab — Full Accredited Diploma View */}
+                  {filter === "certificates" ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[10px] font-heading font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          Accredited Credential
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          100% Verified
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCertCourse(item)}
+                          className="btn-primary flex-1 py-2 px-3 text-xs font-heading font-extrabold inline-flex items-center justify-center gap-1.5 shadow-sm min-h-[38px] cursor-pointer"
                         >
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <span>Certificate</span>
-                      </button>
-
-                      {/* 2. Small Verify Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenVerifyForCourse(item)}
-                        className="px-3 py-2 text-xs font-heading font-bold rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 inline-flex items-center justify-center gap-1 transition-all min-h-[38px] cursor-pointer"
-                        title="Verify cryptographic authenticity in official registry"
-                      >
-                        <svg
-                          width="13"
-                          height="13"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                          <span>View Official Diploma</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenVerifyForCourse(item)}
+                          className="px-3 py-2 text-xs font-heading font-bold rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 inline-flex items-center justify-center gap-1 transition-all min-h-[38px] cursor-pointer"
+                          title="Verify cryptographic authenticity"
                         >
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <polyline points="9 12 11 14 15 10" />
-                        </svg>
-                        <span>Verify</span>
-                      </button>
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            <polyline points="9 12 11 14 15 10" />
+                          </svg>
+                          <span>Verify</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : isFinished ? (
+                    /* Case 2: In Completed Tab — Review Lessons or Claim/View Certificate */
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>Completed</span>
+                        </span>
+                      </div>
 
-                      {/* 3. Review Syllabus Link */}
-                      <Link
-                        href={`/course/${course.id}?start=true`}
-                        className="p-2 text-xs text-muted-foreground hover:text-foreground rounded-xl border border-border hover:bg-muted inline-flex items-center justify-center min-h-[38px]"
-                        title="Review course video lessons"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        {isCertUnlocked ? (
+                          <button
+                            type="button"
+                            onClick={() => setFilter("certificates")}
+                            className="btn-ghost text-xs px-3 py-1.5 font-heading font-bold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1 border border-emerald-500/30 hover:bg-emerald-500/10"
+                          >
+                            <span>Certificate Unlocked →</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCertCourse(item)}
+                            className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold shadow-sm inline-flex items-center gap-1"
+                          >
+                            <svg
+                              width="13"
+                              height="13"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <circle cx="12" cy="8" r="7" />
+                              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                            </svg>
+                            <span>Claim Certificate (₹29)</span>
+                          </button>
+                        )}
+                        <Link
+                          href={`/course/${course.id}?start=true`}
+                          className="btn-ghost text-xs px-2.5 py-1.5 font-heading text-muted-foreground hover:text-foreground"
+                        >
+                          Review
+                        </Link>
+                      </div>
                     </div>
                   ) : (
+                    /* Case 3: In Progress / All Courses — Clean Learning Action (No Certificate Clutter) */
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-body text-muted-foreground">
-                        {pct === 0 ? "Just Enrolled" : "In progress"}
+                        {completedCount === 0
+                          ? "Just Started"
+                          : `${completedCount}/${course.lessonCount} done`}
                       </span>
                       <Link
                         href={`/course/${course.id}?start=true`}
-                        className="text-xs font-heading font-bold text-primary-600 dark:text-primary-400 hover:translate-x-0.5 transition-transform inline-flex items-center gap-1"
+                        className="btn-primary text-xs font-heading font-bold px-4 py-2 rounded-xl inline-flex items-center gap-1.5 shadow-sm active:scale-95"
                       >
-                        <span>{pct === 0 ? "Get Started" : "Resume"}</span>
+                        <span>{completedCount === 0 ? "Start Learning" : "Continue Lesson"}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                           <polygon points="5 3 19 12 5 21 5 3" />
                         </svg>
@@ -614,6 +845,57 @@ export default function MyLearningPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Remove Course Confirmation Modal */}
+      {courseToRemove && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="clay-card p-6 bg-card border border-border rounded-3xl max-w-sm w-full shadow-2xl text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </div>
+            <h3 className="font-heading font-bold text-lg text-foreground mb-1">Remove Course?</h3>
+            <p className="text-xs text-muted-foreground font-body mb-5 leading-relaxed">
+              Do you want to remove{" "}
+              <span className="font-semibold text-foreground">
+                &ldquo;{courseToRemove.course.title}&rdquo;
+              </span>{" "}
+              from your dashboard? You can re-enroll anytime.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCourseToRemove(null)}
+                disabled={isRemoving}
+                className="btn-ghost flex-1 py-2.5 text-xs font-heading font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRemove}
+                disabled={isRemoving}
+                className="btn-destructive flex-1 py-2.5 text-xs font-heading font-bold shadow-md"
+              >
+                {isRemoving ? "Removing…" : "Remove"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
