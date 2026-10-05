@@ -276,9 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fbErr?.code === "auth/wrong-password" ||
         fbErr?.code === "auth/invalid-credential"
       ) {
-        setAuthError(
-          "Incorrect email or password. If you originally registered with Google, use 'Continue with Google' above. Or click 'Forgot password?' below to reset."
-        );
+        setAuthError("Wrong password. Try again or reset it below.");
       } else if (fbErr?.code === "auth/invalid-email") {
         setAuthError("Please enter a valid email address (e.g. name@example.com).");
       } else if (fbErr?.code === "auth/too-many-requests") {

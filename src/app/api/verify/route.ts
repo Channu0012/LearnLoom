@@ -112,17 +112,23 @@ async function handleVerification(request: NextRequest, rawId: string) {
   // 3. Check cryptographic HMAC signature algorithm
   const cryptoResult = verifyCertificateId(cleanId);
   if (cryptoResult.isValid) {
+    const qName = request.nextUrl.searchParams.get("n") || undefined;
+    const qCourse = request.nextUrl.searchParams.get("c") || undefined;
+    const qDate = request.nextUrl.searchParams.get("d") || undefined;
+    const qScore = request.nextUrl.searchParams.get("s");
+    const qLessons = request.nextUrl.searchParams.get("l");
+
     return NextResponse.json({
       isValid: true,
       id: cleanId,
       source: "cryptographic_hmac",
       certificate: {
         id: cleanId,
-        userName: "Distinguished Scholar",
-        courseTitle: "Accredited Continuing Computational Education",
-        lessonCount: 12,
-        quizScore: 100,
-        issuedDate: "October 2026",
+        userName: qName || "Distinguished Scholar",
+        courseTitle: qCourse || "Accredited Continuing Computational Education",
+        lessonCount: qLessons ? Number(qLessons) : 12,
+        quizScore: qScore ? Number(qScore) : 100,
+        issuedDate: qDate || "October 2026",
         verifyUrl: `https://veyskill.in/verify/${cleanId}`,
         verificationMethod: "Cryptographic HMAC-SHA256 Tamper-Proof Checksum",
         platform: "VeySkill",

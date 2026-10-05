@@ -230,6 +230,17 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setTextColor(11, 92, 88); // Prestigious Dark Teal (#0B5C58)
   doc.text(executiveTitle, centerX, 118, { align: "center" });
 
+  // 5b. Professional Completion Validation Statement (fills space elegantly)
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 116, 139); // Slate-500
+  doc.text(
+    "This accredited credential validates professional-grade competency through curriculum mastery and verified evaluation.",
+    centerX,
+    128,
+    { align: "center" }
+  );
+
   // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text)
   const cleanDate = issuedDate.trim() || "October 2026";
   doc.setFont("helvetica", "bold");
@@ -238,7 +249,25 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.text(cleanDate, centerX, 148, { align: "center" });
 
   // 7. Scannable QR Code (Bottom-Left Quadrant, creating perfect balance with Instructor Signature)
-  const effectiveVerifyUrl = verifyUrl || `https://veyskill.in/verify/${id}`;
+  const buildPdfVerifyUrl = () => {
+    let base = verifyUrl || `https://veyskill.in/verify/${id}`;
+    try {
+      const url = new URL(base, "https://veyskill.in");
+      if (cleanName && !url.searchParams.has("n")) {
+        url.searchParams.set("n", cleanName);
+      }
+      if (executiveTitle && !url.searchParams.has("c")) {
+        url.searchParams.set("c", executiveTitle);
+      }
+      if (cleanDate && !url.searchParams.has("d")) {
+        url.searchParams.set("d", cleanDate);
+      }
+      return url.toString();
+    } catch {
+      return base;
+    }
+  };
+  const effectiveVerifyUrl = buildPdfVerifyUrl();
   const qrX = 42;
   const qrY = 134;
   const qrSize = 26; // 26mm x 26mm high-precision scannable square

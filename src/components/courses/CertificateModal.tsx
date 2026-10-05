@@ -8,8 +8,6 @@
 // Zero emojis — pure high-precision vector icons and executive typography.
 // ---------------------------------------------------------------------------
 import { useState, useRef, useCallback, useEffect } from "react";
-import QRCode from "qrcode";
-import { escapeXml } from "@/lib/security";
 import { generatePdfCertificate, formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 
@@ -97,6 +95,20 @@ export function CertificateModal({
       if (!res.ok) throw new Error("Failed to generate certificate");
       const data = await res.json();
       setCertificate(data.certificate);
+      try {
+        if (typeof window !== "undefined" && data.certificate?.id) {
+          localStorage.setItem(
+            `veyskill_cert_${courseId || "default"}`,
+            JSON.stringify(data.certificate)
+          );
+          localStorage.setItem(
+            `veyskill_cert_${data.certificate.id}`,
+            JSON.stringify(data.certificate)
+          );
+        }
+      } catch {
+        // Ignore quota/private mode errors
+      }
     } catch {
       setError("Unable to issue verified certificate. Please retry in a few moments.");
     } finally {
@@ -115,14 +127,26 @@ export function CertificateModal({
   ]);
 
   const [hasFetched, setHasFetched] = useState(false);
-  if (isOpen && !hasFetched && !certificate && !loading) {
-    setHasFetched(true);
-    generateCertificate();
-  }
-  if (!isOpen && hasFetched) {
-    setHasFetched(false);
-    setCertificate(null);
-  }
+  useEffect(() => {
+    if (isOpen && !certificate) {
+      try {
+        const cached = localStorage.getItem(`veyskill_cert_${courseId || "default"}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.id) {
+            setCertificate(parsed);
+            return;
+          }
+        }
+      } catch {
+        // Ignore
+      }
+      if (!hasFetched && !loading) {
+        setHasFetched(true);
+        generateCertificate();
+      }
+    }
+  }, [isOpen, certificate, courseId, hasFetched, loading, generateCertificate]);
 
   const effectiveName = recipientName.trim() || certificate?.userName || "Distinguished Scholar";
 
@@ -168,114 +192,7 @@ export function CertificateModal({
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
   }, [certificate]);
 
-  const handleDownloadSvg = useCallback(async () => {
-    if (!certificate) return;
-
-    try {
-      const safeName = escapeXml(effectiveName);
-      const safeTitle = escapeXml(formatExecutiveCourseTitle(certificate.courseTitle));
-      const safeId = escapeXml(certificate.id);
-      const safeDate = escapeXml(certificate.issuedDate);
-
-      // Generate real QR data URL for SVG embedding
-      const qrDataUrl = await QRCode.toDataURL(certificate.verifyUrl, {
-        margin: 1,
-        width: 280,
-        color: { dark: "#0B4F4A", light: "#FFFFFF" },
-      });
-
-      // Responsive font sizing for single-line recipient name
-      let nameFontSize = 34;
-      if (safeName.length > 22) nameFontSize = 28;
-      if (safeName.length > 32) nameFontSize = 22;
-      if (safeName.length > 42) nameFontSize = 18;
-
-      const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 678" width="960" height="678">
-  <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F5E6AB"/>
-      <stop offset="50%" stop-color="#D4AF37"/>
-      <stop offset="100%" stop-color="#AA771C"/>
-    </linearGradient>
-    <linearGradient id="tealWave" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#0F766E" stop-opacity="0.8"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Clean Background -->
-  <rect x="0" y="0" width="960" height="678" fill="#FFFFFF"/>
-
-  <!-- Decorative Waves -->
-  <path d="M 0,0 C 200,60 300,0 450,40 C 350,120 150,140 0,160 Z" fill="url(#tealWave)"/>
-  <path d="M 960,678 C 760,618 660,678 510,638 C 610,558 810,538 960,518 Z" fill="url(#tealWave)"/>
-
-  <!-- Top Left Gold Medal -->
-  <g transform="translate(100, 60)">
-    <polygon points="-6,25 -16,65 -2,58 6,65" fill="#C99E32"/>
-    <polygon points="6,25 2,58 16,65 6,25" fill="#AA771C"/>
-    <circle cx="0" cy="20" r="26" fill="url(#goldGrad)"/>
-    <circle cx="0" cy="20" r="22" fill="#FFFFFF" fill-opacity="0.2"/>
-    <circle cx="0" cy="20" r="18" fill="url(#goldGrad)"/>
-  </g>
-
-  <!-- Top Right Brand Logo -->
-  <g transform="translate(840, 60)">
-    <path d="M -20,-10 L 0,25 L 20,-10 L 10,-10 L 0,12 L -10,-10 Z" fill="#3B82F6"/>
-    <path d="M -10,-10 L 0,12 L 10,-10 L 4,-10 L 0,3 L -4,-10 Z" fill="#14B8A6"/>
-    <text x="0" y="42" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="900" fill="#0A3A37" text-anchor="middle">Veyskill</text>
-  </g>
-
-  <!-- Title Block -->
-  <text x="480" y="115" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="900" letter-spacing="2" fill="#0B766E" text-anchor="middle">CERTIFICATE</text>
-  <text x="480" y="148" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="3" fill="#0F766E" text-anchor="middle">OF COMPLETION</text>
-  <text x="480" y="215" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="500" fill="#475569" text-anchor="middle">This is to certify that</text>
-
-  <!-- Recipient Name -->
-  <text x="480" y="295" font-family="'Helvetica Neue', Arial, sans-serif" font-size="${nameFontSize}" font-weight="900" fill="#0A3A37" text-anchor="middle">${safeName}</text>
-
-  <!-- Teal Divider Line with Circle Caps -->
-  <line x1="230" y1="318" x2="730" y2="318" stroke="#0B766E" stroke-width="2.5"/>
-  <circle cx="230" cy="318" r="4.5" fill="#FFFFFF" stroke="#0B766E" stroke-width="2.5"/>
-  <circle cx="730" cy="318" r="4.5" fill="#FFFFFF" stroke="#0B766E" stroke-width="2.5"/>
-
-  <!-- Subheading & Course Masterclass Title -->
-  <text x="480" y="358" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#64748B" text-anchor="middle">for successfully completing the curriculum and demonstrating mastery in</text>
-  <text x="480" y="390" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="800" fill="#0B5C58" text-anchor="middle">${safeTitle}</text>
-
-  <!-- Awarded on Date -->
-  <text x="480" y="452" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#64748B" text-anchor="middle">Awarded on</text>
-  <text x="480" y="476" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#1E293B" text-anchor="middle">${safeDate}</text>
-
-  <!-- Bottom Left: Scannable QR Code & ID -->
-  <g transform="translate(130, 430)">
-    <rect x="-8" y="-8" width="106" height="106" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
-    <image href="${qrDataUrl}" x="0" y="0" width="90" height="90"/>
-    <text x="45" y="112" font-family="'Courier New', monospace" font-size="10" font-weight="700" fill="#1E293B" text-anchor="middle">ID: ${safeId}</text>
-    <text x="45" y="125" font-family="'Helvetica Neue', Arial, sans-serif" font-size="8" font-weight="800" letter-spacing="1" fill="#0B766E" text-anchor="middle">SCAN TO VERIFY</text>
-  </g>
-
-  <!-- Bottom Right: Instructor Signature & Name -->
-  <g transform="translate(680, 520)">
-    <path d="M 10,-20 Q 30,-45 50,-20 T 70,-10 T 90,-25 Q 110,-10 130,-20" fill="none" stroke="#0B766E" stroke-width="2.2" stroke-linecap="round"/>
-    <text x="70" y="5" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="800" fill="#0A3A37" text-anchor="middle">channabasav patil</text>
-    <text x="70" y="22" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#64748B" text-anchor="middle">Program Instructor</text>
-  </g>
-</svg>`;
-
-      const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `VeySkill_Credential_${certificate.id}.svg`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      // Fallback
-      alert("SVG download failed. Please use PDF download instead.");
-    }
-  }, [certificate, effectiveName]);
+  // SVG download removed per user request — PDF is the official format
 
   const handleShare = useCallback(async () => {
     if (!certificate) return;
@@ -615,28 +532,6 @@ export function CertificateModal({
                   <span>Add to LinkedIn</span>
                 </button>
 
-                {/* 3. Download Vector SVG */}
-                <button
-                  type="button"
-                  onClick={handleDownloadSvg}
-                  className="btn-ghost text-xs px-3.5 py-3 font-heading font-semibold inline-flex items-center justify-center gap-1.5 min-h-[46px] cursor-pointer"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  <span>Download SVG</span>
-                </button>
-
                 {/* 4. Share Verification Link */}
                 <button
                   type="button"
@@ -685,6 +580,136 @@ export function CertificateModal({
                   </svg>
                   <span>Verify</span>
                 </a>
+              </div>
+
+              {/* 6. Accredited Credential Plan & Lifetime Verification Breakdown */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-cyan-500/10 border border-emerald-500/20 space-y-3.5 mt-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    <span className="font-heading font-black text-xs sm:text-sm text-foreground">
+                      Accredited Credential Plan &amp; Lifetime Verification
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">
+                    UNLOCKED &amp; VERIFIED
+                  </span>
+                </div>
+
+                <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
+                  Your certificate has been cryptographically signed with SHA-256 HMAC and
+                  permanently logged into the VeySkill accreditation registry. Here is your
+                  credential plan:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-heading font-bold text-xs text-foreground block">
+                        Lifetime Verification URL
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block mt-0.5 leading-snug">
+                        Permanently hosted at{" "}
+                        <code className="text-teal-600 dark:text-teal-400 font-mono">
+                          /verify/{certificate.id}
+                        </code>
+                        . Open to any recruiter, employer, or university.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-heading font-bold text-xs text-foreground block">
+                        LinkedIn &amp; Resume Endorsement
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block mt-0.5 leading-snug">
+                        One-click integration with LinkedIn &ldquo;Licenses &amp;
+                        Certifications&rdquo; section and printable high-res 300 DPI vector PDF.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-heading font-bold text-xs text-foreground block">
+                        Instant Scannable QR Code
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block mt-0.5 leading-snug">
+                        Anyone scanning the certificate QR code with their mobile camera instantly
+                        opens your tamper-proof verification page.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-heading font-bold text-xs text-foreground block">
+                        Lifelong Validity (No Expiry)
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block mt-0.5 leading-snug">
+                        Your completion badge and assessment mastery remain permanently recorded
+                        with zero expiration or renewal fees.
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}

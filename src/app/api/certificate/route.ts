@@ -130,15 +130,25 @@ export async function POST(request: NextRequest) {
     const certificateId = generateSecureCertificateId();
     const date = completedDate ? new Date(completedDate) : new Date();
 
+    const formattedDate = formatDate(date);
+    const queryParams = new URLSearchParams({
+      n: userName,
+      c: courseTitle,
+      d: formattedDate,
+      ...(lessonCount ? { l: String(lessonCount) } : {}),
+      ...(quizScore != null ? { s: String(quizScore) } : {}),
+    });
+    const verifyUrl = `https://veyskill.in/verify/${certificateId}?${queryParams.toString()}`;
+
     const certificate = {
       id: certificateId,
       userName,
       courseTitle,
       lessonCount: Math.max(0, Math.min(1000, lessonCount)),
       quizScore: quizScore != null ? Math.max(0, Math.min(100, Math.round(quizScore))) : null,
-      issuedDate: formatDate(date),
+      issuedDate: formattedDate,
       issuedTimestamp: date.toISOString(),
-      verifyUrl: `https://veyskill.in/verify/${certificateId}`,
+      verifyUrl,
       platform: "VeySkill",
     };
 

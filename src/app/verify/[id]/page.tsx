@@ -11,14 +11,20 @@ import { VerifyPdfDownloadButton } from "@/components/verify/VerifyPdfDownloadBu
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { id } = await params;
   const cleanId = normalizeCertificateId(id);
+  const query = (await searchParams) || {};
+  const queryName = typeof query.n === "string" ? query.n : undefined;
+  const queryCourse = typeof query.c === "string" ? query.c : undefined;
+  const scholar = queryName ? `${queryName}'s ` : "";
+  const course = queryCourse ? ` in ${queryCourse}` : "";
   return {
     title: `Verify Credential ${cleanId || id} | VeySkill Accredited Registry`,
-    description: `Official cryptographic credential verification for certificate ${cleanId || id} issued by VeySkill.`,
+    description: `Official cryptographic credential verification for ${scholar}certificate ${cleanId || id}${course} issued by VeySkill.`,
     robots: {
       index: false,
       follow: false,
@@ -40,9 +46,28 @@ interface CertRecord {
   managerTitle?: string;
 }
 
-export default async function VerifyCertificatePage({ params }: Props) {
+export default async function VerifyCertificatePage({ params, searchParams }: Props) {
   const { id: rawId } = await params;
   const cleanId = normalizeCertificateId(rawId);
+  const query = (await searchParams) || {};
+  const queryName =
+    typeof query.n === "string" ? query.n : Array.isArray(query.n) ? query.n[0] : undefined;
+  const queryCourse =
+    typeof query.c === "string" ? query.c : Array.isArray(query.c) ? query.c[0] : undefined;
+  const queryDate =
+    typeof query.d === "string" ? query.d : Array.isArray(query.d) ? query.d[0] : undefined;
+  const queryScore =
+    typeof query.s === "string"
+      ? Number(query.s)
+      : Array.isArray(query.s)
+        ? Number(query.s[0])
+        : null;
+  const queryLessons =
+    typeof query.l === "string"
+      ? Number(query.l)
+      : Array.isArray(query.l)
+        ? Number(query.l[0])
+        : null;
 
   let certRecord: CertRecord | null = null;
   let isDbVerified = false;
@@ -83,13 +108,15 @@ export default async function VerifyCertificatePage({ params }: Props) {
   const verification = verifyCertificateId(cleanId);
   const isValid = isDbVerified || Boolean(benchmark) || verification.isValid;
 
-  const recipientName = certRecord?.userName || "Distinguished Scholar";
+  const recipientName = certRecord?.userName || queryName || "Distinguished Scholar";
   const courseTitle = formatExecutiveCourseTitle(
-    certRecord?.courseTitle || "Advanced Technology Masterclass"
+    certRecord?.courseTitle || queryCourse || "Advanced Technology Masterclass"
   );
-  const lessonCount = certRecord?.lessonCount || 12;
-  const quizScore = certRecord?.quizScore ?? null;
-  const issuedDate = certRecord?.issuedDate || "October 2026";
+  const lessonCount =
+    certRecord?.lessonCount || (queryLessons && !isNaN(queryLessons) ? queryLessons : 12);
+  const quizScore =
+    certRecord?.quizScore ?? (queryScore != null && !isNaN(queryScore) ? queryScore : null);
+  const issuedDate = certRecord?.issuedDate || queryDate || "October 2026";
   const verifyUrl = `https://veyskill.in/verify/${cleanId}`;
 
   return (

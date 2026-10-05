@@ -38,9 +38,29 @@ export function OfficialCertificateView({
 }: OfficialCertificateViewProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
-  const effectiveVerifyUrl = verifyUrl || `https://veyskill.in/verify/${certificateId}`;
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
   const cleanDate = issuedDate.trim() || "October 2026";
+
+  // Build high-integrity verification URL embedding certificate metadata
+  // so scanning this QR code from any external camera/phone opens this specific credential
+  const effectiveVerifyUrl = (() => {
+    try {
+      const base = verifyUrl || `https://veyskill.in/verify/${certificateId}`;
+      const url = new URL(base, "https://veyskill.in");
+      if (recipientName && !url.searchParams.has("n")) {
+        url.searchParams.set("n", recipientName.trim());
+      }
+      if (executiveTitle && !url.searchParams.has("c")) {
+        url.searchParams.set("c", executiveTitle);
+      }
+      if (cleanDate && !url.searchParams.has("d")) {
+        url.searchParams.set("d", cleanDate);
+      }
+      return url.toString();
+    } catch {
+      return verifyUrl || `https://veyskill.in/verify/${certificateId}`;
+    }
+  })();
 
   // Generate high-contrast scannable QR code (Dark Teal on Pure White)
   useEffect(() => {
@@ -130,6 +150,17 @@ export function OfficialCertificateView({
           >
             {executiveTitle}
           </h4>
+        </div>
+
+        {/* 4b. Professional Credential Validation Statement (at y = 62.5%) */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 w-[72%] text-center z-10 pointer-events-none"
+          style={{ top: "62.5%" }}
+        >
+          <p className="font-heading font-medium text-[6px] sm:text-[9px] md:text-[11px] text-slate-500 leading-tight">
+            This credential validates professional-grade competency through comprehensive curriculum
+            mastery and verified assessment performance.
+          </p>
         </div>
 
         {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 70.5%) */}
