@@ -100,6 +100,7 @@ export interface LessonInput {
 export interface OEmbedResponse {
   title: string;
   author_name: string;
+  author_url?: string;
   thumbnail_url: string;
   provider_name: string;
 }

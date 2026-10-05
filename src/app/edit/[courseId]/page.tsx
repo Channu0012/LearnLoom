@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CourseEditor } from "@/components/courses/CourseEditor";
 
@@ -15,5 +16,9 @@ interface EditPageProps {
 
 export default async function EditPage({ params }: EditPageProps) {
   const { courseId } = await params;
-  return <CourseEditor courseId={courseId} />;
+  return (
+    <Suspense fallback={null}>
+      <CourseEditor courseId={courseId} />
+    </Suspense>
+  );
 }

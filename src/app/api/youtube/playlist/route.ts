@@ -110,6 +110,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing required parameter: url (or id)" }, { status: 400 });
   }
 
+  const lowerInput = inputParam.toLowerCase();
+  if (
+    lowerInput.includes("music.youtube.com") ||
+    lowerInput.includes("list=rd") ||
+    lowerInput.includes("list=olak") ||
+    lowerInput.includes("list=lm")
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "YouTube Music playlists, albums, and auto-generated mixes cannot be imported. VeySkill is strictly for educational courses and masterclasses.",
+        blocked: true,
+        category: "music",
+      },
+      { status: 422 }
+    );
+  }
+
   const playlistId = extractYouTubePlaylistId(inputParam);
   if (!playlistId) {
     return NextResponse.json(
@@ -152,7 +170,8 @@ export async function GET(request: NextRequest) {
         const val = validatePlaylistEducation(
           apiFallback.title,
           apiFallback.channelTitle,
-          apiFallback.videos
+          apiFallback.videos,
+          inputParam
         );
         if (!val.valid) {
           return NextResponse.json(
@@ -225,10 +244,7 @@ export async function GET(request: NextRequest) {
           vm.accessibilityContext?.label ||
           "";
 
-        // Strip trailing duration labels from accessibility label (e.g., "5 minutes, 3 seconds")
-        if (title.includes(" - ")) {
-          title = title.split(" - ")[0];
-        }
+        // Only strip trailing duration labels (e.g., "5 minutes, 3 seconds") if label was used
         title = title.replace(/\s+\d+\s+(?:minutes?|hours?|seconds?).*$/i, "").trim();
 
         // Filter out private or deleted videos
@@ -290,7 +306,8 @@ export async function GET(request: NextRequest) {
         const val = validatePlaylistEducation(
           apiFallback.title,
           apiFallback.channelTitle,
-          apiFallback.videos
+          apiFallback.videos,
+          inputParam
         );
         if (!val.valid) {
           return NextResponse.json(
@@ -327,7 +344,12 @@ export async function GET(request: NextRequest) {
       "";
 
     // Academic integrity check: Zero-tolerance playlist educational verification
-    const playlistValidation = validatePlaylistEducation(playlistTitle, channelName, videos);
+    const playlistValidation = validatePlaylistEducation(
+      playlistTitle,
+      channelName,
+      videos,
+      inputParam
+    );
     if (!playlistValidation.valid) {
       return NextResponse.json(
         {

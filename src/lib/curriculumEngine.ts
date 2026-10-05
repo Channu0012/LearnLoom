@@ -1370,8 +1370,8 @@ export function checkCertificateEligibility(
       `${title} ${desc}`
     );
 
-  // If course has only 1 lesson and matches roadmap/brief overview keywords
-  if (lessonCount <= 1 && isRoadmapKeyword) {
+  // If course matches roadmap/brief overview keywords
+  if (isRoadmapKeyword) {
     return {
       eligible: false,
       label: "Educational Roadmap",
@@ -1380,19 +1380,14 @@ export function checkCertificateEligibility(
     };
   }
 
-  // If single video with no structured curriculum depth (1 lesson only)
-  if (lessonCount <= 1) {
-    // If title explicitly claims full masterclass or complete bootcamps, allow, otherwise mark as open guide
-    const isFullCourse =
-      /\b(full course|bootcamp|masterclass|complete course|complete guide)\b/i.test(title);
-    if (!isFullCourse) {
-      return {
-        eligible: false,
-        label: "Informational Video Guide",
-        reason:
-          "This is an open educational guide. Verified credentials require a multi-lesson structured curriculum.",
-      };
-    }
+  // Strictly NO certificates for single educational videos or non-course guides (< 2 lessons)
+  if (lessonCount < 2) {
+    return {
+      eligible: false,
+      label: "Educational Video Guide",
+      reason:
+        "This is a single-module educational guide. Official accredited certificates are exclusively awarded for structured multi-lesson course curricula (2+ modules).",
+    };
   }
 
   return {

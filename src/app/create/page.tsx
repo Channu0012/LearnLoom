@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CourseEditor } from "@/components/courses/CourseEditor";
 
@@ -11,5 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default function CreatePage() {
-  return <CourseEditor />;
+  return (
+    <Suspense fallback={null}>
+      <CourseEditor />
+    </Suspense>
+  );
 }

@@ -34,6 +34,19 @@ export function HeroConverterBar() {
       return;
     }
 
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.includes("music.youtube.com") ||
+      lower.includes("list=rd") ||
+      lower.includes("list=olak") ||
+      lower.includes("list=lm")
+    ) {
+      setError(
+        "Commercial music tracks, songs, and albums cannot be imported. VeySkill is strictly for educational courses and masterclasses."
+      );
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
     router.push(`/create?url=${encodeURIComponent(trimmed)}`);

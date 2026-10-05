@@ -49,6 +49,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 2b. Check Certificate Eligibility (non-course single videos cannot purchase certificates)
+    const { checkCertificateEligibility } = await import("@/lib/curriculumEngine");
+    const lessonCount = typeof body.lessonCount === "number" ? body.lessonCount : 1;
+    const eligibility = checkCertificateEligibility(courseTitle, lessonCount);
+    if (!eligibility.eligible) {
+      return NextResponse.json({ error: eligibility.reason, notEligible: true }, { status: 400 });
+    }
+
     // 3. Generate unique order ID
     const orderId = generateOrderId(uid, courseId);
 

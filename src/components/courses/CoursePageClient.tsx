@@ -851,7 +851,7 @@ function CoursePlayerContent({
             </Link>
             <span className="text-muted-foreground text-xs">/</span>
             <span className="text-xs font-heading font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md">
-              Academic Masterclass
+              {certEligibility.eligible ? "Academic Masterclass" : certEligibility.label}
             </span>
           </div>
           <h1 className="font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl text-foreground break-words line-clamp-2 sm:line-clamp-none">

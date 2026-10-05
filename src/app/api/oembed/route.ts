@@ -82,7 +82,12 @@ export async function GET(request: NextRequest) {
     const data = (await response.json()) as OEmbedResponse;
 
     // Academic integrity check: block commercial movies, songs, trailers, entertainment
-    const filter = validateEducationalContent(data.title ?? "", data.author_name);
+    const filter = validateEducationalContent(
+      data.title ?? "",
+      data.author_name,
+      urlParam,
+      data.author_url
+    );
     if (filter.blocked) {
       return NextResponse.json(
         {

@@ -55,6 +55,39 @@ describe("validateEducationalContent", () => {
       expect(res.blocked).toBe(true);
       expect(res.category).toBe("music");
     });
+
+    it("blocks singles without official music video tag (e.g. Alan Walker - Faded)", () => {
+      const res = validateEducationalContent("Alan Walker - Faded", "Alan Walker");
+      expect(res.blocked).toBe(true);
+      expect(res.category).toBe("music");
+    });
+
+    it("blocks YouTube Music domain links", () => {
+      const res = validateEducationalContent(
+        "Faded",
+        "Alan Walker",
+        "https://music.youtube.com/watch?v=60ItHLz5WEA"
+      );
+      expect(res.blocked).toBe(true);
+      expect(res.category).toBe("music");
+      expect(res.reason).toContain("YouTube Music");
+    });
+
+    it("blocks YouTube Music radio mix lists (list=RD...)", () => {
+      const res = validateEducationalContent(
+        "Shape of You",
+        "Ed Sheeran",
+        "https://www.youtube.com/watch?v=JGwWNGJdvx8&list=RDJGwWNGJdvx8"
+      );
+      expect(res.blocked).toBe(true);
+      expect(res.category).toBe("music");
+    });
+
+    it("blocks YouTube topic channels (- Topic)", () => {
+      const res = validateEducationalContent("Song Track", "Coldplay - Topic");
+      expect(res.blocked).toBe(true);
+      expect(res.category).toBe("music");
+    });
   });
 
   describe("blocks commercial movies, trailers, and film clips", () => {

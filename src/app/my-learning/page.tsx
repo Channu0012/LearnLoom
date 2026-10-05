@@ -9,6 +9,7 @@ import type { CourseDoc, ProgressDoc } from "@/lib/types";
 import { CourseraLoader } from "@/components/ui/CourseraLoader";
 import { CertificateModal } from "@/components/courses/CertificateModal";
 import { normalizeCertificateId, verifyCertificateId } from "@/lib/security";
+import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 
 interface CourseWithProgress {
   course: CourseDoc;
@@ -142,13 +143,14 @@ export default function MyLearningPage() {
       (item.course.lessonCount || 0) > 0
   );
 
-  // Certificates tab ONLY shows courses that are completed AND paid/issued
+  // Certificates tab ONLY shows courses that are completed, paid/issued, AND eligible for accredited credentials
   const certificateItems = completedItems.filter(
     (item) =>
-      paidCourseIds.has(item.course.id) ||
-      Boolean(item.progress.certificateIssued) ||
-      Boolean(item.progress.hasPaidCertificate) ||
-      Boolean(item.progress.certificateId)
+      checkCertificateEligibility(item.course.title, item.course.lessonCount).eligible &&
+      (paidCourseIds.has(item.course.id) ||
+        Boolean(item.progress.certificateIssued) ||
+        Boolean(item.progress.hasPaidCertificate) ||
+        Boolean(item.progress.certificateId))
   );
 
   const displayedItems =
@@ -514,11 +516,13 @@ export default function MyLearningPage() {
             const totalCount = Math.max(1, course.lessonCount || 1);
             const pct = Math.min(100, Math.max(0, Math.round((completedCount / totalCount) * 100)));
             const isFinished = pct === 100;
+            const certEligibility = checkCertificateEligibility(course.title, course.lessonCount);
             const isCertUnlocked =
-              paidCourseIds.has(course.id) ||
-              Boolean(progress.certificateIssued) ||
-              Boolean(progress.hasPaidCertificate) ||
-              Boolean(progress.certificateId);
+              certEligibility.eligible &&
+              (paidCourseIds.has(course.id) ||
+                Boolean(progress.certificateIssued) ||
+                Boolean(progress.hasPaidCertificate) ||
+                Boolean(progress.certificateId));
 
             return (
               <div
@@ -786,7 +790,11 @@ export default function MyLearningPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {isCertUnlocked ? (
+                        {!certEligibility.eligible ? (
+                          <span className="text-[11px] font-heading font-medium text-muted-foreground bg-muted/60 border border-border px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                            <span>Educational Guide · Completed</span>
+                          </span>
+                        ) : isCertUnlocked ? (
                           <button
                             type="button"
                             onClick={() => setFilter("certificates")}

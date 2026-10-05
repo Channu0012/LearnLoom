@@ -125,6 +125,15 @@ describe("Curriculum Engine & Domain Intelligence", () => {
     });
     expect(singleVideoCheatSheet.eligible).toBe(false);
 
+    // Any single educational video (< 2 lessons) is strictly non-eligible for certificates
+    const singleEducationalVideo = checkCertificateEligibility({
+      title: "Python Full Course for Beginners [2026]",
+      description: "Learn Python programming in one single video",
+      lessonCount: 1,
+    });
+    expect(singleEducationalVideo.eligible).toBe(false);
+    expect(singleEducationalVideo.label).toBe("Educational Video Guide");
+
     // Multi-module comprehensive masterclass SHOULD be eligible
     const masterclassCheck = checkCertificateEligibility({
       title: "Complete Python Mastery & Cloud Architecture",

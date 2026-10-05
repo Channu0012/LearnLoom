@@ -6,7 +6,7 @@
 // /edit/[courseId] → edit existing draft (owner only)
 // ---------------------------------------------------------------------------
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   LIMITS,
@@ -198,8 +198,129 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   const [saveError, setSaveError] = useState("");
   const [loadingCourse, setLoadingCourse] = useState(!!courseId);
 
+  const searchParams = useSearchParams();
+  const [initialUrlHandled, setInitialUrlHandled] = useState(false);
+
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Auto-import when redirected from homepage with ?url=
+  useEffect(() => {
+    if (initialUrlHandled || !searchParams || courseId) return;
+    const paramUrl = searchParams.get("url");
+    if (!paramUrl) return;
+
+    setInitialUrlHandled(true);
+    const trimmed = paramUrl.trim();
+    const lower = trimmed.toLowerCase();
+
+    // Strict URL check
+    if (
+      lower.includes("music.youtube.com") ||
+      lower.includes("list=rd") ||
+      lower.includes("list=olak") ||
+      lower.includes("list=lm")
+    ) {
+      setUrlError(
+        "Commercial music tracks, albums, and auto-generated mixes cannot be imported. VeySkill is strictly for educational courses and masterclasses."
+      );
+      return;
+    }
+
+    if (trimmed.includes("list=") || extractYouTubePlaylistId(trimmed)) {
+      setImportMode("playlist");
+      setPlaylistInput(trimmed);
+      (async () => {
+        setPlaylistImporting(true);
+        setUrlError("");
+        try {
+          const res = await fetch(`/api/youtube/playlist?url=${encodeURIComponent(trimmed)}`);
+          const data = await res.json();
+          if (!res.ok || data.error || data.blocked) {
+            setUrlError(
+              data.error ||
+                "This playlist cannot be imported. Only verified educational masterclasses and coursework are permitted."
+            );
+            return;
+          }
+          if (data.videos && data.videos.length > 0) {
+            const playlistIntegrity = validatePlaylistEducation(
+              data.title || "",
+              data.channelTitle || "",
+              data.videos,
+              trimmed
+            );
+            if (!playlistIntegrity.valid) {
+              setUrlError(
+                playlistIntegrity.reason ||
+                  "This playlist cannot be imported. Only verified educational masterclasses and coursework are permitted."
+              );
+              return;
+            }
+            if (!title.trim() && data.title) {
+              setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
+            }
+            const newLessons: LessonInput[] = data.videos.map((v: any, index: number) => ({
+              tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+              youtubeId: v.videoId,
+              title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
+              thumbnailUrl: v.thumbnailUrl || youtubeThumbnail(v.videoId),
+            }));
+            setLessons((prev) => [...prev, ...newLessons]);
+            setPlaylistSuccessMsg(
+              `Imported ${data.videos.length} educational lessons successfully.`
+            );
+          }
+        } catch {
+          setUrlError("Failed to import playlist. Please ensure it is public and educational.");
+        } finally {
+          setPlaylistImporting(false);
+        }
+      })();
+    } else if (extractYouTubeId(trimmed)) {
+      setImportMode("single");
+      setUrlInput(trimmed);
+      (async () => {
+        setFetchingVideo(true);
+        setUrlError("");
+        try {
+          const res = await fetch(`/api/oembed?url=${encodeURIComponent(trimmed)}`);
+          const data = await res.json();
+          if (!res.ok || data.blocked || data.error || !data.videoId) {
+            setUrlError(
+              data.error ||
+                "This video cannot be imported. VeySkill strictly permits authentic educational lectures only. Commercial music, movies, and entertainment are prohibited."
+            );
+            return;
+          }
+          const filter = validateEducationalContent(data.title ?? "", data.channelName, trimmed);
+          if (filter.blocked) {
+            setUrlError(filter.reason || "This video is not educational and cannot be added.");
+            return;
+          }
+          setLessons((prev) => [
+            ...prev,
+            {
+              tempId: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              youtubeId: data.videoId!,
+              title: (data.title ?? "Untitled Video").slice(0, LIMITS.LESSON_TITLE),
+              thumbnailUrl: data.thumbnailUrl || youtubeThumbnail(data.videoId!),
+            },
+          ]);
+          if (!title.trim() && data.title) {
+            setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
+          }
+          setUrlInput("");
+        } catch {
+          setUrlError(
+            "Unable to import this video. Please ensure it is an active public educational video."
+          );
+        } finally {
+          setFetchingVideo(false);
+        }
+      })();
+    }
+  }, [searchParams, initialUrlHandled, courseId, title]);
 
   // Load existing course if editing
   useEffect(() => {
@@ -240,6 +361,19 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     const trimmedUrl = urlInput.trim();
     if (!trimmedUrl) return;
 
+    const lower = trimmedUrl.toLowerCase();
+    if (
+      lower.includes("music.youtube.com") ||
+      lower.includes("list=rd") ||
+      lower.includes("list=olak") ||
+      lower.includes("list=lm")
+    ) {
+      setUrlError(
+        "Commercial music tracks, songs, and albums cannot be imported. VeySkill is strictly for educational courses and masterclasses."
+      );
+      return;
+    }
+
     const videoId = extractYouTubeId(trimmedUrl);
     if (!videoId) {
       setUrlError(
@@ -269,7 +403,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       }
 
       // Strict client-side educational verification
-      const filter = validateEducationalContent(data.title ?? "", data.channelName);
+      const filter = validateEducationalContent(data.title ?? "", data.channelName, trimmedUrl);
       if (filter.blocked) {
         setUrlError(
           filter.reason ||
@@ -307,6 +441,19 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       return;
     }
 
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.includes("music.youtube.com") ||
+      lower.includes("list=rd") ||
+      lower.includes("list=olak") ||
+      lower.includes("list=lm")
+    ) {
+      setUrlError(
+        "Commercial music tracks, albums, and auto-generated mixes cannot be imported. VeySkill is strictly for educational courses and masterclasses."
+      );
+      return;
+    }
+
     const playlistId = extractYouTubePlaylistId(trimmed);
     if (!playlistId) {
       setUrlError(
@@ -320,6 +467,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       const res = await fetch(`/api/youtube/playlist?url=${encodeURIComponent(trimmed)}`);
       const data = (await res.json()) as {
         title?: string;
+        channelTitle?: string;
         videos?: { videoId: string; title: string; thumbnailUrl: string }[];
         error?: string;
       };
@@ -340,7 +488,12 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       }
 
       // Academic integrity check: Zero-tolerance playlist verification
-      const playlistIntegrity = validatePlaylistEducation(data.title || "", "", data.videos || []);
+      const playlistIntegrity = validatePlaylistEducation(
+        data.title || "",
+        data.channelTitle || "",
+        data.videos || [],
+        trimmed
+      );
 
       if (!playlistIntegrity.valid) {
         setUrlError(
@@ -412,7 +565,11 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
               continue;
             }
 
-            const localFilter = validateEducationalContent(data.title ?? "", data.channelName);
+            const localFilter = validateEducationalContent(
+              data.title ?? "",
+              data.channelName,
+              line
+            );
             if (localFilter.blocked) {
               skippedNonEducational++;
               continue;
