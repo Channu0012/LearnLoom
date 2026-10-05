@@ -1,6 +1,8 @@
 // ---------------------------------------------------------------------------
 // GET /api/youtube/playlist?url=<playlistUrlOrId>
 // Fetches full playlist metadata and video items from YouTube.
+// Features resilient multi-tier ingestion: fast scraper with private/deleted video
+// filtering, followed by official YouTube Data API v3 fallback.
 // ---------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from "next/server";
 import { extractYouTubePlaylistId } from "@/lib/constants";
@@ -31,6 +33,64 @@ export interface PlaylistVideoItem {
   videoId: string;
   title: string;
   thumbnailUrl: string;
+}
+
+/**
+ * Fallback to official YouTube Data API v3 if scraping is throttled.
+ */
+async function fetchViaOfficialApi(
+  playlistId: string
+): Promise<{ title: string; channelTitle: string; videos: PlaylistVideoItem[] } | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    // 1. Fetch playlist metadata
+    const metaRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${encodeURIComponent(
+        playlistId
+      )}&key=${apiKey}`
+    );
+    if (!metaRes.ok) return null;
+    const metaData = await metaRes.json();
+    const playlistItem = metaData.items?.[0]?.snippet;
+    const title = playlistItem?.title || "Imported Course";
+    const channelTitle = playlistItem?.channelTitle || "";
+
+    // 2. Fetch playlist items
+    const itemsRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${encodeURIComponent(
+        playlistId
+      )}&key=${apiKey}`
+    );
+    if (!itemsRes.ok) return null;
+    const itemsData = await itemsRes.json();
+
+    const videos: PlaylistVideoItem[] = [];
+    for (const item of itemsData.items || []) {
+      const vId = item.snippet?.resourceId?.videoId;
+      const vTitle = item.snippet?.title || "";
+      if (
+        vId &&
+        vTitle &&
+        !/private video|deleted video|\[deleted video\]|\[private video\]/i.test(vTitle)
+      ) {
+        videos.push({
+          videoId: vId,
+          title: vTitle.trim(),
+          thumbnailUrl:
+            item.snippet?.thumbnails?.high?.url ||
+            item.snippet?.thumbnails?.default?.url ||
+            `https://i.ytimg.com/vi/${vId}/hqdefault.jpg`,
+        });
+      }
+    }
+
+    if (videos.length === 0) return null;
+    return { title, channelTitle, videos };
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -78,20 +138,49 @@ export async function GET(request: NextRequest) {
 
     clearTimeout(timeout);
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Failed to access YouTube playlist. The playlist might be private or removed." },
-        { status: 404 }
-      );
+    let html = "";
+    if (res.ok) {
+      html = await res.text();
     }
 
-    const html = await res.text();
     const match = html.match(/ytInitialData\s*=\s*({.+?});<\/script>/);
 
+    // If scraping was blocked or returned no data, attempt official API fallback
     if (!match || !match[1]) {
+      const apiFallback = await fetchViaOfficialApi(playlistId);
+      if (apiFallback) {
+        const val = validatePlaylistEducation(
+          apiFallback.title,
+          apiFallback.channelTitle,
+          apiFallback.videos
+        );
+        if (!val.valid) {
+          return NextResponse.json(
+            {
+              error:
+                val.reason ||
+                "This playlist cannot be imported. It contains commercial entertainment or music videos that do not meet VeySkill academic standards.",
+              blocked: true,
+              offendingVideoTitle: val.offendingVideoTitle,
+            },
+            { status: 422 }
+          );
+        }
+        return NextResponse.json({
+          playlistId,
+          title: apiFallback.title,
+          channelTitle: apiFallback.channelTitle,
+          itemCount: apiFallback.videos.length,
+          videos: apiFallback.videos,
+        });
+      }
+
       return NextResponse.json(
-        { error: "Could not parse playlist information from YouTube." },
-        { status: 500 }
+        {
+          error:
+            "Could not parse playlist information from YouTube. The playlist might be private, restricted, or unavailable.",
+        },
+        { status: 404 }
       );
     }
 
@@ -142,7 +231,16 @@ export async function GET(request: NextRequest) {
         }
         title = title.replace(/\s+\d+\s+(?:minutes?|hours?|seconds?).*$/i, "").trim();
 
-        if (videoId && typeof videoId === "string" && !videos.some((v) => v.videoId === videoId)) {
+        // Filter out private or deleted videos
+        const isUnavailable =
+          /private video|deleted video|\[deleted video\]|\[private video\]/i.test(title);
+
+        if (
+          !isUnavailable &&
+          videoId &&
+          typeof videoId === "string" &&
+          !videos.some((v) => v.videoId === videoId)
+        ) {
           videos.push({
             videoId,
             title: title || `Lesson ${videos.length + 1}`,
@@ -155,13 +253,24 @@ export async function GET(request: NextRequest) {
       if (o.playlistVideoRenderer) {
         const pvr = o.playlistVideoRenderer;
         const videoId = pvr.videoId;
-        const title =
-          pvr.title?.runs?.[0]?.text || pvr.title?.simpleText || `Lesson ${videos.length + 1}`;
+        const title = (
+          pvr.title?.runs?.[0]?.text ||
+          pvr.title?.simpleText ||
+          `Lesson ${videos.length + 1}`
+        ).trim();
 
-        if (videoId && typeof videoId === "string" && !videos.some((v) => v.videoId === videoId)) {
+        const isUnavailable =
+          /private video|deleted video|\[deleted video\]|\[private video\]/i.test(title);
+
+        if (
+          !isUnavailable &&
+          videoId &&
+          typeof videoId === "string" &&
+          !videos.some((v) => v.videoId === videoId)
+        ) {
           videos.push({
             videoId,
-            title: title.trim(),
+            title,
             thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
           });
         }
@@ -175,10 +284,38 @@ export async function GET(request: NextRequest) {
     walk(ytData);
 
     if (videos.length === 0) {
+      // Try official API as fallback before giving up
+      const apiFallback = await fetchViaOfficialApi(playlistId);
+      if (apiFallback && apiFallback.videos.length > 0) {
+        const val = validatePlaylistEducation(
+          apiFallback.title,
+          apiFallback.channelTitle,
+          apiFallback.videos
+        );
+        if (!val.valid) {
+          return NextResponse.json(
+            {
+              error:
+                val.reason ||
+                "This playlist cannot be imported. It contains commercial entertainment or music videos.",
+              blocked: true,
+            },
+            { status: 422 }
+          );
+        }
+        return NextResponse.json({
+          playlistId,
+          title: apiFallback.title,
+          channelTitle: apiFallback.channelTitle,
+          itemCount: apiFallback.videos.length,
+          videos: apiFallback.videos,
+        });
+      }
+
       return NextResponse.json(
         {
           error:
-            "No videos found in this playlist. Please ensure the playlist is public and contains videos.",
+            "No public videos found in this playlist. Please ensure the playlist is public and contains active videos.",
         },
         { status: 404 }
       );
@@ -209,17 +346,18 @@ export async function GET(request: NextRequest) {
       title: playlistTitle,
       channelTitle: channelName,
       itemCount: videos.length,
-      videos: videos.slice(0, 150), // Supports massive playlists up to 150 lessons
+      videos,
     });
-  } catch (err: any) {
-    if (err?.name === "AbortError") {
+  } catch (err: unknown) {
+    if ((err as { name?: string })?.name === "AbortError") {
       return NextResponse.json(
-        { error: "Request timed out while connecting to YouTube." },
+        { error: "Request timed out while connecting to YouTube. Please try again." },
         { status: 504 }
       );
     }
+
     return NextResponse.json(
-      { error: "Failed to import YouTube playlist. Please try again." },
+      { error: "An unexpected error occurred while fetching the playlist. Please try again." },
       { status: 500 }
     );
   }

@@ -6,7 +6,7 @@
 // smart "Refresh Feed" button that prioritizes new or unseen courses (persisted
 // in localStorage), and distraction-free video masterclasses grid.
 // ---------------------------------------------------------------------------
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { searchCoursesFullStrength } from "@/lib/keywords";
@@ -52,8 +52,10 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(COURSES_PER_PAGE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Sync initial URL query param if present (?q=... or ?search=...)
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function ExplorePage() {
     }
 
     setFeedCourses(nextFeed);
-    setCurrentPage(1);
+    setVisibleCount(COURSES_PER_PAGE);
     setRefreshMessage(msg);
 
     setTimeout(() => {
@@ -148,27 +150,46 @@ export default function ExplorePage() {
     return ranked.map((r) => r.course);
   }, [rawCourses, feedCourses, searchInput]);
 
-  // Reset pagination on search change
+  // Reset visibleCount on search change
   useEffect(() => {
-    setCurrentPage(1);
+    setVisibleCount(COURSES_PER_PAGE);
   }, [searchInput]);
+
+  const loadMore = useCallback(() => {
+    if (visibleCount >= courses.length || isLoadingMore) return;
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => Math.min(prev + COURSES_PER_PAGE, courses.length));
+      setIsLoadingMore(false);
+    }, 200);
+  }, [visibleCount, courses.length, isLoadingMore]);
+
+  // YouTube-Style IntersectionObserver for continuous infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: "350px 0px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   const handleRefreshClick = () => {
     if (searchInput) setSearchInput("");
+    setVisibleCount(COURSES_PER_PAGE);
     refreshFeed(rawCourses);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
-  const paginatedCourses = courses.slice(
-    (currentPage - 1) * COURSES_PER_PAGE,
-    currentPage * COURSES_PER_PAGE
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const displayedCourses = courses.slice(0, visibleCount);
 
   return (
     <div className="container-page py-10 sm:py-16 w-full max-w-7xl mx-auto px-4 sm:px-6">
@@ -353,60 +374,38 @@ export default function ExplorePage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            {paginatedCourses.map((course) => (
+            {displayedCourses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
 
-          {/* Clean Numbered Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-14 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border">
-              <p className="text-xs text-muted-foreground font-body">
-                Showing {(currentPage - 1) * COURSES_PER_PAGE + 1}–
-                {Math.min(currentPage * COURSES_PER_PAGE, courses.length)} of {courses.length}{" "}
-                masterclasses
-              </p>
-
-              <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+          {/* YouTube-Style Infinite Scroll Sentinel & Smooth Loading Indicator */}
+          <div ref={sentinelRef} className="w-full py-10 flex flex-col items-center justify-center">
+            {visibleCount < courses.length ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 text-xs font-heading font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-4 py-2 rounded-full border border-teal-500/20 shadow-sm animate-fade-in">
+                  <div className="w-3.5 h-3.5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                  <span>Loading more masterclasses…</span>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-body">
+                  Showing {displayedCourses.length} of {courses.length} masterclasses
+                </span>
+              </div>
+            ) : courses.length > COURSES_PER_PAGE ? (
+              <div className="text-center py-6 space-y-2 border-t border-border/60 w-full max-w-md mx-auto animate-fade-in">
+                <p className="text-xs font-heading font-semibold text-muted-foreground">
+                  You&apos;ve reached the end of the catalog ({courses.length} masterclasses)
+                </p>
                 <button
                   type="button"
-                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="min-h-[44px] px-4 py-2 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all inline-flex items-center justify-center active:scale-95"
-                  aria-label="Previous page"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="text-xs font-heading font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 inline-flex items-center gap-1 cursor-pointer"
                 >
-                  ← Prev
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`w-10 h-10 sm:w-9 sm:h-9 min-h-[44px] sm:min-h-0 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer flex items-center justify-center active:scale-95 ${
-                      currentPage === pageNum
-                        ? "bg-teal-600 text-white shadow-sm"
-                        : "border border-border text-foreground hover:bg-muted"
-                    }`}
-                    aria-label={`Page ${pageNum}`}
-                    aria-current={currentPage === pageNum ? "page" : undefined}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="min-h-[44px] px-4 py-2 rounded-xl border border-border text-xs font-heading font-semibold hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all inline-flex items-center justify-center active:scale-95"
-                  aria-label="Next page"
-                >
-                  Next →
+                  <span>Back to top ↑</span>
                 </button>
               </div>
-            </div>
-          )}
+            ) : null}
+          </div>
         </>
       )}
     </div>

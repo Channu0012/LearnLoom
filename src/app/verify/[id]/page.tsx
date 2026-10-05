@@ -5,7 +5,9 @@ import {
   verifyCertificateId,
   BENCHMARK_CERTIFICATES,
 } from "@/lib/security";
+import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
+import { VerifyPdfDownloadButton } from "@/components/verify/VerifyPdfDownloadButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -70,10 +72,10 @@ export default async function VerifyCertificatePage({ params }: Props) {
       issuedDate: benchmark.issuedDate,
       verifyUrl: `https://veyskill.in/verify/${cleanId}`,
       platform: "VeySkill",
-      instructorName: benchmark.instructorName || "Jane Kane",
-      instructorTitle: benchmark.instructorTitle || "CURRICULUM DIRECTOR",
-      managerName: benchmark.managerName || "Thomson Loewe",
-      managerTitle: benchmark.managerTitle || "HEAD OF ACADEMIC CREDENTIALS",
+      instructorName: benchmark.instructorName || "channabasav patil",
+      instructorTitle: benchmark.instructorTitle || "Program Instructor",
+      managerName: benchmark.managerName || "VeySkill Academic Council",
+      managerTitle: benchmark.managerTitle || "ACCREDITED CREDENTIALS",
     };
   }
 
@@ -82,7 +84,9 @@ export default async function VerifyCertificatePage({ params }: Props) {
   const isValid = isDbVerified || Boolean(benchmark) || verification.isValid;
 
   const recipientName = certRecord?.userName || "Distinguished Scholar";
-  const courseTitle = certRecord?.courseTitle || "Accredited Continuing Computational Education";
+  const courseTitle = formatExecutiveCourseTitle(
+    certRecord?.courseTitle || "Advanced Technology Masterclass"
+  );
   const lessonCount = certRecord?.lessonCount || 12;
   const quizScore = certRecord?.quizScore ?? null;
   const issuedDate = certRecord?.issuedDate || "October 2026";
@@ -205,11 +209,16 @@ export default async function VerifyCertificatePage({ params }: Props) {
               </div>
             </div>
 
-            {/* Official Diploma Preview in Split Layout */}
+            {/* Official Diploma Preview in Master Template */}
             <div className="space-y-3 pt-4">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground block text-left">
-                Accredited Diploma Rendering:
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground block text-left">
+                  Official Accredited Credential View:
+                </span>
+                <span className="text-[10px] font-heading font-semibold text-emerald-600 dark:text-emerald-400">
+                  Tamper-Proof Holographic Record
+                </span>
+              </div>
               <div className="w-full shadow-2xl rounded-3xl overflow-hidden border border-border">
                 <OfficialCertificateView
                   recipientName={recipientName}
@@ -219,17 +228,26 @@ export default async function VerifyCertificatePage({ params }: Props) {
                   lessonCount={lessonCount}
                   quizScore={quizScore}
                   verifyUrl={verifyUrl}
-                  instructorName={certRecord?.instructorName || "Jane Kane"}
-                  instructorTitle={certRecord?.instructorTitle || "CURRICULUM DIRECTOR"}
-                  managerName={certRecord?.managerName || "Thomson Loewe"}
-                  managerTitle={certRecord?.managerTitle || "HEAD OF ACADEMIC CREDENTIALS"}
                   isInteractive={false}
                 />
               </div>
             </div>
 
+            {/* Direct Official PDF Download Action */}
+            <div className="pt-6 pb-2 border-t border-border/80 flex flex-col items-center gap-4">
+              <VerifyPdfDownloadButton
+                id={cleanId}
+                userName={recipientName}
+                courseTitle={courseTitle}
+                lessonCount={lessonCount}
+                quizScore={quizScore}
+                issuedDate={issuedDate}
+                verifyUrl={verifyUrl}
+              />
+            </div>
+
             {/* Navigation Actions */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/verify"
                 className="btn-ghost w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-2"
@@ -238,7 +256,7 @@ export default async function VerifyCertificatePage({ params }: Props) {
               </Link>
               <Link
                 href="/explore"
-                className="btn-primary w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-2"
+                className="btn-ghost w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-2"
               >
                 <span>Browse Accredited Courses</span>
               </Link>

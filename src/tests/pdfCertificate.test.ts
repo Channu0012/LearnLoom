@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createPdfCertificateDoc } from "@/lib/pdfCertificate";
+import { createPdfCertificateDoc, formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 
 describe("PDF Certificate Generator", () => {
   it("creates a valid PDF document with all required options", async () => {
@@ -48,5 +48,27 @@ describe("PDF Certificate Generator", () => {
     expect(doc).toBeDefined();
     const arrayBuffer = doc.output("arraybuffer");
     expect(arrayBuffer.byteLength).toBeGreaterThan(1000);
+  });
+
+  describe("formatExecutiveCourseTitle", () => {
+    it("converts single words into prestigious masterclasses", () => {
+      expect(formatExecutiveCourseTitle("java")).toBe("Java Programming Masterclass");
+      expect(formatExecutiveCourseTitle("python")).toBe(
+        "Python Architecture & Concurrency Masterclass"
+      );
+      expect(formatExecutiveCourseTitle("react")).toBe("Full Stack React & Next.js Masterclass");
+      expect(formatExecutiveCourseTitle("dsa")).toBe("Data Structures & Algorithms Masterclass");
+    });
+
+    it("cleans youtube playlist clutter while preserving academic title", () => {
+      expect(
+        formatExecutiveCourseTitle(
+          "Java Full Course (2026) | Complete 12 Hours Tutorial for Beginners"
+        )
+      ).toBe("Java Masterclass");
+      expect(formatExecutiveCourseTitle("Python for Data Science Bootcamp")).toBe(
+        "Python for Data Science Bootcamp"
+      );
+    });
   });
 });

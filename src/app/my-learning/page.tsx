@@ -420,8 +420,8 @@ export default function MyLearningPage() {
           {displayedItems.map((item) => {
             const { course, progress } = item;
             const completedCount = progress.completedLessonIds?.length || 0;
-            const totalCount = course.lessonCount || 1;
-            const pct = Math.min(100, Math.round((completedCount / totalCount) * 100));
+            const totalCount = Math.max(1, course.lessonCount || 1);
+            const pct = Math.min(100, Math.max(0, Math.round((completedCount / totalCount) * 100)));
             const isFinished = pct === 100;
 
             return (

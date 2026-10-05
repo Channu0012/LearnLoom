@@ -10,7 +10,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import QRCode from "qrcode";
 import { escapeXml } from "@/lib/security";
-import { generatePdfCertificate } from "@/lib/pdfCertificate";
+import { generatePdfCertificate, formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 
 interface CertificateData {
@@ -72,12 +72,13 @@ export function CertificateModal({
     setError(null);
     setPaymentRequired(false);
     try {
+      const executiveTitle = formatExecutiveCourseTitle(courseTitle);
       const res = await fetch("/api/certificate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userName: recipientName.trim() || userName || "Distinguished Scholar",
-          courseTitle,
+          courseTitle: executiveTitle,
           lessonCount,
           quizScore:
             quizScore != null && quizTotal ? Math.round((quizScore / quizTotal) * 100) : null,
@@ -172,98 +173,95 @@ export function CertificateModal({
 
     try {
       const safeName = escapeXml(effectiveName);
-      const safeTitle = escapeXml(certificate.courseTitle);
+      const safeTitle = escapeXml(formatExecutiveCourseTitle(certificate.courseTitle));
       const safeId = escapeXml(certificate.id);
       const safeDate = escapeXml(certificate.issuedDate);
 
       // Generate real QR data URL for SVG embedding
       const qrDataUrl = await QRCode.toDataURL(certificate.verifyUrl, {
-        margin: 0,
+        margin: 1,
         width: 280,
-        color: { dark: "#FFFFFF", light: "#081B33" },
+        color: { dark: "#0B4F4A", light: "#FFFFFF" },
       });
 
       // Responsive font sizing for single-line recipient name
-      let nameFontSize = 38;
-      if (safeName.length > 20) nameFontSize = 30;
-      if (safeName.length > 32) nameFontSize = 24;
-      if (safeName.length > 44) nameFontSize = 18;
+      let nameFontSize = 34;
+      if (safeName.length > 22) nameFontSize = 28;
+      if (safeName.length > 32) nameFontSize = 22;
+      if (safeName.length > 42) nameFontSize = 18;
 
       const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640">
-  <!-- Right White Canvas -->
-  <rect x="0" y="0" width="960" height="640" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 678" width="960" height="678">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5E6AB"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#AA771C"/>
+    </linearGradient>
+    <linearGradient id="tealWave" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0F766E" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Left Obsidian Navy Anchor Bar -->
-  <rect x="0" y="0" width="220" height="640" fill="#081B33"/>
+  <!-- Clean Background -->
+  <rect x="0" y="0" width="960" height="678" fill="#FFFFFF"/>
 
-  <!-- Left Bar: VeySkill Crest Logo -->
-  <polygon points="110,50 82,65 138,65" fill="#FFFFFF"/>
-  <polygon points="110,80 82,65 138,65" fill="#FFFFFF"/>
-  <polyline points="82,80 110,94 138,80" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
-  <polyline points="82,92 110,106 138,92" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <!-- Decorative Waves -->
+  <path d="M 0,0 C 200,60 300,0 450,40 C 350,120 150,140 0,160 Z" fill="url(#tealWave)"/>
+  <path d="M 960,678 C 760,618 660,678 510,638 C 610,558 810,538 960,518 Z" fill="url(#tealWave)"/>
 
-  <!-- Left Bar: Brand Text -->
-  <text x="110" y="145" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="4" fill="#FFFFFF" text-anchor="middle">VEYSKILL</text>
-  <text x="110" y="165" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="2" fill="#CBD5E1" text-anchor="middle">ONLINE ACADEMY</text>
-
-  <!-- Left Bar: Real Scannable QR Code -->
-  <image href="${qrDataUrl}" x="45" y="450" width="130" height="130"/>
-  <text x="110" y="605" font-family="'Courier New', monospace" font-size="9" font-weight="700" letter-spacing="2" fill="#CBD5E1" text-anchor="middle">SCAN TO VERIFY</text>
-
-  <!-- Right Canvas: Subtle Guilloche Wave Watermark -->
-  <g stroke="#F1F5F9" stroke-width="1.2" fill="none">
-    <path d="M 220,120 C 400,40 600,200 960,120"/>
-    <path d="M 220,140 C 400,60 600,220 960,140"/>
-    <path d="M 220,160 C 400,80 600,240 960,160"/>
-    <path d="M 220,340 C 500,200 700,480 960,340"/>
-    <path d="M 220,360 C 500,220 700,500 960,360"/>
-    <circle cx="850" cy="500" r="160" stroke-width="0.8"/>
-    <circle cx="850" cy="500" r="120" stroke-width="0.8"/>
+  <!-- Top Left Gold Medal -->
+  <g transform="translate(100, 60)">
+    <polygon points="-6,25 -16,65 -2,58 6,65" fill="#C99E32"/>
+    <polygon points="6,25 2,58 16,65 6,25" fill="#AA771C"/>
+    <circle cx="0" cy="20" r="26" fill="url(#goldGrad)"/>
+    <circle cx="0" cy="20" r="22" fill="#FFFFFF" fill-opacity="0.2"/>
+    <circle cx="0" cy="20" r="18" fill="url(#goldGrad)"/>
   </g>
 
-  <!-- Right Canvas: Title Block -->
-  <text x="270" y="95" font-family="'Helvetica Neue', Arial, sans-serif" font-size="44" font-weight="900" letter-spacing="1" fill="#0F172A">CERTIFICATE</text>
-  <text x="270" y="125" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="3" fill="#1E293B">OF COMPLETION</text>
+  <!-- Top Right Brand Logo -->
+  <g transform="translate(840, 60)">
+    <path d="M -20,-10 L 0,25 L 20,-10 L 10,-10 L 0,12 L -10,-10 Z" fill="#3B82F6"/>
+    <path d="M -10,-10 L 0,12 L 10,-10 L 4,-10 L 0,3 L -4,-10 Z" fill="#14B8A6"/>
+    <text x="0" y="42" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="900" fill="#0A3A37" text-anchor="middle">Veyskill</text>
+  </g>
 
-  <!-- Top Right: Gold Award Medallion with Ribbons -->
-  <!-- Ribbons -->
-  <polygon points="868,75 852,145 870,135 882,145" fill="#081B33"/>
-  <polygon points="882,75 870,135 882,145 898,135 882,75" fill="#081B33"/>
-  <!-- Gold Core -->
-  <circle cx="875" cy="75" r="42" fill="#D4AF37"/>
-  <circle cx="875" cy="75" r="38" fill="#F3E5AB"/>
-  <circle cx="875" cy="75" r="34" fill="#ECC867"/>
-  <!-- Stars -->
-  <text x="875" y="65" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#855806" text-anchor="middle">★ ★ ★</text>
-  <text x="875" y="82" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="900" fill="#523602" text-anchor="middle">2026</text>
-  <text x="875" y="94" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" font-weight="800" letter-spacing="1" fill="#6E4703" text-anchor="middle">AWARDED</text>
+  <!-- Title Block -->
+  <text x="480" y="115" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="900" letter-spacing="2" fill="#0B766E" text-anchor="middle">CERTIFICATE</text>
+  <text x="480" y="148" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="3" fill="#0F766E" text-anchor="middle">OF COMPLETION</text>
+  <text x="480" y="215" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="500" fill="#475569" text-anchor="middle">This is to certify that</text>
 
-  <!-- Recipient Intro -->
-  <text x="270" y="215" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="500" fill="#64748B">We proudly present this certificate to</text>
+  <!-- Recipient Name -->
+  <text x="480" y="295" font-family="'Helvetica Neue', Arial, sans-serif" font-size="${nameFontSize}" font-weight="900" fill="#0A3A37" text-anchor="middle">${safeName}</text>
 
-  <!-- Recipient Name (Auto-Scaled Single Line) -->
-  <text x="270" y="270" font-family="'Helvetica Neue', Arial, sans-serif" font-size="${nameFontSize}" font-weight="900" fill="#0F172A">${safeName}</text>
-  <line x1="270" y1="290" x2="890" y2="290" stroke="#E2E8F0" stroke-width="1.5"/>
+  <!-- Teal Divider Line with Circle Caps -->
+  <line x1="230" y1="318" x2="730" y2="318" stroke="#0B766E" stroke-width="2.5"/>
+  <circle cx="230" cy="318" r="4.5" fill="#FFFFFF" stroke="#0B766E" stroke-width="2.5"/>
+  <circle cx="730" cy="318" r="4.5" fill="#FFFFFF" stroke="#0B766E" stroke-width="2.5"/>
 
-  <!-- Course Statement -->
-  <text x="270" y="335" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#475569">honouring completion of the curriculum: <tspan font-weight="800" fill="#0F172A">"${safeTitle}"</tspan></text>
-  <text x="270" y="360" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#475569">For demonstrating academic mastery across ${certificate.lessonCount} comprehensive modules${certificate.quizScore != null ? `, with a passing grade of ${certificate.quizScore}%` : ""}.</text>
+  <!-- Subheading & Course Masterclass Title -->
+  <text x="480" y="358" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#64748B" text-anchor="middle">for successfully completing the curriculum and demonstrating mastery in</text>
+  <text x="480" y="390" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="800" fill="#0B5C58" text-anchor="middle">${safeTitle}</text>
 
-  <!-- Bottom Divider Line -->
-  <line x1="270" y1="470" x2="890" y2="470" stroke="#E2E8F0" stroke-width="1.5"/>
+  <!-- Awarded on Date -->
+  <text x="480" y="452" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#64748B" text-anchor="middle">Awarded on</text>
+  <text x="480" y="476" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#1E293B" text-anchor="middle">${safeDate}</text>
 
-  <!-- Left Signature -->
-  <text x="270" y="520" font-family="'Brush Script MT', cursive, Georgia, serif" font-size="28" font-style="italic" fill="#0F172A">Jane Kane</text>
-  <text x="270" y="545" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#0F172A">Jane Kane</text>
-  <text x="270" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1" fill="#64748B">CURRICULUM DIRECTOR</text>
-  <text x="270" y="582" font-family="'Courier New', monospace" font-size="11" font-weight="600" fill="#64748B">${safeDate}</text>
+  <!-- Bottom Left: Scannable QR Code & ID -->
+  <g transform="translate(130, 430)">
+    <rect x="-8" y="-8" width="106" height="106" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <image href="${qrDataUrl}" x="0" y="0" width="90" height="90"/>
+    <text x="45" y="112" font-family="'Courier New', monospace" font-size="10" font-weight="700" fill="#1E293B" text-anchor="middle">ID: ${safeId}</text>
+    <text x="45" y="125" font-family="'Helvetica Neue', Arial, sans-serif" font-size="8" font-weight="800" letter-spacing="1" fill="#0B766E" text-anchor="middle">SCAN TO VERIFY</text>
+  </g>
 
-  <!-- Right Signature -->
-  <text x="600" y="520" font-family="'Brush Script MT', cursive, Georgia, serif" font-size="28" font-style="italic" fill="#0F172A">Thomson Loewe</text>
-  <text x="600" y="545" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="800" fill="#0F172A">Thomson Loewe</text>
-  <text x="600" y="560" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1" fill="#64748B">HEAD OF ACADEMIC CREDENTIALS</text>
-  <text x="600" y="582" font-family="'Courier New', monospace" font-size="10" font-weight="700" fill="#64748B">${safeId}</text>
+  <!-- Bottom Right: Instructor Signature & Name -->
+  <g transform="translate(680, 520)">
+    <path d="M 10,-20 Q 30,-45 50,-20 T 70,-10 T 90,-25 Q 110,-10 130,-20" fill="none" stroke="#0B766E" stroke-width="2.2" stroke-linecap="round"/>
+    <text x="70" y="5" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="800" fill="#0A3A37" text-anchor="middle">channabasav patil</text>
+    <text x="70" y="22" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#64748B" text-anchor="middle">Program Instructor</text>
+  </g>
 </svg>`;
 
       const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
@@ -514,7 +512,7 @@ export function CertificateModal({
                 </a>
               </div>
 
-              {/* Official Classical Diploma Preview matching user standard */}
+              {/* Official Master Template Credential Preview */}
               <div ref={certRef} className="w-full">
                 <OfficialCertificateView
                   recipientName={effectiveName}
@@ -524,10 +522,6 @@ export function CertificateModal({
                   lessonCount={certificate.lessonCount}
                   quizScore={certificate.quizScore}
                   verifyUrl={certificate.verifyUrl}
-                  instructorName="Jane Kane"
-                  instructorTitle="CURRICULUM DIRECTOR"
-                  managerName="Thomson Loewe"
-                  managerTitle="HEAD OF ACADEMIC CREDENTIALS"
                   isInteractive={false}
                 />
               </div>

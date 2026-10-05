@@ -102,17 +102,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (firebaseUser) {
         try {
-          // Create/merge user document on first login
-          await createUserDoc(firebaseUser.uid, {
-            uid: firebaseUser.uid,
-            displayName: (
-              firebaseUser.displayName ??
-              firebaseUser.email?.split("@")[0] ??
-              "Learner"
-            ).slice(0, LIMITS.DISPLAY_NAME),
-            photoURL: firebaseUser.photoURL,
-          });
-          const doc = await getUser(firebaseUser.uid);
+          let doc = await getUser(firebaseUser.uid);
+          if (!doc) {
+            // First time login: create user document in Firestore
+            await createUserDoc(firebaseUser.uid, {
+              uid: firebaseUser.uid,
+              displayName: (
+                firebaseUser.displayName ??
+                firebaseUser.email?.split("@")[0] ??
+                "Learner"
+              ).slice(0, LIMITS.DISPLAY_NAME),
+              photoURL: firebaseUser.photoURL,
+            });
+            doc = await getUser(firebaseUser.uid);
+          }
           setUserDoc(doc);
         } catch {
           // If Firestore is offline or permission denied, set fallback memory representation

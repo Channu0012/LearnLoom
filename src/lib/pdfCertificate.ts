@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------
-// VeySkill Executive PDF Certificate Generator (A4 Landscape Brand Standard)
-// Modern split-layout with deep navy anchor bar, scannable QR code, gold award medallion,
-// subtle guilloché security watermark, auto-scaling single-line recipient name, and cryptographic ID.
+// VeySkill Official PDF Certificate Generator (A4 Landscape Brand Standard)
+// Uses the official embossed VeySkill template (media_1791181434953.pdf) as master canvas.
+// Overlays dynamic recipient name, normalized masterclass course title,
+// high-contrast scannable QR code linking to official cryptographic verification,
+// credential ID directly underneath QR code, and issuance date.
 // ---------------------------------------------------------------------------
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
@@ -20,22 +22,134 @@ export interface CertificatePdfOptions {
   managerTitle?: string;
 }
 
-export async function createPdfCertificateDoc(options: CertificatePdfOptions): Promise<jsPDF> {
-  const {
-    id,
-    userName,
-    courseTitle,
-    lessonCount,
-    quizScore,
-    issuedDate,
-    verifyUrl,
-    instructorName = "Jane Kane",
-    instructorTitle = "CURRICULUM DIRECTOR",
-    managerName = "Thomson Loewe",
-    managerTitle = "HEAD OF ACADEMIC CREDENTIALS",
-  } = options;
+// In-memory cache for browser image fetch
+let cachedBrowserTemplateDataUrl: string | null = null;
 
-  // A4 Landscape: 297mm width x 210mm height
+/**
+ * Normalizes raw course titles into prestigious, executive-grade masterclass names.
+ * Ensures single words (e.g. 'java', 'python') or cluttered YouTube playlist strings
+ * become dignified credentials (e.g. 'Java Programming Masterclass').
+ */
+export function formatExecutiveCourseTitle(rawTitle: string): string {
+  if (!rawTitle || !rawTitle.trim()) return "Advanced Technology Masterclass";
+
+  let title = rawTitle.trim();
+
+  // Handle single words or common abbreviations
+  const lower = title.toLowerCase().replace(/[^a-z0-9+#]/g, "");
+  const knownShortTitles: Record<string, string> = {
+    java: "Java Programming Masterclass",
+    python: "Python Architecture & Concurrency Masterclass",
+    javascript: "Modern JavaScript & TypeScript Masterclass",
+    js: "Modern JavaScript Masterclass",
+    ts: "TypeScript Enterprise Masterclass",
+    typescript: "TypeScript Enterprise Masterclass",
+    react: "Full Stack React & Next.js Masterclass",
+    reactjs: "Full Stack React & Next.js Masterclass",
+    nextjs: "Full Stack Next.js & Server Architecture Masterclass",
+    c: "C Systems Programming Masterclass",
+    cpp: "Modern C++ Systems Engineering Masterclass",
+    "c++": "Modern C++ Systems Engineering Masterclass",
+    golang: "Go Distributed Systems Masterclass",
+    go: "Go Distributed Systems Masterclass",
+    rust: "Rust Systems & Memory Safety Masterclass",
+    flutter: "Flutter & Mobile Engineering Masterclass",
+    ai: "Artificial Intelligence & LLM Systems Masterclass",
+    ml: "Machine Learning & Neural Networks Masterclass",
+    sql: "Relational Database Design & SQL Masterclass",
+    html: "Modern Web Foundations & Semantic HTML Masterclass",
+    css: "Modern CSS Architecture & Design Systems Masterclass",
+    dsa: "Data Structures & Algorithms Masterclass",
+  };
+
+  if (knownShortTitles[lower]) {
+    return knownShortTitles[lower];
+  }
+
+  // Strip YouTube playlist / clickbait noise while preserving the academic subject
+  title = title
+    .replace(/\[.*?\]/g, "")
+    .replace(/\(.*?\)/g, "")
+    .replace(
+      /\b(full\s+course|complete\s+course|full\s+tutorial|tutorial\s+for\s+beginners|crash\s+course|free\s+course|202[0-9]|in\s+one\s+video)\b/gi,
+      ""
+    )
+    .replace(/\|\s*.*$/g, "")
+    .replace(/[-:]\s*(full\s+course|tutorial).*$/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (title.length < 3) {
+    title = rawTitle.trim();
+  }
+
+  // Ensure title ends with an authoritative academic term
+  if (
+    !/masterclass|certification|curriculum|bootcamp|foundations|specialization|mastery|engineering|architecture/i.test(
+      title
+    )
+  ) {
+    title = `${title} Masterclass`;
+  }
+
+  return title;
+}
+
+/**
+ * Loads the official certificate template image as a base64 Data URL.
+ * Supports both Node (Vitest/SSR) and Browser runtime environments.
+ */
+async function getCertificateTemplateDataUrl(): Promise<string | null> {
+  // 1. Browser runtime
+  if (typeof window !== "undefined") {
+    if (cachedBrowserTemplateDataUrl) {
+      return cachedBrowserTemplateDataUrl;
+    }
+    try {
+      const res = await fetch("/images/certificate-template.jpg");
+      if (res.ok) {
+        const blob = await res.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            cachedBrowserTemplateDataUrl = dataUrl;
+            resolve(dataUrl);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
+  }
+
+  // 2. Node runtime (vitest / build / test)
+  if (typeof window === "undefined") {
+    try {
+      // Use dynamic require so Webpack client-side bundler skips this module
+      const req = new Function("moduleName", "return require(moduleName)");
+      const fs = req("fs");
+      const path = req("path");
+      const imagePath = path.join(process.cwd(), "public", "images", "certificate-template.jpg");
+      if (fs.existsSync(imagePath)) {
+        const buffer = fs.readFileSync(imagePath);
+        return `data:image/jpeg;base64,${buffer.toString("base64")}`;
+      }
+    } catch {
+      // Ignore Node read failure and fallback
+    }
+  }
+
+  return null;
+}
+
+export async function createPdfCertificateDoc(options: CertificatePdfOptions): Promise<jsPDF> {
+  const { id, userName, courseTitle, issuedDate, verifyUrl } = options;
+
+  // A4 Landscape: 297mm width x 210mm height (ISO 216 standard)
   const doc = new jsPDF({
     orientation: "landscape",
     unit: "mm",
@@ -44,281 +158,129 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
 
   const pageWidth = 297;
   const pageHeight = 210;
-  const leftBarWidth = 65; // 22% of 297mm
+  const centerX = pageWidth / 2; // 148.5mm
 
-  // 1. Right Content White Background (#FFFFFF)
+  // 1. Base Canvas White Background
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageWidth, pageHeight, "F");
 
-  // 2. Left Anchor Bar — Deep Obsidian Navy (#081B33)
-  doc.setFillColor(8, 27, 51);
-  doc.rect(0, 0, leftBarWidth, pageHeight, "F");
+  // 2. Load and draw the official high-resolution VeySkill template background
+  const templateDataUrl = await getCertificateTemplateDataUrl();
+  if (templateDataUrl) {
+    try {
+      doc.addImage(templateDataUrl, "JPEG", 0, 0, pageWidth, pageHeight);
+    } catch (err) {
+      console.warn("Could not draw template background image, using vector fallback:", err);
+    }
+  } else {
+    // Elegant Vector Fallback if template image is missing
+    doc.setDrawColor(11, 118, 110);
+    doc.setLineWidth(1.5);
+    doc.roundedRect(10, 10, pageWidth - 20, pageHeight - 20, 6, 6, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(30);
+    doc.setTextColor(11, 118, 110);
+    doc.text("CERTIFICATE", centerX, 36, { align: "center" });
+    doc.setFontSize(14);
+    doc.setTextColor(30, 41, 59);
+    doc.text("OF COMPLETION", centerX, 44, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(71, 85, 105);
+    doc.text("This is to certify that", centerX, 68, { align: "center" });
+    // Center divider line
+    doc.setDrawColor(11, 118, 110);
+    doc.setLineWidth(0.8);
+    doc.line(72, 102.2, 225, 102.2);
+  }
 
-  // ── LEFT BAR: Top Brandmark & Logo ───────────────────────────────────────
-  const leftCenterX = leftBarWidth / 2;
+  // 3. Recipient Full Legal Name (Auto-Scaled Single Line sitting cleanly above the teal line)
+  const cleanName = userName.trim() || "Distinguished Scholar";
+  let nameSize = 26;
+  if (cleanName.length > 22) nameSize = 22;
+  if (cleanName.length > 32) nameSize = 18;
+  if (cleanName.length > 42) nameSize = 15;
 
-  // Real VeySkill Layered Crest in White
-  const crestY = 24;
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(255, 255, 255);
-
-  // Top diamond / cap layer
-  doc.triangle(
-    leftCenterX,
-    crestY,
-    leftCenterX - 9,
-    crestY + 4.5,
-    leftCenterX + 9,
-    crestY + 4.5,
-    "F"
-  );
-  doc.triangle(
-    leftCenterX,
-    crestY + 9,
-    leftCenterX - 9,
-    crestY + 4.5,
-    leftCenterX + 9,
-    crestY + 4.5,
-    "F"
-  );
-
-  // Lower Chevron 1
-  doc.setLineWidth(1.2);
-  doc.line(leftCenterX - 9, crestY + 8, leftCenterX, crestY + 12.5);
-  doc.line(leftCenterX, crestY + 12.5, leftCenterX + 9, crestY + 8);
-
-  // Lower Chevron 2
-  doc.line(leftCenterX - 9, crestY + 12, leftCenterX, crestY + 16.5);
-  doc.line(leftCenterX, crestY + 16.5, leftCenterX + 9, crestY + 12);
-
-  // Brand Name & Subtitle
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(255, 255, 255);
-  doc.text("VEYSKILL", leftCenterX, crestY + 24, { align: "center" });
+  doc.setFontSize(nameSize);
+  doc.setTextColor(10, 58, 55); // Deep Teal (#0A3A37)
+  doc.text(cleanName, centerX, 97, { align: "center" });
 
+  // 4. Subheading Statement below the teal dividing line
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  doc.setTextColor(203, 213, 225); // slate-300
-  doc.text("ONLINE ACADEMY", leftCenterX, crestY + 28, { align: "center" });
+  doc.setFontSize(9.5);
+  doc.setTextColor(71, 85, 105); // Slate-600
+  doc.text(
+    "for successfully completing the curriculum and demonstrating mastery in",
+    centerX,
+    110,
+    {
+      align: "center",
+    }
+  );
 
-  // ── LEFT BAR: Bottom Scannable QR Code ──────────────────────────────────
+  // 5. Clean, Professional Masterclass Course Title
+  const executiveTitle = formatExecutiveCourseTitle(courseTitle);
+  let titleSize = 16;
+  if (executiveTitle.length > 36) titleSize = 13.5;
+  if (executiveTitle.length > 50) titleSize = 11.5;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(titleSize);
+  doc.setTextColor(11, 92, 88); // Prestigious Dark Teal (#0B5C58)
+  doc.text(executiveTitle, centerX, 118, { align: "center" });
+
+  // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text)
+  const cleanDate = issuedDate.trim() || "October 2026";
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10.5);
+  doc.setTextColor(30, 41, 59); // Slate-800
+  doc.text(cleanDate, centerX, 148, { align: "center" });
+
+  // 7. Scannable QR Code (Bottom-Left Quadrant, creating perfect balance with Instructor Signature)
+  const effectiveVerifyUrl = verifyUrl || `https://veyskill.in/verify/${id}`;
+  const qrX = 42;
+  const qrY = 134;
+  const qrSize = 26; // 26mm x 26mm high-precision scannable square
+
   try {
-    const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
-      margin: 0,
+    const qrDataUrl = await QRCode.toDataURL(effectiveVerifyUrl, {
+      margin: 1,
       width: 320,
       color: {
-        dark: "#FFFFFF",
-        light: "#081B33", // Matched to navy bar background
+        dark: "#0B4F4A", // Dark Teal
+        light: "#FFFFFF", // Pure White
       },
     });
 
-    const qrSize = 38;
-    const qrX = leftCenterX - qrSize / 2;
-    const qrY = pageHeight - 58;
+    // Subtle background card backing for guaranteed contrast
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1.5, 1.5, "F");
 
     doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
-    doc.setTextColor(203, 213, 225);
-    doc.text("SCAN TO VERIFY", leftCenterX, qrY + qrSize + 5, {
-      align: "center",
-    });
   } catch (err) {
     console.error("PDF QR code embedding error:", err);
   }
 
-  // ── RIGHT CONTENT: Faint Guilloché Waves (Watermark) ─────────────────────
-  doc.setDrawColor(241, 245, 249); // slate-100
-  doc.setLineWidth(0.4);
-  doc.line(leftBarWidth, 40, pageWidth, 60);
-  doc.line(leftBarWidth, 45, pageWidth, 65);
-  doc.line(leftBarWidth, 50, pageWidth, 70);
-  doc.line(leftBarWidth, 110, pageWidth, 130);
-  doc.line(leftBarWidth, 115, pageWidth, 135);
-  doc.circle(pageWidth - 30, pageHeight - 30, 45, "S");
-  doc.circle(pageWidth - 30, pageHeight - 30, 35, "S");
-
-  // ── RIGHT CONTENT: Top Header & Gold Award Medallion ─────────────────────
-  const rightContentX = leftBarWidth + 16;
-
-  // Title: CERTIFICATE
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(32);
-  doc.setTextColor(15, 23, 42); // slate-900
-  doc.text("CERTIFICATE", rightContentX, 36);
-
-  // Subtitle: OF COMPLETION
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(30, 41, 59); // slate-800
-  doc.text("OF COMPLETION", rightContentX, 44);
-
-  // ── Top Right Gold Medallion with Dangling Ribbons ────────────────────────
-  const medalCenterX = pageWidth - 32;
-  const medalCenterY = 32;
-  const medalRadius = 13;
-
-  // Dangling Ribbons (Drawn first so medal sits on top)
-  doc.setFillColor(8, 27, 51); // Navy ribbons
-  // Left ribbon
-  doc.triangle(
-    medalCenterX - 4,
-    medalCenterY + 8,
-    medalCenterX - 11,
-    medalCenterY + 28,
-    medalCenterX - 2,
-    medalCenterY + 25,
-    "F"
-  );
-  doc.triangle(
-    medalCenterX - 4,
-    medalCenterY + 8,
-    medalCenterX - 2,
-    medalCenterY + 25,
-    medalCenterX + 2,
-    medalCenterY + 28,
-    "F"
-  );
-  // Right ribbon
-  doc.triangle(
-    medalCenterX + 4,
-    medalCenterY + 8,
-    medalCenterX + 2,
-    medalCenterY + 28,
-    medalCenterX + 6,
-    medalCenterY + 25,
-    "F"
-  );
-  doc.triangle(
-    medalCenterX + 4,
-    medalCenterY + 8,
-    medalCenterX + 6,
-    medalCenterY + 25,
-    medalCenterX + 11,
-    medalCenterY + 28,
-    "F"
-  );
-
-  // Outer Gold Medal Base
-  doc.setFillColor(212, 175, 55); // #D4AF37
-  doc.circle(medalCenterX, medalCenterY, medalRadius, "F");
-
-  // Inner Shimmer Rim
-  doc.setFillColor(243, 229, 171); // #F3E5AB
-  doc.circle(medalCenterX, medalCenterY, medalRadius - 1.2, "F");
-
-  // Center Gold Core
-  doc.setFillColor(236, 200, 103);
-  doc.circle(medalCenterX, medalCenterY, medalRadius - 2.5, "F");
-
-  // Medal Inner Text
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(110, 71, 3); // dark amber
-  doc.text("2026", medalCenterX, medalCenterY + 0.5, { align: "center" });
-
-  doc.setFontSize(5);
-  doc.text("AWARDED", medalCenterX, medalCenterY + 4, { align: "center" });
-
-  // 3 Stars above year
-  doc.setFontSize(6);
-  doc.text("* * *", medalCenterX, medalCenterY - 3, { align: "center" });
-
-  // ── RECIPIENT BLOCK: We proudly present this certificate to ──────────────
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.5);
-  doc.setTextColor(100, 116, 139); // slate-500
-  doc.text("We proudly present this certificate to", rightContentX, 70);
-
-  // Recipient Full Name — Auto-Scaled Single Line
-  const cleanName = userName.trim() || "Distinguished Scholar";
-  let nameSize = 27;
-  if (cleanName.length > 20) nameSize = 23;
-  if (cleanName.length > 30) nameSize = 19;
-  if (cleanName.length > 40) nameSize = 15;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(nameSize);
-  doc.setTextColor(15, 23, 42); // slate-950
-  doc.text(cleanName, rightContentX, 84);
-
-  // Thin Accent Divider
-  doc.setDrawColor(226, 232, 240); // slate-200
-  doc.setLineWidth(0.4);
-  doc.line(rightContentX, 90, pageWidth - 20, 90);
-
-  // ── COURSE STATEMENT ─────────────────────────────────────────────────────
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.5);
-  doc.setTextColor(51, 65, 85); // slate-700
-
-  const introText = `honouring completion of the curriculum: "${courseTitle}".`;
-  const descText = `For demonstrating academic mastery, curriculum proficiency across ${lessonCount} comprehensive modules${
-    quizScore != null ? ` with a passing grade of ${quizScore}%` : ""
-  }.`;
-
-  const fullText = `${introText} ${descText}`;
-  const splitDesc = doc.splitTextToSize(fullText, pageWidth - rightContentX - 25);
-  doc.text(splitDesc, rightContentX, 100);
-
-  // ── BOTTOM SIGNATURES & VERIFICATION METADATA ────────────────────────────
-  const signDividerY = 152;
-  doc.setDrawColor(226, 232, 240);
-  doc.line(rightContentX, signDividerY, pageWidth - 20, signDividerY);
-
-  const leftSignX = rightContentX;
-  const rightSignX = rightContentX + 105;
-  const signBaseY = signDividerY + 12;
-
-  // Left Signatory (Calligraphy + Printed Name + Title + Date)
-  doc.setFont("times", "italic");
-  doc.setFontSize(18);
-  doc.setTextColor(15, 23, 42);
-  doc.text(instructorName, leftSignX, signBaseY);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(15, 23, 42);
-  doc.text(instructorName, leftSignX, signBaseY + 6);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(100, 116, 139);
-  doc.text(instructorTitle, leftSignX, signBaseY + 10);
-
-  doc.setFont("courier", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(71, 85, 105);
-  doc.text(issuedDate, leftSignX, signBaseY + 16);
-
-  // Right Signatory (Calligraphy + Printed Name + Title + Cryptographic UUID)
-  doc.setFont("times", "italic");
-  doc.setFontSize(18);
-  doc.setTextColor(15, 23, 42);
-  doc.text(managerName, rightSignX, signBaseY);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(15, 23, 42);
-  doc.text(managerName, rightSignX, signBaseY + 6);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(100, 116, 139);
-  doc.text(managerTitle, rightSignX, signBaseY + 10);
+  // 8. Credential ID directly beneath QR Code
+  const qrCenterX = qrX + qrSize / 2; // 55mm
 
   doc.setFont("courier", "bold");
   doc.setFontSize(7.5);
-  doc.setTextColor(71, 85, 105);
-  doc.text(id, rightSignX, signBaseY + 16);
+  doc.setTextColor(30, 41, 59); // Slate-800
+  doc.text(`ID: ${id}`, qrCenterX, qrY + qrSize + 4.5, { align: "center" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(5.5);
+  doc.setTextColor(11, 118, 110); // Teal-600
+  doc.text("SCAN TO VERIFY", qrCenterX, qrY + qrSize + 8, { align: "center" });
 
   return doc;
 }
 
 export async function generatePdfCertificate(options: CertificatePdfOptions): Promise<void> {
   const doc = await createPdfCertificateDoc(options);
-  const filename = `VeySkill_Certificate_${options.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+  const cleanId = options.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const filename = `VeySkill_Certificate_${cleanId}.pdf`;
   doc.save(filename);
 }

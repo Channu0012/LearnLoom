@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, sanitizeInput, generateSecureCertificateId } from "@/lib/security";
+import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,8 @@ export async function POST(request: NextRequest) {
     const orderId = typeof body?.orderId === "string" ? body.orderId.trim() : "";
 
     const userName = sanitizeInput(rawUserName, 100);
-    const courseTitle = sanitizeInput(rawCourseTitle, 200);
+    const sanitizedTitle = sanitizeInput(rawCourseTitle, 200);
+    const courseTitle = formatExecutiveCourseTitle(sanitizedTitle);
 
     if (!userName || !courseTitle) {
       return NextResponse.json(

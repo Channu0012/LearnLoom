@@ -292,19 +292,13 @@ function CoursePlayerContent({
     }
   }, [user?.uid, courseId]);
 
-  // Lesson Pagination State (10 lessons per page)
-  const LESSONS_PER_PAGE = 10;
-  const [lessonPage, setLessonPage] = useState(1);
-  const totalLessonPages = Math.max(1, Math.ceil(lessons.length / LESSONS_PER_PAGE));
-
-  // Auto-sync lesson page when active lesson changes
+  // Active lesson auto-scroll ref for YouTube playlist drawer
+  const activeLessonItemRef = useRef<HTMLLIElement>(null);
   useEffect(() => {
-    if (!activeLessonId || lessons.length === 0) return;
-    const idx = lessons.findIndex((l) => l.id === activeLessonId);
-    if (idx >= 0) {
-      setLessonPage(Math.floor(idx / LESSONS_PER_PAGE) + 1);
+    if (activeLessonItemRef.current) {
+      activeLessonItemRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [activeLessonId, lessons]);
+  }, [activeLessonId]);
 
   // Enrollment & Auto-Start state
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
@@ -1828,231 +1822,172 @@ function CoursePlayerContent({
               </div>
             </div>
 
-            {/* Page-wise Pagination Header (if more than 10 lessons) */}
-            {totalLessonPages > 1 && (
-              <div className="px-4 py-2.5 bg-muted/70 border-b border-border flex items-center justify-between text-xs">
-                <span className="font-heading font-bold text-muted-foreground text-[11px]">
-                  Page {lessonPage} of {totalLessonPages} (Lessons{" "}
-                  {(lessonPage - 1) * LESSONS_PER_PAGE + 1}–
-                  {Math.min(lessonPage * LESSONS_PER_PAGE, lessons.length)})
+            {/* YouTube-Style Continuous Playlist Header */}
+            <div className="px-4 py-2.5 bg-muted/60 border-b border-border flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                <span className="font-heading font-bold text-foreground text-xs">
+                  Lesson {activeIdx + 1} of {lessons.length}
                 </span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setLessonPage((p) => Math.max(1, p - 1))}
-                    disabled={lessonPage === 1}
-                    className="p-1 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    aria-label="Previous page"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLessonPage((p) => Math.min(totalLessonPages, p + 1))}
-                    disabled={lessonPage === totalLessonPages}
-                    className="p-1 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    aria-label="Next page"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </div>
               </div>
-            )}
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {completedIds.size}/{lessons.length} completed
+              </span>
+            </div>
 
-            {/* Lesson list items with thumbnails and snappy active loading states */}
-            <ol className="divide-y divide-border max-h-[520px] overflow-y-auto">
-              {lessons
-                .slice((lessonPage - 1) * LESSONS_PER_PAGE, lessonPage * LESSONS_PER_PAGE)
-                .map((lesson, idx) => {
-                  const globalIdx = (lessonPage - 1) * LESSONS_PER_PAGE + idx;
-                  const isActive = lesson.id === activeLessonId;
-                  const isDone = completedIds.has(lesson.id);
-                  const isLoadingThis = loadingLessonId === lesson.id;
-                  const thumbUrl =
-                    lesson.thumbnailUrl ||
-                    `https://img.youtube.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
+            {/* Continuous YouTube Playlist Scrollable List */}
+            <ol className="divide-y divide-border max-h-[580px] overflow-y-auto overscroll-contain scroll-smooth">
+              {lessons.map((lesson, idx) => {
+                const globalIdx = idx;
+                const isActive = lesson.id === activeLessonId;
+                const isDone = completedIds.has(lesson.id);
+                const isLoadingThis = loadingLessonId === lesson.id;
+                const thumbUrl =
+                  lesson.thumbnailUrl ||
+                  `https://img.youtube.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
 
-                  return (
-                    <li key={lesson.id}>
-                      <button
-                        type="button"
-                        onClick={() => handleSelectLesson(lesson.id)}
-                        className={`w-full text-left p-3 flex items-start gap-3 transition-all duration-150 cursor-pointer relative group active:scale-[0.99] ${
-                          isLoadingThis
-                            ? "bg-teal-500/20 border-l-4 border-teal-500 ring-2 ring-teal-500/30 animate-pulse"
-                            : isActive
-                              ? "bg-primary-500/10 border-l-4 border-primary-500 shadow-sm"
-                              : "hover:bg-muted/60 active:bg-primary-500/15"
-                        }`}
-                        aria-current={isActive ? "true" : undefined}
-                      >
-                        {/* Lesson Thumbnail */}
-                        <div className="relative flex-shrink-0 w-24 sm:w-28 aspect-video rounded-lg overflow-hidden bg-muted">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={thumbUrl}
-                            alt={
-                              lesson.title
-                                ? `${lesson.title} thumbnail`
-                                : `Lesson ${idx + 1} thumbnail`
-                            }
-                            className={`w-full h-full object-cover transition-all duration-300 ${isActive ? "brightness-75" : "group-hover:brightness-90"}`}
-                            loading="lazy"
-                          />
-                          {/* Play overlay on active */}
-                          {isActive && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-md">
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="#0F766E"
-                                  aria-hidden="true"
-                                >
-                                  <polygon points="5 3 19 12 5 21 5 3" />
-                                </svg>
-                              </div>
-                            </div>
-                          )}
-                          {/* Loading spinner overlay */}
-                          {isLoadingThis && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                return (
+                  <li key={lesson.id} ref={isActive ? activeLessonItemRef : undefined}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectLesson(lesson.id)}
+                      className={`w-full text-left p-3 flex items-start gap-3 transition-all duration-150 cursor-pointer relative group active:scale-[0.99] ${
+                        isLoadingThis
+                          ? "bg-teal-500/20 border-l-4 border-teal-500 ring-2 ring-teal-500/30 animate-pulse"
+                          : isActive
+                            ? "bg-primary-500/10 border-l-4 border-primary-500 shadow-sm"
+                            : "hover:bg-muted/60 active:bg-primary-500/15"
+                      }`}
+                      aria-current={isActive ? "true" : undefined}
+                    >
+                      {/* Lesson Thumbnail */}
+                      <div className="relative flex-shrink-0 w-24 sm:w-28 aspect-video rounded-lg overflow-hidden bg-muted">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbUrl}
+                          alt={
+                            lesson.title
+                              ? `${lesson.title} thumbnail`
+                              : `Lesson ${idx + 1} thumbnail`
+                          }
+                          className={`w-full h-full object-cover transition-all duration-300 ${isActive ? "brightness-75" : "group-hover:brightness-90"}`}
+                          loading="lazy"
+                        />
+                        {/* Play overlay on active */}
+                        {isActive && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-md">
                               <svg
-                                className="animate-spin w-5 h-5 text-white"
+                                width="12"
+                                height="12"
                                 viewBox="0 0 24 24"
-                                fill="none"
+                                fill="#0F766E"
+                                aria-hidden="true"
                               >
-                                <circle
-                                  className="opacity-30"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                />
-                                <path
-                                  className="opacity-90"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v8H4z"
-                                />
+                                <polygon points="5 3 19 12 5 21 5 3" />
                               </svg>
                             </div>
-                          )}
-                          {/* Done checkmark overlay */}
-                          {isDone && !isLoadingThis && (
-                            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                          </div>
+                        )}
+                        {/* Loading spinner overlay */}
+                        {isLoadingThis && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <svg
+                              className="animate-spin w-5 h-5 text-white"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <circle
+                                className="opacity-30"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-90"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v8H4z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        {/* Done checkmark overlay */}
+                        {isDone && !isLoadingThis && (
+                          <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                            <svg
+                              width="10"
+                              height="10"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        )}
+                        {/* Lesson number badge */}
+                        {!isDone && !isLoadingThis && (
+                          <div className="absolute bottom-1 right-1 bg-black/75 text-white text-[10px] font-heading font-bold px-1.5 py-0.5 rounded shadow-sm">
+                            {globalIdx + 1}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Lesson title & meta */}
+                      <div className="min-w-0 flex-1 py-0.5">
+                        <p
+                          className={`text-xs sm:text-sm font-body leading-snug line-clamp-2 ${
+                            isLoadingThis
+                              ? "font-heading font-bold text-teal-600 dark:text-teal-400"
+                              : isActive
+                                ? "font-heading font-bold text-foreground"
+                                : "text-foreground/90 group-hover:text-primary-600 transition-colors"
+                          }`}
+                        >
+                          {lesson.title}
+                        </p>
+                        <div className="text-[11px] text-muted-foreground font-body mt-1 flex items-center gap-1.5">
+                          {isLoadingThis ? (
+                            <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+                              Buffering video…
+                            </span>
+                          ) : (
+                            <>
                               <svg
-                                width="10"
-                                height="10"
+                                width="11"
+                                height="11"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
+                                strokeWidth="2"
                               >
-                                <polyline points="20 6 9 17 4 12" />
+                                <polygon points="5 3 19 12 5 21 5 3" />
                               </svg>
-                            </div>
-                          )}
-                          {/* Lesson number badge */}
-                          {!isDone && !isLoadingThis && (
-                            <div className="absolute bottom-1 right-1 bg-black/75 text-white text-[10px] font-heading font-bold px-1.5 py-0.5 rounded shadow-sm">
-                              {globalIdx + 1}
-                            </div>
+                              <span>Lesson {globalIdx + 1}</span>
+                              {isDone && (
+                                <>
+                                  <span>·</span>
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                                    Completed
+                                  </span>
+                                </>
+                              )}
+                            </>
                           )}
                         </div>
-
-                        {/* Lesson title & meta */}
-                        <div className="min-w-0 flex-1 py-0.5">
-                          <p
-                            className={`text-xs sm:text-sm font-body leading-snug line-clamp-2 ${
-                              isLoadingThis
-                                ? "font-heading font-bold text-teal-600 dark:text-teal-400"
-                                : isActive
-                                  ? "font-heading font-bold text-foreground"
-                                  : "text-foreground/90 group-hover:text-primary-600 transition-colors"
-                            }`}
-                          >
-                            {lesson.title}
-                          </p>
-                          <div className="text-[11px] text-muted-foreground font-body mt-1 flex items-center gap-1.5">
-                            {isLoadingThis ? (
-                              <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 font-bold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
-                                Buffering video…
-                              </span>
-                            ) : (
-                              <>
-                                <svg
-                                  width="11"
-                                  height="11"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                >
-                                  <polygon points="5 3 19 12 5 21 5 3" />
-                                </svg>
-                                <span>Lesson {globalIdx + 1}</span>
-                                {isDone && (
-                                  <>
-                                    <span>·</span>
-                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                                      Completed
-                                    </span>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
             </ol>
-
-            {/* Quick Page Jump Pills */}
-            {totalLessonPages > 1 && (
-              <div className="p-3 bg-muted/40 border-t border-border flex items-center justify-center gap-1.5 flex-wrap">
-                <span className="text-[11px] text-muted-foreground mr-1">Pages:</span>
-                {Array.from({ length: totalLessonPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    onClick={() => setLessonPage(pageNum)}
-                    className={`w-7 h-7 rounded-lg text-xs font-heading font-bold transition-all cursor-pointer ${
-                      lessonPage === pageNum
-                        ? "bg-primary-600 text-white shadow-sm"
-                        : "bg-card text-muted-foreground hover:text-foreground border border-border"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Sign in prompt card if not authenticated */}
