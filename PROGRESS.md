@@ -119,3 +119,28 @@
 - Hardened `AuthContext.tsx` with `isSigningIn` atomic lock, redirect sign-in fallback, and friendly UI notifications
 - Firestore helpers wrapped with try/catch fallback to prevent unhandled rejection during connection drops
 - Build verification: `npm run build` succeeds in 3.8s with 0 errors across all 13 routes
+
+---
+
+## P11 Mobile & Tablet Optimization, Clean Loading & Launch Ready ✅ done
+
+**Goal:** Streamline loading UX, fix Google Sign-In on mobile and tablet, and ensure 60fps responsive performance for launch.
+
+- **Intrusive Loading Removed:**
+  - Removed document title manipulation (`Loading… · VeySkill`) and the floating top-right loading badge in [`NavigationProgress.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/layout/NavigationProgress.tsx).
+  - Removed global `pointerdown` interceptors on document and removed monkey-patching of `window.fetch`.
+  - Replaced with a lightweight, silky-smooth 3px top progress bar (GitHub/YouTube style) responding solely to internal route transitions and programmatic events.
+- **Mobile & Tablet Authentication:**
+  - In [`AuthContext.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/context/AuthContext.tsx), removed device-based redirect locking that caused silent auth drops on mobile Safari/Chrome due to third-party cookie restrictions.
+  - Initialized `setPersistence(auth, browserLocalPersistence)` on mount to preserve synchronous click gestures.
+  - Enabled standard `signInWithPopup` across mobile, tablet, and desktop with automatic fallback to `signInWithRedirect` if popups are explicitly blocked.
+  - Optimistic profile population renders user credentials immediately upon sign-in with 0ms delay.
+- **Tablet & Mobile Responsiveness:**
+  - In [`Header.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/layout/Header.tsx), set brand subtitle to `hidden xl:block` to preserve horizontal space; compacted navigation pills on tablet viewports (768px–1024px) to prevent wrapping.
+  - In [`AuthModal.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/auth/AuthModal.tsx), added `overscroll-contain`, reduced padding for mobile viewports, and ensured smooth scrolling during virtual keyboard activation.
+- **Verification & Deployment:**
+  - 103/103 Vitest tests passing.
+  - 100% clean TypeScript strict check and zero ESLint warnings.
+  - Next.js production build succeeded for all 19 static and dynamic routes.
+  - Pushed to `origin main` (commit `f357661`) and deployed live to Vercel production: `https://veyskill.in` (HTTP 200).
+
