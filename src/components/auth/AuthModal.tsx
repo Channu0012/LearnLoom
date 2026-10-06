@@ -152,12 +152,12 @@ export function AuthModal() {
         if (e.target === e.currentTarget) closeAuthModal();
       }}
     >
-      <div className="relative w-full max-w-md bg-card border border-border rounded-3xl shadow-2xl overflow-y-auto max-h-[92dvh] p-6 sm:p-8 animate-scale-in">
+      <div className="relative w-full max-w-md bg-card border border-border rounded-3xl shadow-2xl overflow-y-auto max-h-[90dvh] overscroll-contain p-5 sm:p-7 animate-scale-in">
         {/* Close Button */}
         <button
           type="button"
           onClick={closeAuthModal}
-          className="absolute top-4 right-4 p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors cursor-pointer"
+          className="absolute top-3.5 right-3.5 p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors cursor-pointer"
           aria-label="Close modal"
         >
           <svg

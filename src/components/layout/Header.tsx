@@ -79,21 +79,21 @@ export function Header() {
               <span className="text-foreground">Vey</span>
               <span className="text-[#14b8a6]">skill</span>
             </span>
-            <span className="text-[10px] font-body font-medium text-muted-foreground hidden sm:block tracking-wide mt-0.5">
+            <span className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5">
               Turn playlists into courses
             </span>
           </div>
         </Link>
 
-        {/* Desktop Navigation - Comprehensive Suite */}
+        {/* Desktop & Tablet Navigation */}
         <nav
-          className="hidden md:flex items-center gap-1 lg:gap-1.5 xl:gap-2"
+          className="hidden md:flex items-center gap-1 lg:gap-1.5 xl:gap-2 flex-shrink-0"
           aria-label="Main navigation"
         >
           {/* Explore */}
           <Link
             href="/explore"
-            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
               width="15"
@@ -115,7 +115,7 @@ export function Header() {
           {/* Quick Watch */}
           <Link
             href="/quick-watch"
-            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
               width="14"
@@ -130,13 +130,14 @@ export function Header() {
             >
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
-            <span>Quick Watch</span>
+            <span className="hidden lg:inline">Quick Watch</span>
+            <span className="lg:hidden">Watch</span>
           </Link>
 
-          {/* My Learning (Streaks & Active Modules) */}
+          {/* My Learning */}
           <Link
             href="/my-learning"
-            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
               width="15"
@@ -152,13 +153,14 @@ export function Header() {
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
-            <span>My Learning</span>
+            <span className="hidden lg:inline">My Learning</span>
+            <span className="lg:hidden">Learning</span>
           </Link>
 
           {/* My Courses */}
           <Link
             href="/my-courses"
-            className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
           >
             <svg
               width="14"
@@ -173,14 +175,15 @@ export function Header() {
             >
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
-            <span>My Courses</span>
+            <span className="hidden lg:inline">My Courses</span>
+            <span className="lg:hidden">Courses</span>
           </Link>
 
           {/* Admin panel (if admin) */}
           {userDoc?.isAdmin && (
             <Link
               href="/admin"
-              className="font-body font-semibold text-xs lg:text-sm px-2.5 py-1.5 rounded-xl text-accent-500 hover:text-accent-600 hover:bg-accent-500/10 transition-colors inline-flex items-center gap-1.5"
+              className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-accent-500 hover:text-accent-600 hover:bg-accent-500/10 transition-colors inline-flex items-center gap-1.5"
             >
               <svg
                 width="14"

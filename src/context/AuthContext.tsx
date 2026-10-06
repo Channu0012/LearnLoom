@@ -75,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Ensure persistent session storage in browser
+    if (typeof window !== "undefined") {
+      setPersistence(auth, browserLocalPersistence).catch(() => {});
+    }
+
     // Process redirect result if returning from a mobile/redirect flow
     getRedirectResult(auth)
       .then((cred) => {
@@ -175,52 +180,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const isMobileDevice = (): boolean => {
-    if (typeof window === "undefined") return false;
-    return (
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent)) ||
-      window.innerWidth <= 768
-    );
-  };
-
-  // 1-Click Google Sign-In with device-optimized Popup (desktop) & Redirect (mobile)
+  // 1-Click Google Sign-In with device-optimized Popup (desktop, tablet & mobile)
   const signIn = async () => {
     if (isSigningIn) return;
     setIsSigningIn(true);
     setAuthError(null);
     setAuthSuccess(null);
 
-    // 1. Mobile flow: Native mobile browsers require full-page redirect because popups open as orphaned tabs that fail to close or communicate back
-    if (isMobileDevice()) {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-        const provider = getFreshGoogleProvider();
-        await signInWithRedirect(auth, provider);
-        return;
-      } catch (err: unknown) {
-        const fbErr = err as { code?: string; message?: string };
-        setAuthError(fbErr?.message ?? "Failed to initialize Google Sign-In on mobile.");
-        setIsSigningIn(false);
-        return;
-      }
-    }
-
-    // 2. Desktop/Laptop flow: Instant popup with COOP support
     const safetyTimer = setTimeout(() => {
       setIsSigningIn(false);
-    }, 20000);
+    }, 15000);
 
     try {
-      await setPersistence(auth, browserLocalPersistence);
       const provider = getFreshGoogleProvider();
       const cred = await signInWithPopup(auth, provider);
       clearTimeout(safetyTimer);
 
       if (cred?.user) {
         setUser(cred.user);
+        const optimisticDoc: UserDoc = {
+          uid: cred.user.uid,
+          displayName: (cred.user.displayName ?? cred.user.email?.split("@")[0] ?? "Learner").slice(
+            0,
+            LIMITS.DISPLAY_NAME
+          ),
+          photoURL: cred.user.photoURL,
+          isAdmin: false,
+          createdAt: null,
+        };
+        setUserDoc(optimisticDoc);
         setIsAuthModalOpen(false);
         setIsSigningIn(false);
+        setLoading(false);
         return;
       }
     } catch (err: unknown) {
@@ -230,7 +221,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (fbErr?.code === "auth/popup-blocked" || fbErr?.code === "auth/cancelled-popup-request") {
         try {
-          await setPersistence(auth, browserLocalPersistence);
           const provider = getFreshGoogleProvider();
           await signInWithRedirect(auth, provider);
           return;
@@ -249,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fbErr?.message?.includes("third-party cookies")
       ) {
         setAuthError(
-          "Third-party cookies or web storage are restricted. Click 'Popup blocked? Use direct sign-in →' below."
+          "Third-party cookies or web storage are restricted. Tap 'Popup blocked? Use direct sign-in →' below."
         );
       } else if (fbErr?.code === "auth/account-exists-with-different-credential") {
         setAuthError(
