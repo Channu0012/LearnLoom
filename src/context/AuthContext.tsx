@@ -73,11 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Process redirect result if returning from a mobile redirect
+    // Process redirect result if returning from a mobile/redirect flow
     getRedirectResult(auth)
       .then((cred) => {
         if (cred?.user) {
+          setUser(cred.user);
           setIsAuthModalOpen(false);
+          setIsSigningIn(false);
         }
       })
       .catch((err) => {
@@ -98,44 +100,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-
       if (firebaseUser) {
-        try {
-          let doc = await getUser(firebaseUser.uid);
-          if (!doc) {
-            // First time login: create user document in Firestore
-            await createUserDoc(firebaseUser.uid, {
-              uid: firebaseUser.uid,
-              displayName: (
-                firebaseUser.displayName ??
-                firebaseUser.email?.split("@")[0] ??
-                "Learner"
-              ).slice(0, LIMITS.DISPLAY_NAME),
-              photoURL: firebaseUser.photoURL,
-            });
-            doc = await getUser(firebaseUser.uid);
-          }
-          setUserDoc(doc);
-        } catch {
-          // If Firestore is offline or permission denied, set fallback memory representation
-          setUserDoc({
-            uid: firebaseUser.uid,
-            displayName: (
-              firebaseUser.displayName ??
-              firebaseUser.email?.split("@")[0] ??
-              "Learner"
-            ).slice(0, LIMITS.DISPLAY_NAME),
-            photoURL: firebaseUser.photoURL,
-            isAdmin: false,
-            createdAt: null,
-          });
-        }
-      } else {
-        setUserDoc(null);
-      }
+        setUser(firebaseUser);
 
-      setLoading(false);
+        // Immediate optimistic representation so the UI unlocks instantly (0ms)
+        const optimisticDoc: UserDoc = {
+          uid: firebaseUser.uid,
+          displayName: (
+            firebaseUser.displayName ??
+            firebaseUser.email?.split("@")[0] ??
+            "Learner"
+          ).slice(0, LIMITS.DISPLAY_NAME),
+          photoURL: firebaseUser.photoURL,
+          isAdmin: false,
+          createdAt: null,
+        };
+        setUserDoc(optimisticDoc);
+        setLoading(false);
+        setIsSigningIn(false);
+        setIsAuthModalOpen(false);
+
+        // Background non-blocking sync with Firestore (guarded with 3.5s timeout)
+        (async () => {
+          try {
+            const timeoutPromise = new Promise<null>((resolve) =>
+              setTimeout(() => resolve(null), 3500)
+            );
+            const fetchPromise = getUser(firebaseUser.uid);
+            let doc = await Promise.race([fetchPromise, timeoutPromise]);
+
+            if (!doc) {
+              try {
+                await createUserDoc(firebaseUser.uid, {
+                  uid: firebaseUser.uid,
+                  displayName: optimisticDoc.displayName,
+                  photoURL: firebaseUser.photoURL,
+                });
+                doc = await Promise.race([getUser(firebaseUser.uid), timeoutPromise]);
+              } catch {
+                // Ignore firestore write error, optimisticDoc remains active
+              }
+            }
+
+            if (doc) {
+              setUserDoc(doc);
+            }
+          } catch {
+            // Keep optimisticDoc active
+          }
+        })();
+      } else {
+        setUser(null);
+        setUserDoc(null);
+        setLoading(false);
+        setIsSigningIn(false);
+      }
     });
 
     return () => unsubscribe();
@@ -148,47 +167,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null);
     setAuthSuccess(null);
 
-    const isMobile =
-      typeof window !== "undefined" &&
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      try {
-        const provider = getFreshGoogleProvider();
-        await signInWithRedirect(auth, provider);
-        return;
-      } catch (err: unknown) {
-        const fbErr = err as { code?: string; message?: string };
-        setAuthError(fbErr?.message ?? "Failed to initialize Google Sign-In on mobile.");
-        setIsSigningIn(false);
-        return;
-      }
-    }
+    // Safety timeout: Never leave isSigningIn stuck indefinitely if browser popup stalls
+    const safetyTimer = setTimeout(() => {
+      setIsSigningIn(false);
+    }, 20000);
 
     try {
       const provider = getFreshGoogleProvider();
-      await signInWithPopup(auth, provider);
-      setIsAuthModalOpen(false);
-    } catch (err: unknown) {
-      const fbErr = err as { code?: string; message?: string };
+      const cred = await signInWithPopup(auth, provider);
+      clearTimeout(safetyTimer);
 
-      if (fbErr?.code === "auth/popup-blocked") {
+      if (cred?.user) {
+        setUser(cred.user);
+        setIsAuthModalOpen(false);
+        setIsSigningIn(false);
+        return;
+      }
+    } catch (err: unknown) {
+      clearTimeout(safetyTimer);
+      const fbErr = err as { code?: string; message?: string };
+      console.warn("Google signInWithPopup:", fbErr?.code, fbErr?.message);
+
+      if (fbErr?.code === "auth/popup-blocked" || fbErr?.code === "auth/cancelled-popup-request") {
+        // Automatically attempt direct redirect fallback when popups are blocked
+        try {
+          const provider = getFreshGoogleProvider();
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectErr: unknown) {
+          const rErr = redirectErr as { code?: string; message?: string };
+          setAuthError(
+            rErr?.message || "Popup was blocked. Please enable popups or use email sign-in."
+          );
+        }
+      } else if (fbErr?.code === "auth/popup-closed-by-user") {
         setAuthError(
-          "Your browser blocked the sign-in popup. Click 'Continue with Full-Page Google Sign-In' below to choose your email."
-        );
-      } else if (
-        fbErr?.code === "auth/cancelled-popup-request" ||
-        fbErr?.code === "auth/popup-closed-by-user"
-      ) {
-        setAuthError(
-          "Google sign-in window was closed. Click 'Continue with Google' and pick your Google account to proceed."
+          "Sign-in window was closed. Click 'Continue with Google' and select your account to sign in."
         );
       } else if (
         fbErr?.code === "auth/web-storage-unsupported" ||
         fbErr?.message?.includes("third-party cookies")
       ) {
         setAuthError(
-          "Third-party cookies or web storage are restricted. Click 'Use direct sign-in' below to authenticate via Google redirect."
+          "Third-party cookies or web storage are restricted. Click 'Popup blocked? Use direct sign-in →' below."
         );
       } else if (fbErr?.code === "auth/account-exists-with-different-credential") {
         setAuthError(
@@ -216,11 +237,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Network connection failed during Google sign-in. Please check your internet and try again."
         );
       } else {
-        setAuthError(
-          fbErr?.message ?? "Google sign-in failed. Please verify your connection and try again."
-        );
+        setAuthError(fbErr?.message ?? "Google sign-in could not be completed. Please try again.");
       }
     } finally {
+      clearTimeout(safetyTimer);
       setIsSigningIn(false);
     }
   };

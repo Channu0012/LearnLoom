@@ -55,8 +55,6 @@ export function getFreshGoogleProvider(): GoogleAuthProvider {
   provider.setCustomParameters({
     prompt: "select_account",
   });
-  provider.addScope("email");
-  provider.addScope("profile");
   return provider;
 }
 

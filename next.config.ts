@@ -38,10 +38,24 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=()",
           },
           {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+          {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
         ],
+      },
+    ];
+  },
+  // Proxy Firebase Auth handler to avoid third-party cookie restrictions
+  async rewrites() {
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "learnloom-27899";
+    return [
+      {
+        source: "/__/auth/:path*",
+        destination: `https://${projectId}.firebaseapp.com/__/auth/:path*`,
       },
     ];
   },
