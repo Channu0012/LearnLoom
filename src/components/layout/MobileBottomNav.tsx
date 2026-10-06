@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
 
 interface NavItem {
   name: string;
@@ -12,7 +11,6 @@ interface NavItem {
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { user } = useAuth();
 
   const navItems: NavItem[] = [
     {
@@ -25,7 +23,7 @@ export function MobileBottomNav() {
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
-          strokeWidth={active ? "2" : "2"}
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
@@ -45,7 +43,7 @@ export function MobileBottomNav() {
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
-          strokeWidth={active ? "2" : "2"}
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
@@ -59,7 +57,7 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Quick Watch",
+      name: "Watch",
       href: "/quick-watch",
       icon: (active: boolean) => (
         <svg
@@ -78,7 +76,7 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "My Learning",
+      name: "Learning",
       href: "/my-learning",
       icon: (active: boolean) => (
         <svg
@@ -98,8 +96,8 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: user ? "Create" : "Studio",
-      href: "/create",
+      name: "My Courses",
+      href: "/my-courses",
       icon: (active: boolean) => (
         <svg
           width="20"
@@ -112,9 +110,7 @@ export function MobileBottomNav() {
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="16" />
-          <line x1="8" y1="12" x2="16" y2="12" />
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       ),
     },

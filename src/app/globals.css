@@ -398,3 +398,87 @@ body {
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   MOBILE PERFORMANCE — 60fps, zero-jank, battery-friendly
+   ───────────────────────────────────────────────────────────────── */
+
+/* Promote composited layers for elements the browser animates */
+.fixed,
+nav[aria-label="Mobile Bottom Navigation"],
+header {
+  /* Hint GPU compositing — avoids main-thread paint on scroll */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Let the browser skip paint on safe transitions */
+.transition-all,
+.transition-colors,
+.transition-opacity,
+.transition-transform {
+  will-change: auto; /* let browser decide; override on specific hot paths */
+}
+
+/* Active-state icons in bottom nav — GPU-composited scale */
+nav[aria-label="Mobile Bottom Navigation"] a .active\:scale-90:active {
+  will-change: transform;
+}
+
+/* Prevent scroll-chaining on modals and sidebars */
+[role="dialog"],
+.overflow-y-auto {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable tap delay on interactive elements — removes 300ms mobile lag */
+a,
+button,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Contain layout so inner changes don't force full-page reflow */
+main,
+header,
+nav[aria-label="Mobile Bottom Navigation"] {
+  contain: layout style;
+}
+
+/* Prevent text size adjustments on orientation change (iOS Safari) */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Smooth 60fps scroll without GPU-layer thrashing */
+html,
+body {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto;
+  }
+  /* Disable all transitions for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Image rendering quality on retina / high-dpi mobile screens */
+img,
+video {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
