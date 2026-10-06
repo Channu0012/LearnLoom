@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getCoursesByCreator, deleteCourse } from "@/lib/firestore";
 import type { CourseDoc } from "@/lib/types";
-import { CourseraLoader } from "@/components/ui/CourseraLoader";
 
 export default function MyCoursesPage() {
   const { user, loading, openAuthModal } = useAuth();
@@ -102,11 +101,16 @@ export default function MyCoursesPage() {
 
   if (loading || fetching) {
     return (
-      <div className="container-page py-16 max-w-5xl flex items-center justify-center">
-        <CourseraLoader
-          title="Loading Creator Studio…"
-          subtitle="Fetching your created courses, student engagement, and published lessons"
-        />
+      <div className="container-page py-10 max-w-6xl mx-auto px-4 animate-pulse">
+        <div className="flex items-center justify-between mb-8">
+          <div className="h-8 w-48 bg-muted/80 rounded-xl" />
+          <div className="h-10 w-32 bg-muted/70 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
+          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
+          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
+        </div>
       </div>
     );
   }

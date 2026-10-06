@@ -363,13 +363,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      playlistId,
-      title: playlistTitle,
-      channelTitle: channelName,
-      itemCount: videos.length,
-      videos,
-    });
+    return NextResponse.json(
+      {
+        playlistId,
+        title: playlistTitle,
+        channelTitle: channelName,
+        itemCount: videos.length,
+        videos,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=86400",
+        },
+      }
+    );
   } catch (err: unknown) {
     if ((err as { name?: string })?.name === "AbortError") {
       return NextResponse.json(

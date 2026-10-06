@@ -15,6 +15,40 @@ import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard"
 
 const COURSES_PER_PAGE = 12;
 const SEEN_STORAGE_KEY = "learnloom_seen_courses_v1";
+const COURSES_CACHE_KEY = "learnloom_explore_courses_cache_v1";
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
+
+let memoryCoursesCache: { courses: CourseDoc[]; timestamp: number } | null = null;
+
+function getCachedCourses(): CourseDoc[] | null {
+  if (memoryCoursesCache && Date.now() - memoryCoursesCache.timestamp < CACHE_TTL_MS) {
+    return memoryCoursesCache.courses;
+  }
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(COURSES_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.courses) && Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+      memoryCoursesCache = parsed;
+      return parsed.courses;
+    }
+  } catch {
+    // Ignore cache parse errors
+  }
+  return null;
+}
+
+function setCachedCourses(courses: CourseDoc[]) {
+  const payload = { courses, timestamp: Date.now() };
+  memoryCoursesCache = payload;
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(COURSES_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore storage quota
+  }
+}
 
 // Fisher-Yates Dynamic Shuffle for fresh recommendations
 function shuffleArray<T>(array: T[]): T[] {
@@ -112,29 +146,43 @@ export default function ExplorePage() {
     }, 3500);
   }, []);
 
-  // ── Fetch published courses from Firestore ─────────────────────────────
-  const fetchCourses = useCallback(async () => {
-    setFetchError("");
-    setLoading(true);
+  // ── Fetch published courses from Firestore (Cache-First) ──────────────
+  const fetchCourses = useCallback(
+    async (force = false) => {
+      if (!force) {
+        const cached = getCachedCourses();
+        if (cached && cached.length > 0) {
+          setRawCourses(cached);
+          refreshFeed(cached);
+          setLoading(false);
+          return;
+        }
+      }
 
-    try {
-      const q = query(collection(db, "courses"), where("status", "==", "published"), limit(200));
-      const snap = await getDocs(q);
-      const fetched = snap.docs.map((d) => ({
-        ...(d.data() as CourseDoc),
-        id: d.id,
-      }));
+      setFetchError("");
+      setLoading(true);
 
-      setRawCourses(fetched);
-      refreshFeed(fetched);
-    } catch {
-      setFetchError(
-        "Unable to load masterclasses right now. Please check your internet connection."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [refreshFeed]);
+      try {
+        const q = query(collection(db, "courses"), where("status", "==", "published"), limit(200));
+        const snap = await getDocs(q);
+        const fetched = snap.docs.map((d) => ({
+          ...(d.data() as CourseDoc),
+          id: d.id,
+        }));
+
+        setCachedCourses(fetched);
+        setRawCourses(fetched);
+        refreshFeed(fetched);
+      } catch {
+        setFetchError(
+          "Unable to load masterclasses right now. Please check your internet connection."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [refreshFeed]
+  );
 
   useEffect(() => {
     fetchCourses();

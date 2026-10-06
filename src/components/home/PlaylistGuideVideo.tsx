@@ -171,7 +171,7 @@ export function PlaylistGuideVideo() {
                   <video
                     ref={videoRef}
                     src="/videos/how-to-copy-playlist.mp4"
-                    preload="metadata"
+                    preload="none"
                     playsInline
                     muted
                     loop

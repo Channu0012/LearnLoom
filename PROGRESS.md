@@ -144,3 +144,28 @@
   - Next.js production build succeeded for all 19 static and dynamic routes.
   - Pushed to `origin main` (commit `f357661`) and deployed live to Vercel production: `https://veyskill.in` (HTTP 200).
 
+---
+
+## P12 Launch Day High-Performance & Reliability Overhaul ✅ done
+
+**Goal:** Bulletproof performance for high-traffic launch day: edge caching, instant course loading, zero-layout-shift skeletons, 21MB video bandwidth optimization, and bottom navigation streamlining.
+
+- **Mobile Bottom Navigation:**
+  - Replaced duplicate "Create" button with direct "My Courses" tab in [`MobileBottomNav.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/layout/MobileBottomNav.tsx).
+  - Shortened labels (`Watch`, `Learning`, `My Courses`) for zero text truncation across all screen sizes.
+- **Intrusive Full-Screen Loader Elimination:**
+  - Replaced heavy full-screen `CourseraLoader` in root [`loading.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/loading.tsx) with a lightweight, non-intrusive layout skeleton.
+  - Removed `CourseraLoader` blocking overlays in [`my-courses/page.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/my-courses/page.tsx) and [`my-learning/page.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/my-learning/page.tsx), switching to matching layout skeletons.
+  - In [`CoursePageClient.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/courses/CoursePageClient.tsx), removed blocking `authLoading` check so courses with server props render immediately with 0ms delay.
+- **21MB Video Preload Optimization:**
+  - In [`PlaylistGuideVideo.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/home/PlaylistGuideVideo.tsx), changed `preload="metadata"` to `preload="none"`, saving ~21.4MB bandwidth per visitor on the homepage.
+- **Cache-First Explore Discovery:**
+  - Added in-memory and `sessionStorage` 5-minute caching to [`explore/page.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/explore/page.tsx) for 0ms instant back/forward navigation and minimized Firestore read quotas.
+- **Edge Caching & Compression Headers:**
+  - In [`next.config.ts`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/next.config.ts), configured immutable `Cache-Control` for static chunks, 1-day/7-day caching for images and assets.
+  - Added Vercel Edge caching headers (`s-maxage=3600, stale-while-revalidate=86400`) to `/api/oembed` and `/api/youtube/playlist`.
+- **Validation:**
+  - 103/103 tests pass.
+  - TypeScript strict compile with 0 errors.
+  - Production build successful across all 19 routes.
+

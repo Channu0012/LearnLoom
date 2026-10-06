@@ -99,12 +99,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      videoId,
-      title: data.title?.slice(0, 200) ?? "Untitled Video",
-      channelName: data.author_name ?? "",
-      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-    });
+    return NextResponse.json(
+      {
+        videoId,
+        title: data.title?.slice(0, 200) ?? "Untitled Video",
+        channelName: data.author_name ?? "",
+        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    );
   } catch {
     return NextResponse.json(
       {

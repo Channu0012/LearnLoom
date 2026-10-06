@@ -25,7 +25,6 @@ import type { CourseDoc, LessonDoc, SerializedCourseDoc } from "@/lib/types";
 import { ShareModal } from "@/components/ui/ShareModal";
 import { CourseNotes } from "@/components/courses/CourseNotes";
 import { CourseAdBanner } from "@/components/ads/CourseAdBanner";
-import { CourseraLoader } from "@/components/ui/CourseraLoader";
 import { recordStudyActivity } from "@/lib/streak";
 import { QuizModal } from "@/components/courses/QuizModal";
 import { StudyCompanion } from "@/components/courses/StudyCompanion";
@@ -49,7 +48,7 @@ export function CoursePageClient({
   course: legacyCourse,
   lessons: legacyLessons,
 }: CoursePageClientProps) {
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [course, setCourse] = useState<SerializedCourseDoc | CourseDoc | null>(
     initialCourse ?? legacyCourse ?? null
   );
@@ -86,14 +85,17 @@ export function CoursePageClient({
     };
   }, [courseId, course]);
 
-  // Real Coursera-style loading page while resolving auth or fetching course client-side
-  if (authLoading || fetching) {
+  // Only show loading skeleton if course data has not arrived yet (e.g. client-side fetch in progress)
+  if (!course && fetching) {
     return (
-      <div className="container-page py-20 max-w-4xl flex items-center justify-center">
-        <CourseraLoader
-          title="Loading Course Curriculum…"
-          subtitle="Fetching verified video lessons, syllabus chapters, and study scratchpad"
-        />
+      <div className="container-page py-10 max-w-5xl mx-auto px-4 animate-pulse">
+        <div className="h-8 w-64 bg-muted/80 rounded-xl mb-6" />
+        <div className="aspect-video w-full bg-muted/60 rounded-3xl mb-8" />
+        <div className="space-y-4">
+          <div className="h-16 bg-muted/40 rounded-2xl" />
+          <div className="h-16 bg-muted/40 rounded-2xl" />
+          <div className="h-16 bg-muted/40 rounded-2xl" />
+        </div>
       </div>
     );
   }
