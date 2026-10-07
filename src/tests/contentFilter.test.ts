@@ -340,6 +340,27 @@ describe("validatePlaylistEducation", () => {
     expect(res.valid).toBe(true);
   });
 
+  it("approves Jetpack Compose Android courses and playlists without music misclassification", () => {
+    const res = validatePlaylistEducation(
+      "Jetpack Compose Course for Beginners (2026)",
+      "Neat Roots",
+      [
+        { title: "Basic Composables - Android Jetpack Compose 01" },
+        { title: "Row, Column & Box Layouts - Android Jetpack Compose 02" },
+        { title: "Understanding & Using Modifiers - Android Jetpack Compose 03" },
+        { title: "Displaying Images & Icons - Android Jetpack Compose 04" },
+      ],
+      "https://youtube.com/playlist?list=PLUhfM8afLE_PpYD9pf3zb8es__RZdysIi"
+    );
+    expect(res.valid).toBe(true);
+
+    const videoCheck = validateEducationalContent(
+      "Basic Composables - Android Jetpack Compose 01",
+      "Neat Roots"
+    );
+    expect(videoCheck.blocked).toBe(false);
+  });
+
   it("strictly rejects playlist if channel is a music record label", () => {
     const res = validatePlaylistEducation("All Hits 2024", "T-Series", [{ title: "Hit Song 1" }]);
     expect(res.valid).toBe(false);

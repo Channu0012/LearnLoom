@@ -36,8 +36,11 @@ const EDUCATIONAL_PATTERNS = [
 
   // Software Engineering, Dev & Cloud
   /\b(programming|coding|software\s+engineering|computer\s+science|web\s+development|full\s+stack|frontend|backend|devops|cloud\s+computing|cybersecurity|ethical\s+hacking|algorithms?|data\s+structures?|\bdsa\b)\b/i,
-  /\b(python|javascript|typescript|react(?:\s*native)?|next\.?js|node\.?js|vue(?:\.?js)?|angular|express(?:\.?js)?|django|flask|fastapi|spring\s*boot|c\+\+|c#|\.net|\bgolang\b|go\s+language|\brust\b|\bjava\b|\bcore\s+java\b|kotlin|swift|flutter|php|laravel|sql|mysql|postgresql|mongodb|redis|prisma|supabase|firebase|graphql|rest\s+api|\bgit\b|\bgithub\b|\bdocker\b|\bkubernetes\b|\baws\b|\bazure\b|\bgcp\b|\blinux\b|\bbash\b)\b/i,
+  /\b(android|jetpack\s+compose|composables?|jetpack|kotlin|coroutines?|kmp|kotlin\s+multiplatform|mobile\s+app|app\s+development|mobile\s+development)\b/i,
+  /\b(ios|swift|swiftui|uikit|xcode|flutter|react\s*native|dart|viewmodel|layouts?|modifiers?|components?|widgets?|state\s+management)\b/i,
+  /\b(python|javascript|typescript|react(?:\s*native)?|next\.?js|node\.?js|vue(?:\.?js)?|angular|express(?:\.?js)?|django|flask|fastapi|spring\s*boot|c\+\+|c#|\.net|\bgolang\b|go\s+language|\brust\b|\bjava\b|\bcore\s+java\b|php|laravel|sql|mysql|postgresql|mongodb|redis|prisma|supabase|firebase|graphql|rest\s+api|\bgit\b|\bgithub\b|\bdocker\b|\bkubernetes\b|\baws\b|\bazure\b|\bgcp\b|\blinux\b|\bbash\b)\b/i,
   /\b(tailwind(?:\s*css)?|css3?|html5?|figma|ui\/ux|web\s+design|responsive\s+design)\b/i,
+  /\b(?:lesson|lecture|module|chapter|episode|part|session|class|step|unit)\s*\d+\b/i,
 
   // Sciences, STEM, Humanities, Business, Finance
   /\b(mathematics|math|calculus|algebra|linear\s+algebra|geometry|statistics|probability|physics|quantum|chemistry|organic\s+chemistry|biology|genetics|anatomy|medicine)\b/i,
@@ -527,11 +530,29 @@ export function validateEducationalContent(
     }
   }
 
-  // 10e. Artist - Track pattern check (e.g. "Alan Walker - Faded", "Ed Sheeran - Shape of You")
+  // 10e. Commercial music single artist-track pattern check
+  // Only flags when there are indicators of commercial music releases or artists,
+  // NOT legitimate educational lecture titles with hyphens, colons, or pipes.
+  const hasMusicIndicator =
+    /\b(ft\.|feat\.|prod\.|official\s+audio|audio\s+track|single\s+track|video\s+song|remix|music\s+video)\b/i.test(
+      cleanTitle
+    ) ||
+    /[\[\(](?:audio|official|single|remix|visualizer)[\]\)]/i.test(cleanTitle) ||
+    (cleanAuthor && MUSIC_CHANNEL_KEYWORDS.some((kw) => cleanAuthor.includes(kw)));
+
+  const isEducationalOrCurriculumTopic =
+    /\b\d{1,4}\b/.test(cleanTitle) ||
+    /\b(android|compose|composables?|kotlin|swift|swiftui|flutter|react|python|code|dev|app|ui|layout|api|guide|tutorial|course|lesson|part|chapter|module|lecture|basics?|setup)\b/i.test(
+      cleanTitle
+    );
+
   const isTrackPattern =
+    hasMusicIndicator &&
+    !isEducationalOrCurriculumTopic &&
     /^[^\n\r]{2,60}\s*[-–—:|]\s*["']?[^\n\r]{2,80}["']?(?:\s*[\[\(][^\]\)]*[\]\)])?$/i.test(
       cleanTitle
     );
+
   if (isTrackPattern) {
     return {
       blocked: true,
@@ -654,9 +675,52 @@ export function validatePlaylistEducation(
     };
   }
 
+  const isPlaylistCourse =
+    hasEducationalKeyword(cleanTitle) ||
+    [
+      "course",
+      "tutorial",
+      "masterclass",
+      "bootcamp",
+      "lecture",
+      "lessons",
+      "jetpack compose",
+      "android",
+      "kotlin",
+      "swift",
+      "flutter",
+      "react",
+      "python",
+      "coding",
+      "programming",
+      "development",
+    ].some((kw) => lowerTitle.includes(kw));
+
   for (let i = 0; i < videos.length; i++) {
     const v = videos[i]!;
-    const filter = validateEducationalContent(v.title, channelName);
+    const videoClean = (v.title || "").trim();
+
+    // If parent playlist is verified as an educational course:
+    // Only reject videos that are EXPLICIT commercial media (e.g. official music video, watch full movie, prank)
+    if (isPlaylistCourse) {
+      const isExplicitMedia =
+        /\b(official\s+music\s+video|official\s+audio|lyric\s+video|full\s+album|full\s+movies?|watch\s+full\s+movie|theatrical\s+trailer|gameplay\s+walkthrough|prank\s+video)\b/i.test(
+          videoClean
+        ) ||
+        /[\[\(](?:official\s+music\s+video|official\s+audio|lyric\s+video)[\]\)]/i.test(videoClean);
+
+      if (isExplicitMedia) {
+        return {
+          valid: false,
+          reason: `Playlist rejected: Item ${i + 1} ("${videoClean}") was flagged as commercial media. VeySkill strictly rejects playlists containing commercial movies, music, or entertainment.`,
+          offendingVideoIndex: i,
+          offendingVideoTitle: videoClean,
+        };
+      }
+      continue;
+    }
+
+    const filter = validateEducationalContent(videoClean, channelName);
     if (filter.blocked) {
       return {
         valid: false,

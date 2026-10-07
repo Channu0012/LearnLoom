@@ -354,6 +354,102 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     })();
   }, [courseId, user?.uid, router]);
 
+  // ── 1-Click Import Full YouTube Playlist ────────────────────────────────
+  const handleImportPlaylist = useCallback(
+    async (customUrl?: string | unknown) => {
+      setUrlError("");
+      setPlaylistSuccessMsg("");
+      const trimmed = (typeof customUrl === "string" ? customUrl : playlistInput).trim();
+      if (!trimmed) {
+        setUrlError("Please paste a YouTube playlist link or playlist ID.");
+        return;
+      }
+
+      const lower = trimmed.toLowerCase();
+      if (
+        lower.includes("music.youtube.com") ||
+        lower.includes("list=rd") ||
+        lower.includes("list=olak") ||
+        lower.includes("list=lm")
+      ) {
+        setUrlError(
+          "Commercial music tracks, albums, and auto-generated mixes cannot be imported. VeySkill is strictly for educational courses and masterclasses."
+        );
+        return;
+      }
+
+      const playlistId = extractYouTubePlaylistId(trimmed);
+      if (!playlistId) {
+        setUrlError(
+          "Invalid YouTube playlist link. Make sure the URL contains 'list=...' or is a valid playlist ID."
+        );
+        return;
+      }
+
+      setPlaylistImporting(true);
+      try {
+        const res = await fetch(`/api/youtube/playlist?url=${encodeURIComponent(trimmed)}`);
+        const data = (await res.json()) as {
+          title?: string;
+          channelTitle?: string;
+          videos?: { videoId: string; title: string; thumbnailUrl: string }[];
+          error?: string;
+        };
+
+        if (!res.ok || data.error) {
+          setUrlError(data.error || "Failed to load playlist. Please ensure it is public.");
+          return;
+        }
+
+        if (!data.videos || data.videos.length === 0) {
+          setUrlError("No videos found in this playlist.");
+          return;
+        }
+
+        // Auto-populate course title if empty
+        if (!title.trim() && data.title) {
+          setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
+        }
+
+        // Academic integrity check: Zero-tolerance playlist verification
+        const playlistIntegrity = validatePlaylistEducation(
+          data.title || "",
+          data.channelTitle || "",
+          data.videos || [],
+          trimmed
+        );
+
+        if (!playlistIntegrity.valid) {
+          setUrlError(
+            playlistIntegrity.reason ||
+              "Playlist rejected: Only verified educational courses and masterclasses are permitted. Commercial music, movies, or entertainment playlists cannot be imported."
+          );
+          return;
+        }
+
+        const newLessons: LessonInput[] = (data.videos || []).map((v, index) => ({
+          tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+          youtubeId: v.videoId,
+          title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
+          thumbnailUrl: v.thumbnailUrl || youtubeThumbnail(v.videoId),
+        }));
+
+        setLessons((prev) => [...prev, ...newLessons]);
+        setPlaylistSuccessMsg(
+          `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
+        );
+        setPlaylistInput("");
+      } catch {
+        setUrlError(
+          "Connection error while importing playlist. Please check your network and try again."
+        );
+      } finally {
+        setPlaylistImporting(false);
+      }
+    },
+    [playlistInput, title]
+  );
+
   // ── Add video from URL ─────────────────────────────────────────────────
 
   const handleAddVideo = useCallback(async () => {
@@ -374,7 +470,16 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
       return;
     }
 
+    const playlistId = extractYouTubePlaylistId(trimmedUrl);
     const videoId = extractYouTubeId(trimmedUrl);
+
+    // If user pasted a playlist URL into the single video URL box, seamlessly import the playlist!
+    if (playlistId && !videoId) {
+      await handleImportPlaylist(trimmedUrl);
+      setUrlInput("");
+      return;
+    }
+
     if (!videoId) {
       setUrlError(
         "Please paste a valid YouTube URL (e.g. youtube.com/watch?v=... or youtu.be/...)"
@@ -429,100 +534,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     } finally {
       setFetchingVideo(false);
     }
-  }, [urlInput]);
-
-  // ── 1-Click Import Full YouTube Playlist ────────────────────────────────
-  const handleImportPlaylist = useCallback(async () => {
-    setUrlError("");
-    setPlaylistSuccessMsg("");
-    const trimmed = playlistInput.trim();
-    if (!trimmed) {
-      setUrlError("Please paste a YouTube playlist link or playlist ID.");
-      return;
-    }
-
-    const lower = trimmed.toLowerCase();
-    if (
-      lower.includes("music.youtube.com") ||
-      lower.includes("list=rd") ||
-      lower.includes("list=olak") ||
-      lower.includes("list=lm")
-    ) {
-      setUrlError(
-        "Commercial music tracks, albums, and auto-generated mixes cannot be imported. VeySkill is strictly for educational courses and masterclasses."
-      );
-      return;
-    }
-
-    const playlistId = extractYouTubePlaylistId(trimmed);
-    if (!playlistId) {
-      setUrlError(
-        "Invalid YouTube playlist link. Make sure the URL contains 'list=...' or is a valid playlist ID."
-      );
-      return;
-    }
-
-    setPlaylistImporting(true);
-    try {
-      const res = await fetch(`/api/youtube/playlist?url=${encodeURIComponent(trimmed)}`);
-      const data = (await res.json()) as {
-        title?: string;
-        channelTitle?: string;
-        videos?: { videoId: string; title: string; thumbnailUrl: string }[];
-        error?: string;
-      };
-
-      if (!res.ok || data.error) {
-        setUrlError(data.error || "Failed to load playlist. Please ensure it is public.");
-        return;
-      }
-
-      if (!data.videos || data.videos.length === 0) {
-        setUrlError("No videos found in this playlist.");
-        return;
-      }
-
-      // Auto-populate course title if empty
-      if (!title.trim() && data.title) {
-        setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
-      }
-
-      // Academic integrity check: Zero-tolerance playlist verification
-      const playlistIntegrity = validatePlaylistEducation(
-        data.title || "",
-        data.channelTitle || "",
-        data.videos || [],
-        trimmed
-      );
-
-      if (!playlistIntegrity.valid) {
-        setUrlError(
-          playlistIntegrity.reason ||
-            "Playlist rejected: Only verified educational courses and masterclasses are permitted. Commercial music, movies, or entertainment playlists cannot be imported."
-        );
-        return;
-      }
-
-      const newLessons: LessonInput[] = (data.videos || []).map((v, index) => ({
-        tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
-        youtubeId: v.videoId,
-        title: (v.title || `Lesson ${index + 1}`).slice(0, LIMITS.LESSON_TITLE),
-        thumbnailUrl: v.thumbnailUrl || youtubeThumbnail(v.videoId),
-      }));
-
-      setLessons((prev) => [...prev, ...newLessons]);
-      setPlaylistSuccessMsg(
-        `Successfully imported ${newLessons.length} lessons from "${data.title || "playlist"}"!`
-      );
-      setPlaylistInput("");
-    } catch {
-      setUrlError(
-        "Connection error while importing playlist. Please check your network and try again."
-      );
-    } finally {
-      setPlaylistImporting(false);
-    }
-  }, [playlistInput, title]);
+  }, [urlInput, handleImportPlaylist]);
 
   // ── Bulk Add Videos from Multiple URLs ───────────────────────────────────
 
