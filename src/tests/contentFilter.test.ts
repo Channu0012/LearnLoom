@@ -193,6 +193,60 @@ describe("validateEducationalContent", () => {
       );
       expect(res.blocked).toBe(false);
     });
+
+    it("allows AI Education and Prompt Engineering courses without false movie detection", () => {
+      const res1 = validateEducationalContent("AI Education: Complete Prompt Engineering Course");
+      expect(res1.blocked).toBe(false);
+
+      const res2 = validateEducationalContent(
+        "Generative AI and Prompt Engineering - Episode 1: Foundation Models"
+      );
+      expect(res2.blocked).toBe(false);
+
+      const res3 = validateEducationalContent(
+        "Prompt Engineering Masterclass ft. Andrew Ng",
+        "DeepLearning.AI"
+      );
+      expect(res3.blocked).toBe(false);
+
+      const res4 = validateEducationalContent(
+        "First look at GPT-5 and Prompt Engineering Guide",
+        "AI Research Group"
+      );
+      expect(res4.blocked).toBe(false);
+
+      const res5 = validateEducationalContent(
+        "Behind the Scenes of LLM Training: Deep Dive into Transformers"
+      );
+      expect(res5.blocked).toBe(false);
+
+      const res6 = validateEducationalContent(
+        "ChatGPT & Claude Prompt Engineering Tutorial for Beginners",
+        "Prompt Engineering Studios"
+      );
+      expect(res6.blocked).toBe(false);
+
+      const res7 = validateEducationalContent("AI in Film Production and Storytelling Masterclass");
+      expect(res7.blocked).toBe(false);
+
+      const res8 = validateEducationalContent("Prompt Engineering: Making a Movie Script with AI");
+      expect(res8.blocked).toBe(false);
+
+      const res9 = validateEducationalContent(
+        "Prompt Engineering for Filmmakers - Hollywood Scriptwriting with ChatGPT"
+      );
+      expect(res9.blocked).toBe(false);
+
+      const res10 = validateEducationalContent(
+        "AI Education: Sentiment Analysis on Movie Reviews using Python & BERT"
+      );
+      expect(res10.blocked).toBe(false);
+
+      const res11 = validateEducationalContent(
+        "Generative AI Tutorial: Creating Short Films with Sora and Runway"
+      );
+      expect(res11.blocked).toBe(false);
+    });
   });
 });
 
@@ -205,6 +259,22 @@ describe("validateCourseEducation", () => {
         { title: "Lesson 1: Introduction and Environment Setup" },
         { title: "Lesson 2: Variables, Loops, and Functions" },
         { title: "Lesson 3: Building a REST API" },
+      ],
+    });
+    expect(res.valid).toBe(true);
+  });
+
+  it("approves AI education and Prompt Engineering courses with standard curriculum lesson titles", () => {
+    const res = validateCourseEducation({
+      title: "Complete AI & Prompt Engineering Masterclass",
+      description: "Learn LLMs, ChatGPT, Claude, and Agentic Workflows from scratch.",
+      lessons: [
+        { title: "Introduction" },
+        { title: "Environment Setup & API Keys" },
+        { title: "Zero-Shot vs Few-Shot Prompting" },
+        { title: "AI in Film & Video Generation (Runway & Sora)" },
+        { title: "Building an Autonomous AI Agent" },
+        { title: "Conclusion & Course Summary" },
       ],
     });
     expect(res.valid).toBe(true);

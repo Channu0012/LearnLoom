@@ -15,17 +15,48 @@ export interface ContentFilterResult {
 // ── Educational Exemption Patterns ───────────────────────────────────────────
 // Genuine pedagogical terms indicating intentional academic instruction with strict word boundaries
 const EDUCATIONAL_PATTERNS = [
-  /\b(tutorial|tutorials|course|courses|lecture|lectures|lesson|lessons|masterclass|bootcamp|curriculum|syllabus|workshop)\b/i,
-  /\b(crash\s+course|full\s+course|complete\s+course|deep\s+dive|for\s+beginners|fundamentals|introduction\s+to|step\s+by\s+step)\b/i,
-  /\b(how\s+to\s+[a-z]+|learn\s+[a-z]+\s+(?:programming|development|coding|from\s+scratch|basics|fast)|learn\s+to\s+code)\b/i,
-  /\b(architecture|design\s+patterns|clean\s+code|system\s+design|best\s+practices|interview\s+prep|study\s+guide|study\s+plan)\b/i,
-  /\b(programming|coding|software\s+engineering|computer\s+science|data\s+science|machine\s+learning|artificial\s+intelligence)\b/i,
-  /\b(web\s+development|full\s+stack|frontend|backend|devops|cloud\s+computing|cybersecurity|ethical\s+hacking|algorithms|data\s+structures|\bdsa\b)\b/i,
-  /\b(python|javascript|typescript|react|next\.?js|node\.?js|c\+\+|\bgolang\b|\brust\s+(?:programming|language|course|tutorial)\b|\bjava\s+(?:programming|course|tutorial|lecture)\b|\bcore\s+java\b|\bsql\s+(?:database|course|tutorial|queries)\b|\bgit\b|\bgithub\b|\bfigma\b|ui\/ux)\b/i,
-  /\b(mathematics|calculus|algebra|physics|chemistry|biology|economics|finance|accounting|psychology|philosophy|grammar)\b/i,
-  /\b(music\s+theory|sound\s+design|audio\s+production|cinematography|screenwriting|storyboarding|lighting\s+technique|video\s+editing|film\s+analysis|directing|visual\s+storytelling)\b/i,
-  /\b(analysis|theory|breakdown)\b/i,
-  /\b(chords?\s+and\s+scales|piano\s+tutorial|guitar\s+lesson|drum\s+lesson|vocal\s+exercises?)\b/i,
+  // Core pedagogy & instructional formats
+  /\b(tutorial|tutorials|course|courses|lecture|lectures|lesson|lessons|masterclass|bootcamp|curriculum|syllabus|workshop|webinar|seminar|training|class|classes|certification|certificate|exam\s+prep|study\s+guide|study\s+plan|revision|syllabus)\b/i,
+  /\b(crash\s+course|full\s+course|complete\s+course|deep\s+dive|for\s+beginners|fundamentals|introduction\s+to|intro\s+to|intro\b|introduction\b|step\s+by\s+step|handbook|roadmap|overview|walkthrough|guide|guidelines|zero\s+to\s+hero|from\s+scratch|\b101\b|\b102\b)\b/i,
+  /\b(how\s+to\s+[a-z]+|learn\s+[a-z]+|learn\s+to\s+[a-z]+|learning\s+[a-z]+|education|educational|academic|academy|explained|explaining|explanation|principles|concepts|theory|analysis|breakdown)\b/i,
+  /\b(how\s+[a-z]+\s+works?|what\s+is\s+[a-z]+|why\s+[a-z]+\s+matters?|getting\s+started|environment\s+setup|installation\s+guide|setup\s+guide)\b/i,
+  /\b(architecture|design\s+patterns?|clean\s+code|system\s+design|best\s+practices|interview\s+prep|coding\s+interview|leet\s*code)\b/i,
+
+  // AI, Prompt Engineering, LLMs & Generative Tech (High Priority)
+  /\b(prompt\s+engineering|prompting|prompts?|prompt\s+design|prompt\s+crafting|system\s+prompts?|prompt\s+tuning|prompt\s+guide|prompt\s+techniques?|prompt\s+templates?)\b/i,
+  /\b(ai\s+education|ai\s+course|ai\s+tutorial|ai\s+masterclass|ai\s+tools?|ai\s+agents?|agentic\s+ai|autonomous\s+agents?|multi[\s-]agent|ai\s+workflow|ai\s+automation|ai\s+engineering|ai\s+developer|ai\s+development)\b/i,
+  /\b(generative\s+ai|gen\s*ai|artificial\s+intelligence|\bllm\b|\bllms\b|large\s+language\s+models?|foundation\s+models?|frontier\s+models?)\b/i,
+  /\b(chatgpt|gpt-?3(?:\.5)?|gpt-?4(?:o)?(?:-mini)?|gpt-?5|gpt-?o1|gpt-?o3|openai|sora|claude(?:\s*3(?:\.5)?(?:\s*(?:sonnet|haiku|opus))?)?|anthropic|gemini|deepmind|copilot)\b/i,
+  /\b(llama(?:\s*[23](?:\.\d+)?)?|meta\s+ai|mistral(?:\s*ai)?|mixtral|deepseek|qwen|gemma|phi-?[234]|groq|ollama|local\s*llm|vllm|lm\s+studio)\b/i,
+  /\b(midjourney|stable\s+diffusion|dall-?e|runway(?:\s*gen-?[23])?|pika(?:\s*art)?|kling(?:\s*ai)?|flux(?:\.1)?|diffusion\s+models?)\b/i,
+  /\b(langchain|langgraph|llamaindex|crewai|autogen|semantic\s+kernel|hugging\s*face|transformers?|attention\s+mechanism|tokenizers?)\b/i,
+  /\b(rag|retrieval[\s-]augmented\s+generation|vector\s+(?:database|store|embeddings?|search)|pinecone|chromadb|qdrant|weaviate)\b/i,
+  /\b(fine-?tuning|lora|qlora|peft|rlhf|dpo|zero[\s-]shot|few[\s-]shot|chain[\s-]of[\s-]thought|\bcot\b|in[\s-]context\s+learning)\b/i,
+  /\b(machine\s+learning|deep\s+learning|neural\s+networks?|pytorch|tensorflow|keras|scikit-?learn|data\s+science|data\s+analytics?|data\s+engineering|big\s+data|nlp|natural\s+language\s+processing|computer\s+vision)\b/i,
+
+  // Software Engineering, Dev & Cloud
+  /\b(programming|coding|software\s+engineering|computer\s+science|web\s+development|full\s+stack|frontend|backend|devops|cloud\s+computing|cybersecurity|ethical\s+hacking|algorithms?|data\s+structures?|\bdsa\b)\b/i,
+  /\b(python|javascript|typescript|react(?:\s*native)?|next\.?js|node\.?js|vue(?:\.?js)?|angular|express(?:\.?js)?|django|flask|fastapi|spring\s*boot|c\+\+|c#|\.net|\bgolang\b|go\s+language|\brust\b|\bjava\b|\bcore\s+java\b|kotlin|swift|flutter|php|laravel|sql|mysql|postgresql|mongodb|redis|prisma|supabase|firebase|graphql|rest\s+api|\bgit\b|\bgithub\b|\bdocker\b|\bkubernetes\b|\baws\b|\bazure\b|\bgcp\b|\blinux\b|\bbash\b)\b/i,
+  /\b(tailwind(?:\s*css)?|css3?|html5?|figma|ui\/ux|web\s+design|responsive\s+design)\b/i,
+
+  // Sciences, STEM, Humanities, Business, Finance
+  /\b(mathematics|math|calculus|algebra|linear\s+algebra|geometry|statistics|probability|physics|quantum|chemistry|organic\s+chemistry|biology|genetics|anatomy|medicine)\b/i,
+  /\b(economics|macroeconomics|microeconomics|finance|investing|accounting|business|marketing|digital\s+marketing|seo|entrepreneurship|management|psychology|philosophy|history|world\s+history|grammar|english\s+grammar|ielts|toefl)\b/i,
+
+  // Creative & Technical Arts Instruction
+  /\b(music\s+theory|sound\s+design|audio\s+production|music\s+production|cinematography|screenwriting|storyboarding|lighting\s+technique|video\s+editing|film\s+analysis|film\s+directing|film\s+making|visual\s+storytelling|color\s+grading|vfx|3d\s+modeling|blender(?:\s*3d)?|unreal\s+engine|unity(?:\s*3d)?|animation\s+tutorial)\b/i,
+  /\b(chords?\s+and\s+scales|piano\s+tutorial|guitar\s+lesson|drum\s+lesson|vocal\s+exercises?|drawing\s+tutorial|sketching\s+tutorial)\b/i,
+];
+
+// Common pedagogical curriculum lesson structural titles
+const CURRICULUM_STRUCTURAL_PATTERNS = [
+  /\b(intro|introduction|welcome|orientation|prerequisites?|getting\s+started|installation|environment\s+setup|setup\s+guide|requirements?)\b/i,
+  /\b(overview|course\s+overview|syllabus|curriculum|roadmap|agenda|table\s+of\s+contents?|cheat\s*sheet)\b/i,
+  /\b(module\s+\d+|chapter\s+\d+|unit\s+\d+|section\s+\d+|part\s+\d+|step\s+\d+|lesson\s+\d+|session\s+\d+|phase\s+\d+|class\s+\d+)\b/i,
+  /\b(theory|concepts?|architecture|fundamentals?|basics?|deep\s+dive|advanced|intermediate|beginner)\b/i,
+  /\b(demo|demonstration|walkthrough|hands[\s-]on|code[\s-]along|practice|exercise|lab|workshop|tutorial)\b/i,
+  /\b(project|capstone|case\s+study|real[\s-]world\s+example|mini[\s-]project|final\s+project|assignment)\b/i,
+  /\b(review|summary|wrap[\s-]up|conclusion|recap|next\s+steps|outro|final\s+thoughts|q&a|faq|resources|bonus)\b/i,
 ];
 
 export function hasEducationalKeyword(text: string): boolean {
@@ -42,12 +73,11 @@ const MUSIC_SIGNATURES = [
   /\b(full\s+album|ep\s+album|album\s+stream|album\s+release|discography)\b/i,
   /\b(sped\s+up|slowed\s+\+?\s*reverb|8d\s+audio|bass\s+boosted|nightcore)\b/i,
   /\b(prod\.\s*by|produced\s+by)\b/i,
-  /\b(feat\.?|ft\.?)\s+[a-zA-Z0-9]/i,
   /\b(jukebox|all\s+songs|mashup|mega\s+mix|dj\s+remix|remix\s+songs?|club\s+mix)\b/i,
   /\b(original\s+soundtrack|soundtrack\s+ost|\bost\b|bgm\s+ringtone|background\s+score)\b/i,
   /\b(karaoke\s+version|karaoke\s+track|instrumental\s+track|type\s+beat|rap\s+beat)\b/i,
   /\b(live\s+in\s+concert|live\s+performance|acoustic\s+session|unplugged\s+version)\b/i,
-  /\b(lo-?fi\s+beats|lofi\s+hip\s+hop|chill\s+beats|beats\s+to\s+relax|study\s+beats|beats\s+to\s+study)\b/i,
+  /\b(lo-?fi\s+beats|lofi\s+hip\s+hop|chill\s+beats|beats\s+to\s+relax)\b/i,
   /\b(music\s+video|\bmv\b|lyrical\s+video|title\s+track)\b/i,
   /\b(song\s+teaser|theme\s+song|punjabi\s+songs?|hindi\s+songs?|tamil\s+songs?|telugu\s+songs?|kannada\s+songs?|malayalam\s+songs?|bhojpuri\s+songs?)\b/i,
   /\b(party\s+songs?|pop\s+songs?|love\s+songs?|dance\s+songs?|sad\s+songs?|romantic\s+songs?)\b/i,
@@ -58,8 +88,6 @@ const MUSIC_CHANNEL_KEYWORDS = [
   "- topic",
   "topic",
   "vevo",
-  "music",
-  "records",
   "t-series",
   "tseries",
   "sony music",
@@ -80,17 +108,8 @@ const MUSIC_CHANNEL_KEYWORDS = [
   "monstercat",
   "ultra records",
   "sub pop",
-  "soundtrack",
   "audio library",
-  "recordings",
-  "record label",
   "official artist channel",
-  "band",
-  "orchestra",
-  "beats",
-  "records",
-  "vocalist",
-  "singer",
   "shemaroo",
   "eros now",
   "alan walker",
@@ -229,14 +248,14 @@ const FAMOUS_TRACK_TITLES = [
 // ── Commercial Movie, Film & TV Signatures ─────────────────────────────────
 const MOVIE_SIGNATURES = [
   /\b(full\s+movies?|complete\s+movies?|watch\s+full\s+movie|full\s+films?|cinema\s+full)\b/i,
-  /\b(official\s+trailers?|teaser\s+trailers?|final\s+trailers?|trailers?\s+\d+|main\s+trailer|first\s+trailer|theatrical\s+trailer)\b/i,
+  /\b(official\s+trailers?|teaser\s+trailers?|final\s+trailers?|trailers?\s+\d+|main\s+trailer|theatrical\s+trailer)\b/i,
   /\b(movie\s+clips?|film\s+clips?|best\s+movie\s+scenes?|post\s+credits|movie\s+scenes?|action\s+scenes?|climax\s+scenes?)\b/i,
   /\b(scenes?\s+(?:4k|1080p|hd)|(?:4k|1080p|hd)\s+scenes?|robbery\s+scenes?|fight\s+scenes?|death\s+scenes?|final\s+scenes?|chase\s+scenes?)\b/i,
-  /\b(deleted\s+scenes?|bloopers|behind\s+the\s+scenes|making\s+of\s+the\s+movie)\b/i,
+  /\b(deleted\s+scenes?|bloopers|behind\s+the\s+scenes\s+of\s+the\s+(?:movie|film)|making\s+of\s+the\s+movie)\b/i,
   /\b(box\s+office|hindi\s+dubbed|tamil\s+full\s+movies?|telugu\s+full\s+movies?|blockbuster\s+movies?)\b/i,
   /\b(kannada\s+movies?|malayalam\s+movies?|punjabi\s+movies?|south\s+movies?|hollywood\s+movies?|bollywood\s+movies?)\b/i,
-  /\b(theatrical\s+trailers?|motion\s+poster|glimpse|first\s+look|sneak\s+peek|sneak\s+preview)\b/i,
-  /\b(web\s+series|tv\s+serial|season\s+\d+\s+episode|episode\s+\d+|tv\s+show\s+episode)\b/i,
+  /\b(theatrical\s+trailers?|motion\s+poster|glimpse\s+teaser|first\s+glimpse|first\s+look\s+teaser)\b/i,
+  /\b(web\s+series\s+episode|tv\s+serial\s+episode|tv\s+show\s+episode)\b/i,
   /\b(movie\s+reviews?|box\s+office\s+collection|film\s+premiere|ott\s+release)\b/i,
   /\b(action\s+movies?|horror\s+movies?|comedy\s+movies?|romantic\s+movies?|thriller\s+movies?)\b/i,
 ];
@@ -246,6 +265,7 @@ const MOVIE_CHANNEL_KEYWORDS = [
   "marvel entertainment",
   "paramount pictures",
   "walt disney studios",
+  "walt disney",
   "universal pictures",
   "warner bros",
   "20th century studios",
@@ -256,13 +276,18 @@ const MOVIE_CHANNEL_KEYWORDS = [
   "prime video",
   "hulu",
   "hotstar",
+  "disney+",
   "film companion",
-  "cinema",
-  "pictures",
-  "studios",
-  "entertainment",
-  "films",
   "movieclips",
+  "rottentomatoes",
+  "ign movie",
+  "fandango",
+  "screen junkies",
+  "cinema sins",
+  "bollywood hungama",
+  "zee cinema",
+  "star gold",
+  "sony max",
 ];
 
 // ── Pure Entertainment, Memes, Gaming & Non-Educational Signatures ──────────
@@ -302,6 +327,21 @@ const ACADEMIC_CHANNEL_PATTERNS = [
   /\bkurzgesagt\b/i,
   /\bgeeksforgeeks\b/i,
   /\bedx\b/i,
+  /\bdeeplearning\.ai\b/i,
+  /\bandrew\s+ng\b/i,
+  /\bandrej\s+karpathy\b/i,
+  /\bstatquest\b/i,
+  /\bcodebasics\b/i,
+  /\bcampusx\b/i,
+  /\bkrish\s+naik\b/i,
+  /\bsentdex\b/i,
+  /\bneuralnine\b/i,
+  /\btech\s+with\s+tim\b/i,
+  /\bhugging\s*face\b/i,
+  /\btwo\s+minute\s+papers\b/i,
+  /\byannic\s+kilcher\b/i,
+  /\bai\s+explained\b/i,
+  /\bthe\s+ai\s+advantage\b/i,
 ];
 
 /**
@@ -360,20 +400,52 @@ export function validateEducationalContent(
     return { blocked: false };
   }
 
-  // 4. Strict non-exemptible entertainment markers
-  const isGamingOrPrank = /\b(gameplay|let's\s+play|gaming|prank|roast|funny\s+moments)\b/i.test(
-    cleanTitle
-  );
-  const isExplicitTrailer =
-    /\b(official\s+trailer|teaser\s+trailer|final\s+trailer|trailer\s+\d+|teaser)\b/i.test(
+  // 4. Strict non-exemptible pure gaming, prank, and meme markers
+  const isPureGamingOrPrank =
+    /\b(gta\s+(?:v|5)\s+gameplay|minecraft\s+hardcore|free\s+fire\s+gameplay|pubg\s+mobile\s+gameplay|roblox\s+gameplay|gameplay\s+walkthrough|try\s+not\s+to\s+laugh|prank\s+video|pranking|roast\s+video|funny\s+compilation|meme\s+compilation)\b/i.test(
       cleanTitle
     );
-  const isMovieScene =
-    /\b(movie\s+scenes?|film\s+scenes?|robbery\s+scenes?|fight\s+scenes?|action\s+scenes?|climax\s+scenes?|death\s+scenes?|final\s+scenes?|chase\s+scenes?|scenes?\s+4k|4k\s+scenes?)\b/i.test(
-      cleanTitle
-    );
+  if (isPureGamingOrPrank) {
+    return {
+      blocked: true,
+      category: "entertainment",
+      reason:
+        "Video gameplay walkthroughs, gaming streams, and pranks are not permitted. Only educational coursework is allowed.",
+    };
+  }
 
-  // 5. Check commercial music channel keywords FIRST (Labels and artists can never be courses)
+  // 5. Explicit commercial music formats
+  const isExplicitMusicRelease =
+    /\b(official\s+music\s+video|official\s+audio|lyric\s+video|full\s+album\s+stream)\b/i.test(
+      cleanTitle
+    ) ||
+    /[\[\(](?:official\s+music\s+video|official\s+video|official\s+audio|lyric\s+video|visualizer)[\]\)]/i.test(
+      cleanTitle
+    );
+  if (isExplicitMusicRelease) {
+    return {
+      blocked: true,
+      category: "music",
+      reason:
+        "Commercial music videos and audio tracks cannot be imported. VeySkill is dedicated exclusively to academic lectures and technical masterclasses.",
+    };
+  }
+
+  // 6. Explicit commercial movie formats & full movie releases
+  const isExplicitMovieRelease =
+    /\b(watch\s+full\s+movie|complete\s+movie\s+hd|full\s+movie\s+(?:download|1080p|720p|hd|hindi|tamil|telugu|english|malayalam|kannada)|(?:hindi|tamil|telugu|kannada|malayalam)\s+full\s+movies?|hindi\s+dubbed\s+full\s+movie|theatrical\s+trailers?|official\s+theatrical\s+trailer|glimpse\s+teaser|first\s+glimpse\s+teaser)\b/i.test(
+      cleanTitle
+    );
+  if (isExplicitMovieRelease) {
+    return {
+      blocked: true,
+      category: "movie",
+      reason:
+        "Commercial movies, trailers, and film clips cannot be imported. VeySkill is dedicated exclusively to academic curricula and verified coursework.",
+    };
+  }
+
+  // 7. Check commercial music channel keywords (Labels and artists can never be courses)
   if (cleanAuthor && MUSIC_CHANNEL_KEYWORDS.some((kw) => cleanAuthor.includes(kw))) {
     return {
       blocked: true,
@@ -383,7 +455,7 @@ export function validateEducationalContent(
     };
   }
 
-  // 6. Check commercial movie studio channel keywords FIRST
+  // 8. Check commercial movie studio channel keywords
   if (cleanAuthor && MOVIE_CHANNEL_KEYWORDS.some((kw) => cleanAuthor.includes(kw))) {
     return {
       blocked: true,
@@ -393,7 +465,17 @@ export function validateEducationalContent(
     };
   }
 
-  // 7. Check music signatures in title FIRST
+  // 9. AFFIRMATIVE EDUCATIONAL VERIFICATION
+  // If the title contains genuine educational / pedagogy / AI / prompt engineering keywords:
+  const hasPedagogicalIntent = hasEducationalKeyword(cleanTitle);
+  if (hasPedagogicalIntent) {
+    return { blocked: false };
+  }
+
+  // 10. For titles WITHOUT affirmative educational keywords:
+  // Strictly enforce movie, music, and entertainment detection
+
+  // 10a. Music signatures in title
   for (const pattern of MUSIC_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
@@ -405,7 +487,7 @@ export function validateEducationalContent(
     }
   }
 
-  // 8. Check movie signatures in title FIRST
+  // 10b. Movie signatures in title
   for (const pattern of MOVIE_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
@@ -417,7 +499,7 @@ export function validateEducationalContent(
     }
   }
 
-  // 9. Check entertainment/meme/gaming signatures in title FIRST
+  // 10c. Entertainment/meme/gaming signatures in title
   for (const pattern of ENTERTAINMENT_SIGNATURES) {
     if (pattern.test(cleanTitle)) {
       return {
@@ -429,31 +511,7 @@ export function validateEducationalContent(
     }
   }
 
-  // 10. If non-exemptible markers matched, block
-  if (isGamingOrPrank) {
-    return {
-      blocked: true,
-      category: "entertainment",
-      reason:
-        "Video gameplay walkthroughs and pranks are not permitted. Only educational coursework is allowed.",
-    };
-  }
-  if (isExplicitTrailer || isMovieScene) {
-    return {
-      blocked: true,
-      category: "movie",
-      reason:
-        "Movie trailers and film scenes are not permitted. Only educational coursework is allowed.",
-    };
-  }
-
-  // 11. Check pedagogical intent keywords
-  const hasPedagogicalIntent = hasEducationalKeyword(cleanTitle);
-  if (hasPedagogicalIntent) {
-    return { blocked: false };
-  }
-
-  // 12. Check famous track title matches without educational intent
+  // 10d. Famous track title matches without educational intent
   for (const track of FAMOUS_TRACK_TITLES) {
     if (
       lowerTitle === track ||
@@ -469,7 +527,7 @@ export function validateEducationalContent(
     }
   }
 
-  // 13. Artist - Track pattern check (e.g. "Alan Walker - Faded", "Ed Sheeran - Shape of You")
+  // 10e. Artist - Track pattern check (e.g. "Alan Walker - Faded", "Ed Sheeran - Shape of You")
   const isTrackPattern =
     /^[^\n\r]{2,60}\s*[-–—:|]\s*["']?[^\n\r]{2,80}["']?(?:\s*[\[\(][^\]\)]*[\]\)])?$/i.test(
       cleanTitle
@@ -482,7 +540,7 @@ export function validateEducationalContent(
     };
   }
 
-  // 14. Affirmative educational requirement: Reject generic non-educational entertainment
+  // 10f. Affirmative educational requirement: Reject generic non-educational entertainment
   return {
     blocked: true,
     category: "entertainment",
@@ -550,25 +608,34 @@ export function validatePlaylistEducation(
 
   // 2. Check playlist title for explicit non-educational intent
   const playlistTitleRejections = [
-    /\b(songs?|tracks?|singles?|album|discography|jukebox|hits|soundtrack|\bost\b|bgm|remixes?|dj\s+mix|party\s+songs|bollywood\s+songs|punjabi\s+songs|lofi\s+beats)\b/i,
-    /\b(movies?|films?|cinema|trailers?|teasers?|movie\s+scenes?|film\s+clips?|climax|fight\s+scene|web\s+series|tv\s+serial|season\s+\d+|episodes?|kdrama|k-drama)\b/i,
+    /\b(full\s+songs?|hit\s+songs?|video\s+songs?|singles?|album|discography|jukebox|soundtrack|\bost\b|bgm|dj\s+remix|party\s+songs|bollywood\s+songs|punjabi\s+songs|lofi\s+beats)\b/i,
+    /\b(full\s+movies?|cinema\s+full|watch\s+full\s+movie|theatrical\s+trailers?|teaser\s+trailers?|movie\s+scenes?|film\s+clips?|climax\s+scene|fight\s+scene|web\s+series|tv\s+serial|kdrama|k-drama)\b/i,
     /\b(pranks?|roasts?|funny\s+videos?|comedy\s+shows?|stand[\s-]?up|memes?|fails?|vlogs?|gameplay|lets\s+play|gaming)\b/i,
   ];
 
   for (const pattern of playlistTitleRejections) {
     if (pattern.test(cleanTitle)) {
       // Check if it's an authentic academic topic
-      const isAcademicCourse = [
-        "music theory",
-        "music production",
-        "sound engineering",
-        "composition",
-        "film directing",
-        "screenwriting",
-        "cinematography",
-        "video editing",
-        "film history",
-      ].some((term) => lowerTitle.includes(term));
+      const isAcademicCourse =
+        hasEducationalKeyword(cleanTitle) ||
+        [
+          "music theory",
+          "music production",
+          "sound engineering",
+          "composition",
+          "film directing",
+          "film making",
+          "film production",
+          "screenwriting",
+          "cinematography",
+          "video editing",
+          "film history",
+          "prompt engineering",
+          "ai",
+          "course",
+          "tutorial",
+          "masterclass",
+        ].some((term) => lowerTitle.includes(term));
 
       if (!isAcademicCourse) {
         return {
@@ -639,23 +706,35 @@ export function validateCourseEducation(course: {
   const lowerTitle = cleanTitle.toLowerCase();
   const lowerDesc = description.trim().toLowerCase();
 
-  // 1. Check if course title or description contains non-educational marketing keywords FIRST
+  // 1. Check if course title or description contains explicit commercial movie/music keywords
   const titleEntertainmentPatterns = [
-    /\b(movie|movies|film|films|cinema|trailer|trailers|teaser)\b/i,
-    /\b(song|songs|track|tracks|music\s+video|album|remix|dj\s+mix)\b/i,
-    /\b(prank|pranks|roast|gaming|gameplay|funny\s+video|comedy\s+show)\b/i,
+    /\b(full\s+movies?|watch\s+full\s+movie|hollywood\s+(?:[a-z]+\s+)?movies?|bollywood\s+(?:[a-z]+\s+)?movies?|action\s+movies?|horror\s+movies?|comedy\s+movies?|official\s+trailers?|teaser\s+trailers?)\b/i,
+    /\b(hit\s+songs?|video\s+songs?|full\s+album|dj\s+remix|music\s+album|party\s+songs?)\b/i,
+    /\b(pranks?|roasts?|gameplay\s+walkthrough|funny\s+videos?|comedy\s+shows?)\b/i,
   ];
 
   for (const pattern of titleEntertainmentPatterns) {
-    const isExempt = [
-      "film directing",
-      "film history",
-      "music theory",
-      "music production",
-      "sound engineering",
-      "screenwriting",
-      "cinematography",
-    ].some((term) => lowerTitle.includes(term) || lowerDesc.includes(term));
+    const isExempt =
+      hasEducationalKeyword(cleanTitle) ||
+      hasEducationalKeyword(description) ||
+      [
+        "film directing",
+        "film history",
+        "film making",
+        "film production",
+        "music theory",
+        "music production",
+        "sound engineering",
+        "screenwriting",
+        "cinematography",
+        "prompt engineering",
+        "ai",
+        "artificial intelligence",
+        "masterclass",
+        "course",
+        "tutorial",
+        "bootcamp",
+      ].some((term) => lowerTitle.includes(term) || lowerDesc.includes(term));
 
     if (!isExempt && pattern.test(cleanTitle)) {
       return {
@@ -675,7 +754,7 @@ export function validateCourseEducation(course: {
     };
   }
 
-  // 3. Validate every single lesson title in the curriculum: ZERO tolerance
+  // 3. Validate curriculum lesson count
   if (lessons.length === 0) {
     return {
       valid: false,
@@ -683,23 +762,53 @@ export function validateCourseEducation(course: {
     };
   }
 
+  // 4. Validate every single lesson title in the curriculum:
+  // Detects commercial movies, music videos, and non-educational videos embedded in courses
+  const isParentCourseEducational =
+    hasEducationalKeyword(cleanTitle) || hasEducationalKeyword(description);
+
   for (let i = 0; i < lessons.length; i++) {
     const lesson = lessons[i]!;
-    const filter = validateEducationalContent(lesson.title);
+    const lessonClean = (lesson.title || "").trim();
+
+    // Check if the lesson title is an authentic curriculum structural title (e.g. "Introduction", "Module 1", "Setup", "Summary")
+    const isCurriculumStructure = CURRICULUM_STRUCTURAL_PATTERNS.some((p) => p.test(lessonClean));
+
+    // If parent course is verified educational and the lesson has standard curriculum structure,
+    // verify only that it is NOT explicitly a commercial movie, music video, or entertainment stream
+    if (isParentCourseEducational && isCurriculumStructure) {
+      const isExplicitMedia =
+        /\b(official\s+music\s+video|official\s+audio|lyric\s+video|full\s+movies?|watch\s+full\s+movie|theatrical\s+trailer|gameplay\s+walkthrough|prank\s+video)\b/i.test(
+          lessonClean
+        );
+      if (isExplicitMedia) {
+        return {
+          valid: false,
+          reason: `Lesson ${i + 1} ("${lessonClean}") was flagged as non-educational entertainment or media. VeySkill strictly permits academic lectures and technical coursework only.`,
+          offendingLessonIndex: i,
+        };
+      }
+      continue;
+    }
+
+    const filter = validateEducationalContent(lessonClean);
     if (filter.blocked) {
       return {
         valid: false,
-        reason: `Lesson ${i + 1} ("${lesson.title}") was flagged as non-educational (${filter.category || "entertainment"}). VeySkill strictly permits academic lectures and technical coursework only.`,
+        reason: `Lesson ${i + 1} ("${lessonClean}") was flagged as non-educational (${filter.category || "entertainment"}). VeySkill strictly permits academic lectures and technical coursework only.`,
         offendingLessonIndex: i,
       };
     }
   }
 
-  // 4. Positive Educational Intent Verification
+  // 5. Positive Educational Intent Verification
   const hasAcademicInTitleOrDesc =
     hasEducationalKeyword(cleanTitle) || hasEducationalKeyword(description);
 
-  const hasAcademicInLessons = lessons.some((l) => hasEducationalKeyword(l.title));
+  const hasAcademicInLessons = lessons.some(
+    (l) =>
+      hasEducationalKeyword(l.title) || CURRICULUM_STRUCTURAL_PATTERNS.some((p) => p.test(l.title))
+  );
 
   if (!hasAcademicInTitleOrDesc && !hasAcademicInLessons) {
     return {
