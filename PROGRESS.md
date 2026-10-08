@@ -189,5 +189,3 @@
   - 106/106 tests passing across 7 test suites.
   - Zero ESLint or Prettier errors.
   - Live deployment verified on Vercel: `https://veyskill.in` (deployment ID `dpl_H69oBHrar11yTkMQ3YKQAnmQMyDi`).
-
-

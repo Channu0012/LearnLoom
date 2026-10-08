@@ -352,68 +352,6 @@ function CoursePlayerContent({
     }
   }, [user?.displayName]);
 
-  // Check if user already paid for this certificate
-  useEffect(() => {
-    if (!user?.uid || !courseId) return;
-    let isCancelled = false;
-
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/payment/check?uid=${encodeURIComponent(user.uid)}&courseId=${encodeURIComponent(courseId)}`
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!isCancelled && data.hasPaid) {
-          setHasPaidCertificate(true);
-          setPaidOrderId(data.orderId);
-        }
-      } catch (err) {
-        console.error("Failed to check certificate payment status:", err);
-      }
-    })();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [user?.uid, courseId]);
-
-  // Handle return from Cashfree checkout redirect
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdParam = urlParams.get("order_id");
-
-    if (orderIdParam) {
-      // Clean query params from URL without reload
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, "", cleanUrl);
-
-      // Verify payment with server
-      (async () => {
-        try {
-          const res = await fetch("/api/payment/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              orderId: orderIdParam,
-              uid: user?.uid,
-              courseId,
-            }),
-          });
-          const data = await res.json();
-          if (res.ok && data.isPaid) {
-            setHasPaidCertificate(true);
-            setPaidOrderId(orderIdParam);
-            setIsCertificateOpen(true);
-          }
-        } catch (err) {
-          console.error("Auto payment verification failed:", err);
-        }
-      })();
-    }
-  }, [user?.uid, courseId]);
-
   // Active lesson auto-scroll ref for YouTube playlist drawer
   const activeLessonItemRef = useRef<HTMLLIElement>(null);
   useEffect(() => {
@@ -827,6 +765,17 @@ function CoursePlayerContent({
     setTimeout(() => setTabTransitioning(null), 200);
   };
 
+  const progressPercent =
+    lessons.length > 0 ? Math.round((completedIds.size / lessons.length) * 100) : 0;
+  const isCompleted = progressPercent === 100;
+
+  // Calculate total quiz score across all lessons
+  const totalQuizScore = Array.from(quizScores.values()).reduce((a, b) => a + b.score, 0);
+  const totalQuizTotal = Array.from(quizScores.values()).reduce((a, b) => a + b.total, 0);
+  const overallQuizPercent =
+    totalQuizTotal > 0 ? Math.round((totalQuizScore / totalQuizTotal) * 100) : 0;
+  const hasPassedQuiz = totalQuizTotal > 0 && overallQuizPercent >= 70;
+
   // Quiz completion handler — stores scores per lesson and persists to Firestore
   const handleQuizComplete = useCallback(
     (score: number, total: number) => {
@@ -851,8 +800,11 @@ function CoursePlayerContent({
           setTimeout(() => setXpToast(null), 4500);
         }
       }
+      if (isCompleted || completedIds.size >= lessons.length - 1) {
+        setShowCourseComplete(true);
+      }
     },
-    [activeLesson, user, courseId, completedIds]
+    [activeLesson, user, courseId, completedIds, isCompleted, lessons.length]
   );
 
   // Open YouTube-style rich Share modal
@@ -883,14 +835,6 @@ function CoursePlayerContent({
       setSubmittingReport(false);
     }
   };
-
-  const progressPercent =
-    lessons.length > 0 ? Math.round((completedIds.size / lessons.length) * 100) : 0;
-  const isCompleted = progressPercent === 100;
-
-  // Calculate total quiz score across all lessons
-  const totalQuizScore = Array.from(quizScores.values()).reduce((a, b) => a + b.score, 0);
-  const totalQuizTotal = Array.from(quizScores.values()).reduce((a, b) => a + b.total, 0);
 
   // Show course completion celebration when 100%
   useEffect(() => {
@@ -1792,12 +1736,17 @@ function CoursePlayerContent({
                         <span>Take Module Assessment</span>
                       </button>
 
-                      {totalQuizTotal > 0 &&
-                      Math.round((totalQuizScore / totalQuizTotal) * 100) < 70 ? (
+                      {!certEligibility.eligible ? (
+                        <span className="text-xs px-4 py-2 rounded-xl bg-muted/60 border border-border text-muted-foreground font-heading font-medium inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          <span>Educational Guide · Completed</span>
+                        </span>
+                      ) : totalQuizTotal > 0 &&
+                        Math.round((totalQuizScore / totalQuizTotal) * 100) < 70 ? (
                         <button
                           type="button"
-                          disabled
-                          className="btn-primary text-xs px-5 py-2.5 opacity-50 cursor-not-allowed font-heading font-bold inline-flex items-center gap-2"
+                          onClick={() => setIsQuizOpen(true)}
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white shadow-md cursor-pointer"
                           title="Attain at least 70% assessment score to unlock certificate"
                         >
                           <svg
@@ -1811,13 +1760,32 @@ function CoursePlayerContent({
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                           </svg>
-                          <span>Certificate Locked (Need 70%)</span>
+                          <span>Retake Quiz to Unlock (Need 70%)</span>
+                        </button>
+                      ) : totalQuizTotal === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsQuizOpen(true)}
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 bg-primary hover:bg-primary-600 text-white shadow-md cursor-pointer"
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <polyline points="23 4 23 10 17 10" />
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                          </svg>
+                          <span>Take Quiz to Qualify (70% Required)</span>
                         </button>
                       ) : hasPaidCertificate ? (
                         <button
                           type="button"
                           onClick={() => setIsCertificateOpen(true)}
-                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg cursor-pointer"
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-emerald-600 hover:bg-emerald-700 cursor-pointer text-white"
                         >
                           <svg
                             width="14"
@@ -1842,7 +1810,7 @@ function CoursePlayerContent({
                             }
                             setIsPaymentGateOpen(true);
                           }}
-                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer"
+                          className="btn-primary text-xs px-5 py-2.5 font-heading font-bold inline-flex items-center gap-2 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer text-white"
                         >
                           <svg
                             width="14"
@@ -2501,6 +2469,297 @@ function CoursePlayerContent({
         onQuizComplete={handleQuizComplete}
       />
 
+      {/* Course Completion & 70% Certification Milestone Modal */}
+      {showCourseComplete && (
+        <div
+          className="fixed inset-0 z-[65] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Course Completion Celebration"
+        >
+          <div className="relative w-full max-w-lg bg-card border-2 border-border/90 rounded-3xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92dvh]">
+            {/* Header with celebration banner */}
+            <div className="relative p-6 sm:p-7 border-b border-border bg-gradient-to-b from-amber-500/15 via-primary/5 to-background text-center overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowCourseComplete(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                aria-label="Close"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+
+              {/* Animated Emblem */}
+              <div className="w-16 h-16 mx-auto mb-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-xl shadow-amber-500/25 ring-4 ring-amber-500/20">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+              </div>
+
+              <span className="text-[10px] font-mono font-bold tracking-widest text-amber-500 uppercase block mb-1">
+                Curriculum Milestone Reached
+              </span>
+              <h2 className="font-heading font-black text-xl sm:text-2xl text-foreground">
+                Course Mastered! Congratulations!
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1.5 font-body line-clamp-2 max-w-sm mx-auto">
+                {course.title}
+              </p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-4 font-body text-xs">
+              {/* Progress & Verification Stats Box */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-0.5">
+                    Curriculum
+                  </span>
+                  <div className="font-heading font-black text-lg text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-1">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>100% Done</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {lessons.length} Lessons Finished
+                  </span>
+                </div>
+
+                <div
+                  className={`p-3.5 rounded-2xl border text-center ${
+                    hasPassedQuiz
+                      ? "bg-emerald-500/10 border-emerald-500/20"
+                      : totalQuizTotal > 0
+                        ? "bg-amber-500/10 border-amber-500/20"
+                        : "bg-muted/50 border-border"
+                  }`}
+                >
+                  <span
+                    className={`text-[10px] font-mono font-bold uppercase tracking-wider block mb-0.5 ${
+                      hasPassedQuiz
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : totalQuizTotal > 0
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-muted-foreground"
+                    }`}
+                  >
+                    Assessment Score
+                  </span>
+                  <div className="font-heading font-black text-lg text-foreground">
+                    {totalQuizTotal > 0 ? `${overallQuizPercent}%` : "Not Taken"}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {hasPassedQuiz ? "70% Benchmark Passed" : "70% Required to Certify"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Conditional Routing Based on Certificate Eligibility */}
+              {!certEligibility.eligible ? (
+                /* Educational Guide / Single Video Guide Notice */
+                <div className="p-4 rounded-2xl bg-muted/60 border border-border space-y-2">
+                  <div className="flex items-center gap-2 font-heading font-bold text-foreground">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span>Educational Guide Completed</span>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    You completed all modules of this educational guide! Note: Accredited vector
+                    diplomas and cryptographic verification IDs are exclusively awarded for
+                    multi-module technical masterclasses (2+ lessons).
+                  </p>
+                  <div className="pt-2 flex justify-end">
+                    <Link
+                      href="/explore"
+                      className="btn-primary text-xs px-4 py-2 font-heading font-bold inline-flex items-center gap-1.5"
+                    >
+                      <span>Explore Masterclasses →</span>
+                    </Link>
+                  </div>
+                </div>
+              ) : hasPassedQuiz ? (
+                /* 70%+ Passed Standard — Ready for Certificate */
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-teal-500/15 border border-emerald-500/30 space-y-2">
+                    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-heading font-bold">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <polyline points="9 12 11 14 15 10" />
+                      </svg>
+                      <span>Accredited Credential Ready to Unlock</span>
+                    </div>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed">
+                      You achieved a score of <strong>{overallQuizPercent}%</strong> (exceeding the
+                      strict 70% passing threshold). Your official tamper-proof credential with
+                      public registry ID is ready!
+                    </p>
+                  </div>
+
+                  {hasPaidCertificate ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCourseComplete(false);
+                        setIsCertificateOpen(true);
+                      }}
+                      className="w-full btn-primary py-3 font-heading font-black text-sm inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-500/25 cursor-pointer"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <polyline points="9 12 11 14 15 10" />
+                      </svg>
+                      <span>View Verified Certificate</span>
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCourseComplete(false);
+                          if (!user) {
+                            openAuthModal("signin");
+                            return;
+                          }
+                          setIsPaymentGateOpen(true);
+                        }}
+                        className="w-full btn-primary py-3.5 font-heading font-black text-sm inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white shadow-xl shadow-amber-500/25 cursor-pointer animate-pulse"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <circle cx="12" cy="8" r="7" />
+                          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                        </svg>
+                        <span>Claim Verified Certificate — ₹29</span>
+                      </button>
+                      <p className="text-[10px] text-center text-muted-foreground font-mono">
+                        Instant Delivery • PDF Diploma • LinkedIn 1-Click Share • Permanent URL
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Did not reach 70% passing threshold */
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                  <div className="flex items-center gap-2 font-heading font-bold text-amber-700 dark:text-amber-300">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>70% Passing Score Required to Unlock Certificate</span>
+                  </div>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    {totalQuizTotal > 0
+                      ? `Your current assessment score is ${overallQuizPercent}%. To ensure academic credibility, a minimum passing score of 70% is required to certify your diploma.`
+                      : "You completed all video lessons! Complete the module assessment and score at least 70% to qualify for your verified certificate."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCourseComplete(false);
+                      setIsQuizOpen(true);
+                    }}
+                    className="w-full btn-primary py-2.5 font-heading font-bold text-xs inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-600 text-primary-foreground shadow-md cursor-pointer"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="23 4 23 10 17 10" />
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                    <span>
+                      {totalQuizTotal > 0
+                        ? "Retake Assessment to Qualify (70%+)"
+                        : "Take Assessment to Qualify (70%+)"}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-border bg-muted/30 flex items-center justify-between text-xs font-heading font-semibold text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => setShowCourseComplete(false)}
+                className="hover:text-foreground transition-colors cursor-pointer"
+              >
+                Dismiss
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCourseComplete(false);
+                  handleShare();
+                }}
+                className="inline-flex items-center gap-1.5 text-primary hover:underline cursor-pointer"
+              >
+                <span>Share Course</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Gate Modal for ₹29 Certificate Unlock */}
       <PaymentGate
         isOpen={isPaymentGateOpen}
@@ -2516,6 +2775,11 @@ function CoursePlayerContent({
           } catch {}
           if (confirmedName) {
             setCertificateRecipientName(confirmedName);
+          }
+          if (user?.uid) {
+            import("@/lib/firestore").then(({ recordPaidCertificate }) => {
+              recordPaidCertificate(user.uid, courseId, orderId);
+            });
           }
           setIsPaymentGateOpen(false);
           setIsCertificateOpen(true);

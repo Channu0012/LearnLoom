@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getUserProgress, getCourse } from "@/lib/firestore";
+import { getUserProgress, getCourse, recordPaidCertificate } from "@/lib/firestore";
 import type { CourseDoc, ProgressDoc } from "@/lib/types";
 import { CertificateModal } from "@/components/courses/CertificateModal";
+import { PaymentGate } from "@/components/courses/PaymentGate";
 import { normalizeCertificateId, verifyCertificateId } from "@/lib/security";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 
@@ -26,8 +27,9 @@ export default function MyLearningPage() {
   const [isRemoving, setIsRemoving] = useState(false);
   const [paidCourseIds, setPaidCourseIds] = useState<Set<string>>(new Set());
 
-  // Certificate Modal State
+  // Payment & Certificate Modal States
   const [selectedCertCourse, setSelectedCertCourse] = useState<CourseWithProgress | null>(null);
+  const [payingCourse, setPayingCourse] = useState<CourseWithProgress | null>(null);
 
   // Quick Inline Verification Dialog State
   const [quickVerifyOpen, setQuickVerifyOpen] = useState(false);
@@ -94,6 +96,14 @@ export default function MyLearningPage() {
         // Check payment status for completed courses
         const paidSet = new Set<string>();
         for (const item of results) {
+          if (typeof window !== "undefined") {
+            try {
+              const localPaid = localStorage.getItem(`veyskill_paid_${item.course.id}`);
+              if (localPaid) {
+                paidSet.add(item.course.id);
+              }
+            } catch {}
+          }
           const isDone =
             (item.progress.completedLessonIds?.length || 0) >= (item.course.lessonCount || 1) &&
             (item.course.lessonCount || 0) > 0;
@@ -807,8 +817,8 @@ export default function MyLearningPage() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setSelectedCertCourse(item)}
-                            className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold shadow-sm inline-flex items-center gap-1"
+                            onClick={() => setPayingCourse(item)}
+                            className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold shadow-sm inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer text-white"
                           >
                             <svg
                               width="13"
@@ -933,9 +943,54 @@ export default function MyLearningPage() {
               quizTotal={100}
               uid={user?.uid}
               courseId={selectedCertCourse.course.id}
+              orderId={
+                typeof window !== "undefined"
+                  ? localStorage.getItem(`veyskill_paid_${selectedCertCourse.course.id}`) ||
+                    selectedCertCourse.progress.paidOrderId ||
+                    undefined
+                  : selectedCertCourse.progress.paidOrderId || undefined
+              }
+              onRequestPayment={() => {
+                const c = selectedCertCourse;
+                setSelectedCertCourse(null);
+                setPayingCourse(c);
+              }}
             />
           );
         })()}
+
+      {/* Payment Gate Modal for ₹29 Certificate Unlock */}
+      {payingCourse && (
+        <PaymentGate
+          isOpen={Boolean(payingCourse)}
+          onClose={() => setPayingCourse(null)}
+          courseId={payingCourse.course.id}
+          courseTitle={payingCourse.course.title}
+          user={
+            user
+              ? {
+                  uid: user.uid,
+                  displayName: user.displayName,
+                  email: user.email,
+                  phoneNumber: user.phoneNumber,
+                }
+              : null
+          }
+          onPaymentSuccess={(orderId) => {
+            paidCourseIds.add(payingCourse.course.id);
+            setPaidCourseIds(new Set(paidCourseIds));
+            try {
+              localStorage.setItem(`veyskill_paid_${payingCourse.course.id}`, orderId);
+            } catch {}
+            if (user?.uid) {
+              recordPaidCertificate(user.uid, payingCourse.course.id, orderId);
+            }
+            const c = payingCourse;
+            setPayingCourse(null);
+            setSelectedCertCourse(c);
+          }}
+        />
+      )}
 
       {/* Quick Verification & Strict ID Detector Modal */}
       {quickVerifyOpen && (

@@ -67,6 +67,7 @@ export interface ProgressDoc {
   certificateIssued?: boolean;
   certificateId?: string;
   hasPaidCertificate?: boolean;
+  paidOrderId?: string;
   started?: boolean;
   updatedAt: Timestamp;
 }

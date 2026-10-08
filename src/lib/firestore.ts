@@ -351,6 +351,33 @@ export async function saveQuizScore(
   }
 }
 
+/** Record verified payment and certificate unlock in user progress */
+export async function recordPaidCertificate(
+  uid: string,
+  courseId: string,
+  orderId: string,
+  certificateId?: string
+): Promise<void> {
+  try {
+    const ref = doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.PROGRESS, courseId);
+    await setDoc(
+      ref,
+      {
+        courseId,
+        hasPaidCertificate: true,
+        paidOrderId: orderId,
+        certificateIssued: true,
+        ...(certificateId ? { certificateId } : {}),
+        paidAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error("Failed to record paid certificate in Firestore:", err);
+  }
+}
+
 /** Get all in-progress courses for a user */
 export async function getUserProgress(uid: string): Promise<ProgressDoc[]> {
   try {
