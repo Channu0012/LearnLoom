@@ -1846,7 +1846,7 @@ function CoursePlayerContent({
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             <polyline points="9 12 11 14 15 10" />
                           </svg>
-                          <span>Claim Verified Certificate — ₹29</span>
+                          <span>Claim Verified Certificate · ₹29</span>
                         </button>
                       )}
                     </div>
@@ -2686,7 +2686,7 @@ function CoursePlayerContent({
                           }
                           setIsPaymentGateOpen(true);
                         }}
-                        className="w-full btn-primary py-3.5 font-heading font-black text-sm inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white shadow-xl shadow-amber-500/25 cursor-pointer animate-pulse"
+                        className="w-full btn-primary py-3.5 font-heading font-bold text-sm inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-700 text-white shadow-xl shadow-amber-500/25 cursor-pointer active:scale-[0.99] transition-all"
                       >
                         <svg
                           width="16"
@@ -2699,10 +2699,11 @@ function CoursePlayerContent({
                           <circle cx="12" cy="8" r="7" />
                           <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
                         </svg>
-                        <span>Claim Verified Certificate — ₹29</span>
+                        <span>Claim Verified Certificate · ₹29</span>
                       </button>
-                      <p className="text-[10px] text-center text-muted-foreground font-mono">
-                        Instant Delivery • PDF Diploma • LinkedIn 1-Click Share • Permanent URL
+                      <p className="text-[11px] text-center text-muted-foreground font-body">
+                        Instant Delivery • PDF Certificate • LinkedIn Credential • Permanent
+                        Verification Link
                       </p>
                     </div>
                   )}

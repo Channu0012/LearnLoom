@@ -241,28 +241,25 @@ export function PaymentGate({
         {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
           {/* Price Box */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-primary/5 to-emerald-500/10 border border-amber-500/30 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground line-through font-semibold">
-                  ₹199
-                </span>
+              <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-heading font-black text-foreground">
                   ₹29
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  85% OFF
+                <span className="text-[11px] font-mono font-medium text-muted-foreground">
+                  One-time fee
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground font-body mt-0.5">
-                Special Early Learner Subsidized Fee • One-time payment
+                Official Verified Certificate & Credential Issuance
               </p>
             </div>
             <div className="text-right">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
-                Instant Unlock
+                Instant Access
               </span>
-              <span className="text-[11px] text-muted-foreground font-body">Lifetime Access</span>
+              <span className="text-[11px] text-muted-foreground font-body">Lifetime Validity</span>
             </div>
           </div>
 
@@ -286,8 +283,8 @@ export function PaymentGate({
                   </svg>
                 </div>
                 <span>
-                  <strong className="font-semibold">Official Vector PDF Diploma</strong> —
-                  Print-ready high-resolution credential suitable for framing.
+                  <strong className="font-semibold">Official Vector PDF Certificate</strong> —
+                  High-resolution credential with unique verification ID and issuance seal.
                 </span>
               </li>
 
@@ -305,8 +302,8 @@ export function PaymentGate({
                   </svg>
                 </div>
                 <span>
-                  <strong className="font-semibold">1-Click &ldquo;Add to LinkedIn&rdquo;</strong> —
-                  Verifiable certification badge for your professional profile.
+                  <strong className="font-semibold">LinkedIn Profile Credential</strong> — Direct
+                  1-click addition to your LinkedIn Licenses &amp; Certifications.
                 </span>
               </li>
 
@@ -324,15 +321,15 @@ export function PaymentGate({
                   </svg>
                 </div>
                 <span>
-                  <strong className="font-semibold">Cryptographic Verification ID</strong> — Public
-                  URL employers and recruiters can verify anytime.
+                  <strong className="font-semibold">Public Verification URL</strong> — Permanent web
+                  verification link accessible to employers and recruiters anytime.
                 </span>
               </li>
             </ul>
           </div>
 
           {/* Supported Payment Channels */}
-          <div className="p-3.5 rounded-2xl bg-muted/50 border border-border space-y-2">
+          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border space-y-2">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
               Supported Payment Methods:
             </span>
@@ -351,7 +348,7 @@ export function PaymentGate({
           </div>
 
           {/* Full Legal Name for Certificate */}
-          <div className="space-y-1.5 p-3.5 rounded-2xl bg-muted/40 border border-border">
+          <div className="space-y-1.5 p-3.5 rounded-2xl bg-muted/30 border border-border">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="recipient-legal-name"
@@ -369,13 +366,12 @@ export function PaymentGate({
               type="text"
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
-              placeholder="e.g., Alexander Graham Smith"
-              className="w-full px-3 py-2 text-xs font-heading font-bold rounded-xl bg-card border border-border focus:border-amber-500 focus:outline-none text-foreground"
+              placeholder="Enter your name"
+              className="w-full px-3 py-2 text-xs font-heading font-medium rounded-xl bg-card border border-border focus:border-primary focus:outline-none text-foreground"
               required
             />
             <p className="text-[10px] text-muted-foreground font-body">
-              Confirm your official legal name as it should appear on your verified diploma and
-              public registry.
+              Confirm your name as it should appear on your verified certificate.
             </p>
           </div>
 
@@ -386,16 +382,16 @@ export function PaymentGate({
                 htmlFor="payment-phone"
                 className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground"
               >
-                Mobile Number (for UPI &amp; SMS receipt)
+                Mobile Number
               </label>
               <input
                 id="payment-phone"
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="10-digit mobile number"
+                placeholder="Enter number"
                 maxLength={10}
-                className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-card border border-border focus:border-amber-500 focus:outline-none text-foreground"
+                className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-card border border-border focus:border-primary focus:outline-none text-foreground"
               />
             </div>
           )}
@@ -411,9 +407,7 @@ export function PaymentGate({
                   disabled={verifying}
                   className="text-[11px] underline font-bold cursor-pointer hover:opacity-80"
                 >
-                  {verifying
-                    ? "Checking payment status..."
-                    : "Already paid? Click here to re-check status"}
+                  {verifying ? "Checking status…" : "Already paid? Click here to re-check status"}
                 </button>
               )}
             </div>
@@ -425,17 +419,17 @@ export function PaymentGate({
               type="button"
               onClick={handleInitiatePayment}
               disabled={loading || verifying}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white font-heading font-extrabold text-sm shadow-xl shadow-amber-500/25 cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 disabled:opacity-60"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white font-heading font-bold text-sm shadow-xl shadow-amber-500/25 cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 disabled:opacity-60"
             >
               {loading ? (
                 <>
                   <div className="simple-loader !w-4 !h-4 !border-2 !border-white !border-t-transparent" />
-                  <span>Connecting to Cashfree…</span>
+                  <span>Connecting…</span>
                 </>
               ) : verifying ? (
                 <>
                   <div className="simple-loader !w-4 !h-4 !border-2 !border-white !border-t-transparent" />
-                  <span>Verifying Payment…</span>
+                  <span>Verifying…</span>
                 </>
               ) : (
                 <>
@@ -452,7 +446,7 @@ export function PaymentGate({
                     <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
                     <line x1="1" y1="10" x2="23" y2="10" />
                   </svg>
-                  <span>Pay ₹29 &amp; Unlock Official Certificate</span>
+                  <span>Pay ₹29 · Unlock Certificate</span>
                 </>
               )}
             </button>

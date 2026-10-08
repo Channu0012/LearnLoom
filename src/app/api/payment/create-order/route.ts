@@ -101,9 +101,8 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[API] Payment order creation error:", error);
-    return NextResponse.json(
-      { error: "Failed to create payment order. Please try again." },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Failed to create payment order. Please try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

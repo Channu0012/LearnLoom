@@ -88,29 +88,44 @@ export async function createCashfreeOrder(
     phoneDigits = "9876543210";
   }
 
+  // Sanitize customer ID (Cashfree strictly requires alphanumeric, underscore, or hyphen)
+  const safeCustomerId =
+    (params.customerUid || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50) || `user_${Date.now()}`;
+
+  // Sanitize customer name
+  const safeCustomerName =
+    (params.customerName || "Learner").replace(/[^a-zA-Z0-9 .'-]/g, "").trim() || "Learner";
+
+  // Sanitize order ID
+  const safeOrderId =
+    (params.orderId || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 45) || `VS_${Date.now()}`;
+
   // Sanitize customer email
   let email = (params.customerEmail || "").trim();
   if (!email || !email.includes("@")) {
-    email = `learner_${params.customerUid.slice(0, 8)}@veyskill.in`;
+    email = `learner_${safeCustomerId.slice(0, 8)}@veyskill.in`;
   }
 
+  const safeCourseTag = (params.courseId || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
+  const safeUserTag = (params.customerUid || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
+
   const requestBody = {
-    order_id: params.orderId,
+    order_id: safeOrderId,
     order_amount: params.orderAmount,
     order_currency: "INR",
     customer_details: {
-      customer_id: params.customerUid,
-      customer_name: params.customerName.trim() || "Learner",
+      customer_id: safeCustomerId,
+      customer_name: safeCustomerName,
       customer_email: email,
       customer_phone: phoneDigits,
     },
     order_meta: {
       return_url: params.returnUrl,
     },
-    order_note: `VeySkill Certificate: ${params.courseTitle.slice(0, 80)}`,
+    order_note: `VeySkill Certificate: ${(params.courseTitle || "Course").slice(0, 80)}`,
     order_tags: {
-      courseId: params.courseId.slice(0, 50),
-      customerUid: params.customerUid.slice(0, 50),
+      courseId: safeCourseTag,
+      customerUid: safeUserTag,
     },
   };
 
@@ -128,7 +143,14 @@ export async function createCashfreeOrder(
   if (!response.ok) {
     const errBody = await response.text();
     console.error("[Cashfree] Order creation failed:", response.status, errBody);
-    throw new Error(`Cashfree order creation failed: ${response.status}`);
+    let errMsg = `Payment setup could not be completed (${response.status}).`;
+    try {
+      const parsed = JSON.parse(errBody);
+      if (parsed.message) {
+        errMsg = parsed.message;
+      }
+    } catch {}
+    throw new Error(errMsg);
   }
 
   return response.json();
