@@ -230,6 +230,87 @@ function CoursePlayerContent({
 
   const certEligibility = checkCertificateEligibility(course.title, lessons.length);
 
+  // 1. Check local cache for unlocked certificate
+  useEffect(() => {
+    if (typeof window === "undefined" || !courseId) return;
+    try {
+      const cachedPaidOrder = localStorage.getItem(`veyskill_paid_${courseId}`);
+      if (cachedPaidOrder) {
+        setHasPaidCertificate(true);
+        setPaidOrderId(cachedPaidOrder);
+      }
+      const cachedName = localStorage.getItem(`veyskill_paid_name_${courseId}`);
+      if (cachedName) {
+        setCertificateRecipientName(cachedName);
+      }
+    } catch {
+      // localStorage may be restricted in private browsing
+    }
+  }, [courseId]);
+
+  // 2. Query server for recorded certificate payment when user is signed in
+  useEffect(() => {
+    if (!user?.uid || !courseId) return;
+    let isMounted = true;
+    fetch(
+      `/api/payment/check?uid=${encodeURIComponent(user.uid)}&courseId=${encodeURIComponent(courseId)}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.hasPaid) {
+          setHasPaidCertificate(true);
+          if (data.orderId) {
+            setPaidOrderId(data.orderId);
+            try {
+              localStorage.setItem(`veyskill_paid_${courseId}`, data.orderId);
+            } catch {}
+          }
+        }
+      })
+      .catch((err) => console.warn("[Payment] Check notice:", err));
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.uid, courseId]);
+
+  // 3. Handle return redirect from Cashfree payment gateway
+  useEffect(() => {
+    if (typeof window === "undefined" || !courseId) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const paymentStatus = params.get("payment_status");
+      const returnedOrderId = params.get("order_id");
+
+      if (returnedOrderId && (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))) {
+        fetch("/api/payment/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: returnedOrderId,
+            uid: user?.uid || "",
+            courseId,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.isPaid) {
+              setHasPaidCertificate(true);
+              setPaidOrderId(returnedOrderId);
+              try {
+                localStorage.setItem(`veyskill_paid_${courseId}`, returnedOrderId);
+              } catch {}
+              setIsCertificateOpen(true);
+              const cleanUrl = new URL(window.location.href);
+              cleanUrl.searchParams.delete("payment_status");
+              cleanUrl.searchParams.delete("order_id");
+              window.history.replaceState({}, "", cleanUrl.toString());
+            }
+          })
+          .catch((err) => console.warn("[Payment] Redirect verify notice:", err));
+      }
+    } catch {}
+  }, [courseId, user?.uid]);
+
   // Listen to fullscreen changes
   useEffect(() => {
     const handleFsChange = () => {
@@ -2427,6 +2508,12 @@ function CoursePlayerContent({
         onPaymentSuccess={(orderId, confirmedName) => {
           setHasPaidCertificate(true);
           setPaidOrderId(orderId);
+          try {
+            localStorage.setItem(`veyskill_paid_${courseId}`, orderId);
+            if (confirmedName) {
+              localStorage.setItem(`veyskill_paid_name_${courseId}`, confirmedName);
+            }
+          } catch {}
           if (confirmedName) {
             setCertificateRecipientName(confirmedName);
           }

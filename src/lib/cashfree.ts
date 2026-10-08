@@ -9,9 +9,24 @@ import crypto from "crypto";
 // Configuration (dynamically retrieved from environment variables)
 // ---------------------------------------------------------------------------
 export function getCashfreeConfig() {
-  const appId = process.env.CASHFREE_APP_ID ?? "";
-  const secretKey = process.env.CASHFREE_SECRET_KEY ?? "";
-  const mode = process.env.NEXT_PUBLIC_CASHFREE_MODE ?? "sandbox";
+  const appId = (process.env.CASHFREE_APP_ID ?? "").trim();
+  const secretKey = (process.env.CASHFREE_SECRET_KEY ?? "").trim();
+  let mode = (
+    process.env.NEXT_PUBLIC_CASHFREE_MODE ||
+    process.env.CASHFREE_MODE ||
+    process.env.CASHFREE_ENVIRONMENT ||
+    "sandbox"
+  )
+    .trim()
+    .toLowerCase();
+
+  // Smart auto-detection based on production key prefix
+  if (secretKey.includes("_prod_") || appId.includes("_prod_")) {
+    mode = "production";
+  } else if (secretKey.includes("_test_") || appId.startsWith("TEST")) {
+    mode = "sandbox";
+  }
+
   const apiBase =
     mode === "production" ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg";
 
@@ -64,23 +79,38 @@ export async function createCashfreeOrder(
     throw new Error("Cashfree API credentials not configured");
   }
 
+  // Sanitize customer phone for Cashfree requirements (must be 10 digits)
+  let phoneDigits = (params.customerPhone || "").replace(/[^0-9]/g, "");
+  if (phoneDigits.length > 10 && phoneDigits.startsWith("91")) {
+    phoneDigits = phoneDigits.slice(2);
+  }
+  if (phoneDigits.length !== 10) {
+    phoneDigits = "9876543210";
+  }
+
+  // Sanitize customer email
+  let email = (params.customerEmail || "").trim();
+  if (!email || !email.includes("@")) {
+    email = `learner_${params.customerUid.slice(0, 8)}@veyskill.in`;
+  }
+
   const requestBody = {
     order_id: params.orderId,
     order_amount: params.orderAmount,
     order_currency: "INR",
     customer_details: {
       customer_id: params.customerUid,
-      customer_name: params.customerName,
-      customer_email: params.customerEmail,
-      customer_phone: params.customerPhone,
+      customer_name: params.customerName.trim() || "Learner",
+      customer_email: email,
+      customer_phone: phoneDigits,
     },
     order_meta: {
       return_url: params.returnUrl,
     },
-    order_note: `VeySkill Certificate: ${params.courseTitle}`,
+    order_note: `VeySkill Certificate: ${params.courseTitle.slice(0, 80)}`,
     order_tags: {
-      courseId: params.courseId,
-      customerUid: params.customerUid,
+      courseId: params.courseId.slice(0, 50),
+      customerUid: params.customerUid.slice(0, 50),
     },
   };
 
