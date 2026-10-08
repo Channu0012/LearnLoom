@@ -921,7 +921,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value.slice(0, LIMITS.COURSE_TITLE))}
             className={`input ${errors.title ? "error" : ""}`}
-            placeholder="e.g. Master Modern Web Design with Tailwind CSS"
+            placeholder="Enter course title"
             maxLength={LIMITS.COURSE_TITLE}
             aria-describedby={errors.title ? "title-error" : undefined}
             aria-required="true"
@@ -949,7 +949,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value.slice(0, LIMITS.COURSE_DESCRIPTION))}
             className={`textarea ${errors.description ? "error" : ""}`}
-            placeholder="What will learners achieve upon completing this course?"
+            placeholder="Enter course description"
             maxLength={LIMITS.COURSE_DESCRIPTION}
             aria-describedby={errors.description ? "desc-error" : undefined}
             rows={4}
@@ -1054,7 +1054,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                     }
                   }}
                   className={`input flex-1 min-h-[48px] ${urlError ? "error" : ""}`}
-                  placeholder="Paste YouTube playlist URL (e.g. https://www.youtube.com/playlist?list=PL...)"
+                  placeholder="Enter YouTube playlist link"
                   aria-label="YouTube playlist URL"
                 />
                 <button
@@ -1148,7 +1148,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
                     }
                   }}
                   className={`input flex-1 min-h-[48px] ${urlError ? "error" : ""}`}
-                  placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=...)"
+                  placeholder="Enter YouTube video link"
                   aria-label="YouTube video URL"
                   aria-describedby={urlError ? "url-error" : undefined}
                 />

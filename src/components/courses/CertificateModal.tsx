@@ -374,7 +374,7 @@ export function CertificateModal({
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="Enter Full Legal Name"
+                    placeholder="Enter your name"
                     maxLength={70}
                     className="w-full sm:w-56 px-3 py-1.5 text-xs font-heading font-bold rounded-xl bg-card border border-border focus:border-amber-500 focus:outline-none text-foreground"
                     aria-label="Recipient Legal Name"

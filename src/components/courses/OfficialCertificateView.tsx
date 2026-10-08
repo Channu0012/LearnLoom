@@ -117,7 +117,7 @@ export function OfficialCertificateView({
               value={recipientName}
               onChange={(e) => onNameChange(e.target.value)}
               className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center border-b-2 border-[#0B766E]/40 focus:border-[#0B766E] focus:outline-none whitespace-nowrap overflow-hidden text-ellipsis ${getNameSizeClass()}`}
-              placeholder="Enter Full Legal Name"
+              placeholder="Enter your name"
             />
           ) : (
             <h3

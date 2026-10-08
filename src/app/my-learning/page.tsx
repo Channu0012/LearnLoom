@@ -1103,7 +1103,7 @@ export default function MyLearningPage() {
                   type="text"
                   value={testInputId}
                   onChange={(e) => setTestInputId(e.target.value)}
-                  placeholder="e.g. VS-9A3F1B8E2C or paste link"
+                  placeholder="Enter certificate ID or link"
                   className="flex-1 px-3.5 py-2.5 rounded-xl bg-muted/50 border border-border focus:border-teal-500 text-foreground font-mono text-xs uppercase outline-none"
                 />
                 <button

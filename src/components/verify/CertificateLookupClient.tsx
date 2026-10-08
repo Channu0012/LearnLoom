@@ -61,7 +61,7 @@ export function CertificateLookupClient() {
                 setCredentialId(e.target.value);
                 if (error) setError(null);
               }}
-              placeholder="e.g. VS-9A3F1B8E2C or paste verification link"
+              placeholder="Enter certificate ID or verification link"
               className="w-full px-4 py-3.5 rounded-2xl bg-muted/40 border border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-foreground font-mono text-sm sm:text-base outline-none transition-all placeholder:text-muted-foreground/60 uppercase"
               aria-describedby={error ? "lookup-error" : undefined}
             />

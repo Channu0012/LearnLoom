@@ -462,7 +462,7 @@ export function AuthModal() {
                 id="auth-name"
                 type="text"
                 autoComplete="name"
-                placeholder="e.g. Marie Curie"
+                placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={60}
@@ -483,7 +483,7 @@ export function AuthModal() {
               type="email"
               autoComplete="email"
               required
-              placeholder="you@domain.com"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -526,7 +526,7 @@ export function AuthModal() {
                   type={showPassword ? "text" : "password"}
                   autoComplete={authModalMode === "signin" ? "current-password" : "new-password"}
                   required
-                  placeholder="••••••••"
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
