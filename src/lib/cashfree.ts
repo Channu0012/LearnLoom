@@ -4,13 +4,35 @@
 // NEVER import this file in client components (browser).
 // ---------------------------------------------------------------------------
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 
 // ---------------------------------------------------------------------------
 // Configuration (dynamically retrieved from environment variables)
 // ---------------------------------------------------------------------------
 export function getCashfreeConfig() {
-  const appId = (process.env.CASHFREE_APP_ID ?? "").trim();
-  const secretKey = (process.env.CASHFREE_SECRET_KEY ?? "").trim();
+  let appId = (process.env.CASHFREE_APP_ID ?? "").trim();
+  let secretKey = (process.env.CASHFREE_SECRET_KEY ?? "").trim();
+
+  // Fallback for local development if process was started before .env.local was updated
+  if ((!appId || !secretKey) && typeof window === "undefined" && process.env.NODE_ENV !== "test") {
+    try {
+      const envPath = path.resolve(process.cwd(), ".env.local");
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, "utf-8");
+        for (const line of content.split("\n")) {
+          const trimmed = line.trim();
+          if (!appId && trimmed.startsWith("CASHFREE_APP_ID=")) {
+            appId = trimmed.replace("CASHFREE_APP_ID=", "").trim();
+          }
+          if (!secretKey && trimmed.startsWith("CASHFREE_SECRET_KEY=")) {
+            secretKey = trimmed.replace("CASHFREE_SECRET_KEY=", "").trim();
+          }
+        }
+      }
+    } catch {}
+  }
+
   let mode = (
     process.env.NEXT_PUBLIC_CASHFREE_MODE ||
     process.env.CASHFREE_MODE ||
