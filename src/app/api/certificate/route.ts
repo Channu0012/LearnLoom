@@ -85,32 +85,50 @@ export async function POST(request: NextRequest) {
     );
 
     if (isCashfreeConfigured && uid && courseId) {
-      const { adminDb } = await import("@/lib/firebase-admin");
+      const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
       let isVerified = false;
 
-      // Check specific orderId first if provided
-      if (orderId) {
-        const orderDoc = await adminDb.collection("payments").doc(orderId).get();
-        if (orderDoc.exists) {
-          const p = orderDoc.data();
-          if (p?.isPaid === true && p?.uid === uid && p?.courseId === courseId) {
-            isVerified = true;
+      // 1. Check Firestore record if Firebase Admin is configured
+      if (isFirebaseAdminConfigured) {
+        try {
+          if (orderId) {
+            const orderDoc = await adminDb.collection("payments").doc(orderId).get();
+            if (orderDoc.exists) {
+              const p = orderDoc.data();
+              if (p?.isPaid === true && p?.uid === uid && p?.courseId === courseId) {
+                isVerified = true;
+              }
+            }
           }
+
+          if (!isVerified) {
+            const snap = await adminDb
+              .collection("payments")
+              .where("uid", "==", uid)
+              .where("courseId", "==", courseId)
+              .where("isPaid", "==", true)
+              .limit(1)
+              .get();
+
+            if (!snap.empty) {
+              isVerified = true;
+            }
+          }
+        } catch (dbErr) {
+          console.warn("[Certificate] Firestore payment query failed:", dbErr);
         }
       }
 
-      // Check user's paid records for this course
-      if (!isVerified) {
-        const snap = await adminDb
-          .collection("payments")
-          .where("uid", "==", uid)
-          .where("courseId", "==", courseId)
-          .where("isPaid", "==", true)
-          .limit(1)
-          .get();
-
-        if (!snap.empty) {
-          isVerified = true;
+      // 2. Direct Cashfree status verification fallback if orderId provided
+      if (!isVerified && orderId) {
+        try {
+          const { getCashfreeOrderStatus } = await import("@/lib/cashfree");
+          const cfOrder = await getCashfreeOrderStatus(orderId);
+          if (cfOrder.order_status === "PAID") {
+            isVerified = true;
+          }
+        } catch (cfErr) {
+          console.warn("[Certificate] Direct Cashfree status fallback check:", cfErr);
         }
       }
 

@@ -3,7 +3,7 @@
 // Creates a Cashfree payment order for certificate purchase (₹29)
 // ---------------------------------------------------------------------------
 import { NextRequest, NextResponse } from "next/server";
-import { createCashfreeOrder, generateOrderId } from "@/lib/cashfree";
+import { createCashfreeOrder, generateOrderId, getCashfreeConfig } from "@/lib/cashfree";
 import { checkRateLimit } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
@@ -80,12 +80,15 @@ export async function POST(request: NextRequest) {
       returnUrl,
     });
 
+    const { mode } = getCashfreeConfig();
+
     return NextResponse.json(
       {
         orderId: order.order_id,
         paymentSessionId: order.payment_session_id,
         orderAmount: CERTIFICATE_PRICE,
         cfOrderId: order.cf_order_id,
+        mode,
       },
       { status: 200 }
     );

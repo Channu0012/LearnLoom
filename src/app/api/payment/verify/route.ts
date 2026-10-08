@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 import { NextRequest, NextResponse } from "next/server";
 import { getCashfreeOrderStatus } from "@/lib/cashfree";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, isFirebaseAdminConfigured } from "@/lib/firebase-admin";
 import { checkRateLimit } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
@@ -50,29 +50,35 @@ export async function POST(request: NextRequest) {
 
     const isPaid = orderStatus.order_status === "PAID";
 
-    // 4. Save/update payment record in Firestore
-    const paymentRef = adminDb.collection("payments").doc(orderId);
-    const paymentSnap = await paymentRef.get();
+    // 4. Save/update payment record in Firestore (if Admin SDK configured)
+    if (isFirebaseAdminConfigured) {
+      try {
+        const paymentRef = adminDb.collection("payments").doc(orderId);
+        const paymentSnap = await paymentRef.get();
 
-    if (!paymentSnap.exists) {
-      await paymentRef.set({
-        orderId,
-        cfOrderId: orderStatus.cf_order_id,
-        uid,
-        courseId,
-        amount: orderStatus.order_amount,
-        currency: orderStatus.order_currency || "INR",
-        status: orderStatus.order_status,
-        isPaid,
-        createdAt: new Date().toISOString(),
-        verifiedAt: new Date().toISOString(),
-      });
-    } else {
-      await paymentRef.update({
-        status: orderStatus.order_status,
-        isPaid,
-        verifiedAt: new Date().toISOString(),
-      });
+        if (!paymentSnap.exists) {
+          await paymentRef.set({
+            orderId,
+            cfOrderId: orderStatus.cf_order_id,
+            uid,
+            courseId,
+            amount: orderStatus.order_amount,
+            currency: orderStatus.order_currency || "INR",
+            status: orderStatus.order_status,
+            isPaid,
+            createdAt: new Date().toISOString(),
+            verifiedAt: new Date().toISOString(),
+          });
+        } else {
+          await paymentRef.update({
+            status: orderStatus.order_status,
+            isPaid,
+            verifiedAt: new Date().toISOString(),
+          });
+        }
+      } catch (dbError) {
+        console.warn("[API] Could not persist payment record to Firestore:", dbError);
+      }
     }
 
     return NextResponse.json(

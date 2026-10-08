@@ -115,7 +115,9 @@ export function PaymentGate({
 
       // 2. Dynamically load Cashfree JS Web SDK (client-only)
       const { load } = await import("@cashfreepayments/cashfree-js");
-      const mode = (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox";
+      const mode = (orderData.mode || process.env.NEXT_PUBLIC_CASHFREE_MODE || "sandbox") as
+        | "sandbox"
+        | "production";
 
       const cashfree = await load({ mode });
 
