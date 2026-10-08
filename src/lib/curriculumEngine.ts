@@ -1376,11 +1376,14 @@ export function checkCertificateEligibility(
   const desc = rawDesc.toLowerCase();
   const combined = `${title} ${desc}`;
 
-  // Roadmap & superficial overview patterns (never certificate eligible)
+  // Roadmap & superficial cheat sheet patterns (never certificate eligible)
+  // Check title explicitly or pure cheat sheet terms (do NOT match "what is", "how to learn", or "syllabus" in course bodies)
   const isRoadmapKeyword =
-    /\b(roadmap|road map|cheat\s*sheet|cheatsheet|salary guide|career path|interview tips|study plan|syllabus|how to learn|what is)\b/i.test(
-      combined
-    );
+    /\b(developer\s+roadmap|career\s+roadmap|tech\s+roadmap|salary\s+guide|interview\s+cheat\s*sheet|job\s+roadmap)\b/i.test(
+      title
+    ) ||
+    /\b(cheat\s*sheet|cheatsheet)\b/i.test(title) ||
+    /\b(roadmap|road map)\b/i.test(title);
 
   if (isRoadmapKeyword) {
     return {
@@ -1408,34 +1411,52 @@ export function checkCertificateEligibility(
 
   // 1. Direct Duration Check (if duration in seconds is known from video player or metadata)
   if (typeof duration === "number" && duration > 0) {
-    // 3600 seconds = 1 hour. Any course >= 1 hour qualifies as a full single-video masterclass
-    if (duration >= 3600) {
+    // 2700 seconds = 45 mins. Any course >= 45 mins qualifies as a full single-video masterclass
+    if (duration >= 2700) {
       const hours = Math.round((duration / 3600) * 10) / 10;
       return {
         eligible: true,
         label: "Accredited Single-Video Masterclass",
-        reason: `Comprehensive ${hours}-hour full masterclass verified for credential issuance.`,
+        reason: `Comprehensive ${hours > 0 ? hours + "-hour " : ""}full masterclass verified for credential issuance.`,
         isSingleVideoCourse: true,
-        detectedHours: hours,
+        detectedHours: hours >= 1 ? hours : undefined,
       };
     } else {
       const minutes = Math.round(duration / 60);
       return {
         eligible: false,
         label: "Educational Video Guide",
-        reason: `This is a short educational video (${minutes} mins). Verified certificates are awarded for comprehensive masterclasses (1+ hours) or multi-lesson courses.`,
+        reason: `This is a short educational video (${minutes} mins). Verified certificates are awarded for comprehensive masterclasses (45+ mins) or multi-lesson courses.`,
         isSingleVideoCourse: true,
       };
     }
   }
 
-  // 2. Explicit Hours Pattern in Title / Description
-  // Matches: "3 hours", "7 hours", "12 hours", "[12 Hours]", "4.5 hrs", "8hr", "6 hour"
+  // 2. Explicit Short Minutes Pattern in Title (e.g., "30 minutes", "40 min", "15 mins", "in 20 minutes")
+  // or explicit quick summary indicators in title
+  const shortMinutesMatch = title.match(/\b([1-9]|[1-3][0-9]|4[0-4])\s*(?:minutes?|mins?|min)\b/i);
+  const isExplicitQuickClip =
+    /\b(quick\s+overview|quick\s+summary|quick\s+intro|short\s+tutorial|5-minute|short\s+video)\b/i.test(
+      title
+    );
+
+  if (shortMinutesMatch || isExplicitQuickClip) {
+    const matchedMins = shortMinutesMatch ? parseInt(shortMinutesMatch[1] || "30", 10) : 30;
+    return {
+      eligible: false,
+      label: "Educational Video Guide",
+      reason: `This is a short educational tutorial (${matchedMins} mins). Official accredited certificates are awarded for full-length masterclasses or multi-lesson courses.`,
+      isSingleVideoCourse: true,
+    };
+  }
+
+  // 3. Explicit Hours Pattern in Title / Description
+  // Matches: "3 hours", "7 hours", "12 hours", "[12 Hours]", "4.5 hrs", "8hr", "6 hour", "[4h]", "(3h 30m)", "03:45:00"
   const hoursMatch = combined.match(
-    /(?:\[|\()?\s*(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|hr)\b(?:\s*\]|\))?|(\d+)\+?\s*hour(?:s)?/i
+    /(?:\[|\()?\s*(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|hr)\b(?:\s*\]|\))?|(\d+)\+?\s*hour(?:s)?|(?:\[|\()?\s*([1-9]\d?)\s*h\b(?:\s*\]|\))?/i
   );
   if (hoursMatch) {
-    const matchedHours = parseFloat(hoursMatch[1] || hoursMatch[2] || "0");
+    const matchedHours = parseFloat(hoursMatch[1] || hoursMatch[2] || hoursMatch[3] || "0");
     if (matchedHours >= 1.0) {
       return {
         eligible: true,
@@ -1447,34 +1468,28 @@ export function checkCertificateEligibility(
     }
   }
 
-  // 3. Explicit Short Minutes Pattern in Title / Description
-  // Matches: "30 minutes", "40 min", "15 mins", "in 20 minutes", "45 min"
-  const minutesMatch = combined.match(/\b(\d+)\s*(?:minutes?|mins?|min)\b/i);
-  if (minutesMatch) {
-    const matchedMins = parseInt(minutesMatch[1] || "0", 10);
-    if (matchedMins <= 55) {
+  // 4. Timestamp format in title (e.g., [03:45:12], (01:30:00))
+  const timestampMatch = title.match(/\[?\(?(\d{1,2}):(\d{2}):(\d{2})\)?\]?/);
+  if (timestampMatch) {
+    const h = parseInt(timestampMatch[1] || "0", 10);
+    if (h >= 1) {
       return {
-        eligible: false,
-        label: "Educational Video Guide",
-        reason:
-          "This is a short educational tutorial (under 1 hour). Official accredited certificates are exclusively awarded for full-length masterclasses or multi-lesson courses.",
+        eligible: true,
+        label: "Accredited Single-Video Masterclass",
+        reason: `Comprehensive ${h}-hour full masterclass verified for credential issuance.`,
         isSingleVideoCourse: true,
+        detectedHours: h,
       };
     }
   }
 
-  // 4. Comprehensive Masterclass Keywords (Full Course, Bootcamp, Zero to Hero)
+  // 5. Comprehensive Masterclass Keywords in Title (Full Course, Bootcamp, Masterclass, Deep Dive, Complete Guide)
   const isComprehensiveFullCourse =
-    /\b(full\s+course|complete\s+course|full\s+bootcamp|complete\s+bootcamp|zero\s+to\s+hero|beginner\s+to\s+advanced|complete\s+beginner\s+to\s+pro|comprehensive\s+masterclass|full\s+tutorial|mega\s+course|full\s+certification)\b/i.test(
-      combined
+    /\b(full\s+course|complete\s+course|full\s+bootcamp|complete\s+bootcamp|zero\s+to\s+hero|beginner\s+to\s+advanced|complete\s+beginner\s+to\s+pro|comprehensive\s+masterclass|masterclass|full\s+tutorial|mega\s+course|full\s+certification|deep\s+dive|college\s+course|university\s+course|full\s+lecture|complete\s+guide|tutorial\s+for\s+beginners|crash\s+course)\b/i.test(
+      title
     );
 
-  const isShortOrQuickIndicator =
-    /\b(quick|brief|short|in\s+\d+\s+min|in\s+\d+\s+minutes|crash\s+course\s+in\s+\d+|cheat\s*sheet|summary|overview|guide\s+for\s+beginners)\b/i.test(
-      combined
-    );
-
-  if (isComprehensiveFullCourse && !isShortOrQuickIndicator) {
+  if (isComprehensiveFullCourse) {
     return {
       eligible: true,
       label: "Accredited Single-Video Masterclass",
@@ -1484,12 +1499,14 @@ export function checkCertificateEligibility(
     };
   }
 
-  // Default fallback for single videos without hours or full course proof (e.g. 30 min, 40 min educational videos)
+  // 6. General Educational Course Default
+  // Any single-module technical course that is not explicitly a short clip (<45 mins)
+  // qualifies for verified diploma upon completing the course and passing the 70% technical assessment.
   return {
-    eligible: false,
-    label: "Educational Video Guide",
+    eligible: true,
+    label: "Accredited Masterclass",
     reason:
-      "This is a single-module educational guide. Official accredited certificates are awarded for full-length masterclasses (1+ hours) or multi-lesson courses.",
+      "Educational curriculum verified for cryptographic diploma and credential issuance upon 70% assessment score.",
     isSingleVideoCourse: true,
   };
 }

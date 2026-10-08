@@ -620,16 +620,17 @@ function CoursePlayerContent({
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
 
         // Capture real video duration emitted by YouTube player
-        if (data.info && typeof data.info === "object" && typeof data.info.duration === "number") {
-          if (data.info.duration > 0) {
-            setVideoDuration(data.info.duration);
-          }
-        } else if (
-          data.event === "infoDelivery" &&
-          typeof data.info === "number" &&
-          data.info > 60
-        ) {
-          setVideoDuration(data.info);
+        const possibleDuration =
+          typeof data?.info?.duration === "number"
+            ? data.info.duration
+            : typeof data?.info?.videoData?.duration === "number"
+              ? data.info.videoData.duration
+              : typeof data?.info === "number" && data.info > 10
+                ? data.info
+                : undefined;
+
+        if (possibleDuration && possibleDuration > 0) {
+          setVideoDuration(possibleDuration);
         }
 
         // data.info === 0 indicates YouTube player reached ENDED state (100% completed)
@@ -824,6 +825,7 @@ function CoursePlayerContent({
         }
       }
       if (isCompleted || completedIds.size >= lessons.length - 1) {
+        setIsQuizOpen(false);
         setShowCourseComplete(true);
       }
     },
@@ -2614,9 +2616,9 @@ function CoursePlayerContent({
                     <span>Educational Guide Completed</span>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
-                    You completed all modules of this educational guide! Note: Accredited vector
-                    diplomas and cryptographic verification IDs are exclusively awarded for
-                    multi-module technical masterclasses (2+ lessons).
+                    You completed this educational guide! Note: Accredited vector diplomas and
+                    cryptographic verification IDs are awarded for full-length masterclasses (45+
+                    mins) or multi-lesson courses.
                   </p>
                   <div className="pt-2 flex justify-end">
                     <Link

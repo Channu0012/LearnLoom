@@ -202,5 +202,35 @@ describe("Curriculum Engine & Domain Intelligence", () => {
     });
     expect(masterclassCheck.eligible).toBe(true);
     expect(masterclassCheck.label).toBe("Accredited Masterclass");
+
+    // 10. Single video with [4h] bracketed hour tag
+    const bracket4h = checkCertificateEligibility({
+      title: "Data Structures & Algorithms in Java [4h]",
+      description: "Everything you need to know about trees, graphs, and dynamic programming",
+      lessonCount: 1,
+    });
+    expect(bracket4h.eligible).toBe(true);
+    expect(bracket4h.label).toBe("Accredited Single-Video Masterclass");
+    expect(bracket4h.detectedHours).toBe(4);
+
+    // 11. Single video with description containing "what is" and "how to learn"
+    // (Must NOT be falsely blocked as a roadmap!)
+    const longCourseWithWhatIs = checkCertificateEligibility({
+      title: "Machine Learning with Python - Complete Guide",
+      description:
+        "In this video we cover what is machine learning, how to learn neural networks, and complete syllabus.",
+      lessonCount: 1,
+    });
+    expect(longCourseWithWhatIs.eligible).toBe(true);
+    expect(longCourseWithWhatIs.label).toBe("Accredited Single-Video Masterclass");
+
+    // 12. Single video timestamp formatted title [03:45:00]
+    const timestampCourse = checkCertificateEligibility({
+      title: "C++ Programming Masterclass [03:45:00]",
+      description: "Full modern C++ lecture",
+      lessonCount: 1,
+    });
+    expect(timestampCourse.eligible).toBe(true);
+    expect(timestampCourse.detectedHours).toBe(3);
   });
 });
