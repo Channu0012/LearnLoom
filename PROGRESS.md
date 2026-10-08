@@ -169,3 +169,25 @@
   - TypeScript strict compile with 0 errors.
   - Production build successful across all 19 routes.
 
+---
+
+## P13 Cashfree Production Activation & Certificate Architecture ✅ done
+
+**Goal:** Live activation of Cashfree Payment Gateway for ₹29 Certificate unlock fees, production credential integration, client-server mode synchronization, return redirect handling, and multi-tier payment verification resilience.
+
+- **Cashfree Production Integration:**
+  - Tested and authenticated production API credentials against `https://api.cashfree.com/pg` with 100% verified status.
+  - Injected `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, and `NEXT_PUBLIC_CASHFREE_MODE=production` to Vercel production environment variables and local `.env.local`.
+- **Payment Verification Resilience:**
+  - In [`src/lib/cashfree.ts`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/lib/cashfree.ts), implemented auto-mode detection based on secret key prefix (`_prod_`), phone number extraction (10-digit Indian standard), and email sanitization.
+  - In [`src/app/api/payment/verify/route.ts`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/api/payment/verify/route.ts) and [`src/app/api/payment/webhook/route.ts`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/api/payment/webhook/route.ts), safeguarded Firestore Admin writes to prevent 500 errors when Admin SDK credentials are unconfigured or experiencing latency.
+  - In [`src/app/api/certificate/route.ts`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/app/api/certificate/route.ts), added direct Cashfree order status fallback check so learners who paid are guaranteed their verified certificate.
+- **Frontend State Synchronization & Mobile UPI Redirect Handling:**
+  - In [`src/components/courses/CoursePageClient.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/courses/CoursePageClient.tsx), added `localStorage` caching (`veyskill_paid_${courseId}`), background `/api/payment/check` query upon sign-in, and automatic return URL redirect verification (`?payment_status=success&order_id=...`).
+  - Synchronized SDK mode from server response in [`src/components/courses/PaymentGate.tsx`](file:///c:/Users/chann/OneDrive/Desktop/channu/Learnloom/src/components/courses/PaymentGate.tsx).
+- **Validation & Deployment:**
+  - 106/106 tests passing across 7 test suites.
+  - Zero ESLint or Prettier errors.
+  - Live deployment verified on Vercel: `https://veyskill.in` (deployment ID `dpl_H69oBHrar11yTkMQ3YKQAnmQMyDi`).
+
+
