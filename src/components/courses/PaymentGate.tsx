@@ -13,6 +13,9 @@ interface PaymentGateProps {
   onPaymentSuccess: (_orderId: string, _confirmedName?: string) => void;
   courseId: string;
   courseTitle: string;
+  lessonCount?: number;
+  description?: string;
+  duration?: number;
   user: {
     uid: string;
     displayName: string | null;
@@ -27,6 +30,9 @@ export function PaymentGate({
   onPaymentSuccess,
   courseId,
   courseTitle,
+  lessonCount,
+  description,
+  duration,
   user,
 }: PaymentGateProps) {
   const [loading, setLoading] = useState(false);
@@ -98,6 +104,9 @@ export function PaymentGate({
           uid: user.uid,
           courseId,
           courseTitle,
+          lessonCount,
+          description,
+          duration,
           customerName: legalName.trim() || user.displayName || "Learner",
           customerEmail: user.email || `${user.uid.slice(0, 8)}@veyskill.in`,
           customerPhone: phoneNumber.replace(/[^0-9]/g, "") || "9876543210",
@@ -145,7 +154,17 @@ export function PaymentGate({
     } finally {
       setLoading(false);
     }
-  }, [user, courseId, courseTitle, phoneNumber, legalName, verifyOrderPayment]);
+  }, [
+    user,
+    courseId,
+    courseTitle,
+    lessonCount,
+    description,
+    duration,
+    phoneNumber,
+    legalName,
+    verifyOrderPayment,
+  ]);
 
   if (!isOpen) return null;
 

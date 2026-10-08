@@ -62,11 +62,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2b. Educational Roadmap / Informative Video Check
+    // 2b. Educational Roadmap / Short Video Check (distinguish 30m/40m from 3h/7h masterclasses)
     const { checkCertificateEligibility } = await import("@/lib/curriculumEngine");
     const eligibility = checkCertificateEligibility({
       title: sanitizedTitle,
+      description: typeof body.description === "string" ? body.description : undefined,
       lessonCount,
+      duration: typeof body.duration === "number" ? body.duration : undefined,
     });
     if (!eligibility.eligible) {
       return NextResponse.json(

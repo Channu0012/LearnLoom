@@ -49,10 +49,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2b. Check Certificate Eligibility (non-course single videos cannot purchase certificates)
+    // 2b. Check Certificate Eligibility (distinguish 30m/40m short videos from 3h/7h masterclasses)
     const { checkCertificateEligibility } = await import("@/lib/curriculumEngine");
     const lessonCount = typeof body.lessonCount === "number" ? body.lessonCount : 1;
-    const eligibility = checkCertificateEligibility(courseTitle, lessonCount);
+    const description = typeof body.description === "string" ? body.description : undefined;
+    const duration = typeof body.duration === "number" ? body.duration : undefined;
+    const eligibility = checkCertificateEligibility({
+      title: courseTitle,
+      description,
+      lessonCount,
+      duration,
+    });
     if (!eligibility.eligible) {
       return NextResponse.json({ error: eligibility.reason, notEligible: true }, { status: 400 });
     }

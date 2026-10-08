@@ -155,7 +155,11 @@ export default function MyLearningPage() {
   // Certificates tab ONLY shows courses that are completed, paid/issued, AND eligible for accredited credentials
   const certificateItems = completedItems.filter(
     (item) =>
-      checkCertificateEligibility(item.course.title, item.course.lessonCount).eligible &&
+      checkCertificateEligibility(
+        item.course.title,
+        item.course.lessonCount,
+        item.course.description
+      ).eligible &&
       (paidCourseIds.has(item.course.id) ||
         Boolean(item.progress.certificateIssued) ||
         Boolean(item.progress.hasPaidCertificate) ||
@@ -528,7 +532,11 @@ export default function MyLearningPage() {
             const totalCount = Math.max(1, course.lessonCount || 1);
             const pct = Math.min(100, Math.max(0, Math.round((completedCount / totalCount) * 100)));
             const isFinished = pct === 100;
-            const certEligibility = checkCertificateEligibility(course.title, course.lessonCount);
+            const certEligibility = checkCertificateEligibility(
+              course.title,
+              course.lessonCount,
+              course.description
+            );
             const isCertUnlocked =
               certEligibility.eligible &&
               (paidCourseIds.has(course.id) ||
@@ -966,6 +974,8 @@ export default function MyLearningPage() {
           onClose={() => setPayingCourse(null)}
           courseId={payingCourse.course.id}
           courseTitle={payingCourse.course.title}
+          lessonCount={payingCourse.course.lessonCount}
+          description={payingCourse.course.description}
           user={
             user
               ? {

@@ -227,8 +227,14 @@ function CoursePlayerContent({
   const [isCredibilityModalOpen, setIsCredibilityModalOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAutoplay, setIsAutoplay] = useState(true);
+  const [videoDuration, setVideoDuration] = useState<number | undefined>(undefined);
 
-  const certEligibility = checkCertificateEligibility(course.title, lessons.length);
+  const certEligibility = checkCertificateEligibility(
+    course.title,
+    lessons.length,
+    course.description,
+    videoDuration
+  );
 
   // 1. Check local cache for unlocked certificate
   useEffect(() => {
@@ -595,6 +601,10 @@ function CoursePlayerContent({
       if (iframeRef.current?.contentWindow) {
         try {
           iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "listening" }), "*");
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: "command", func: "getDuration", args: [] }),
+            "*"
+          );
         } catch {
           // Cross-origin restriction fallback
         }
@@ -602,12 +612,25 @@ function CoursePlayerContent({
     }, 350);
   }, []);
 
-  // Real YouTube Video Tracking (ended state = 0 and onError handler)
+  // Real YouTube Video Tracking (ended state = 0, duration tracking, and onError handler)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
         if (!event.data) return;
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+
+        // Capture real video duration emitted by YouTube player
+        if (data.info && typeof data.info === "object" && typeof data.info.duration === "number") {
+          if (data.info.duration > 0) {
+            setVideoDuration(data.info.duration);
+          }
+        } else if (
+          data.event === "infoDelivery" &&
+          typeof data.info === "number" &&
+          data.info > 60
+        ) {
+          setVideoDuration(data.info);
+        }
 
         // data.info === 0 indicates YouTube player reached ENDED state (100% completed)
         if (data.event === "onStateChange" && data.info === 0) {
@@ -2786,6 +2809,9 @@ function CoursePlayerContent({
         }}
         courseId={courseId}
         courseTitle={course.title}
+        lessonCount={lessons.length}
+        description={course.description}
+        duration={videoDuration}
         user={
           user
             ? {
