@@ -351,14 +351,22 @@ export async function saveQuizScore(
 ): Promise<void> {
   try {
     const ref = doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.PROGRESS, courseId);
-    await setDoc(
-      ref,
-      {
+    try {
+      await updateDoc(ref, {
         [`quizScores.${lessonId}`]: { score, total },
         updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+      });
+    } catch {
+      await setDoc(
+        ref,
+        {
+          courseId,
+          quizScores: { [lessonId]: { score, total } },
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
   } catch (err) {
     console.error("Failed to save quiz score in Firestore:", err);
   }

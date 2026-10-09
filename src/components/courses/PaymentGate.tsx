@@ -148,6 +148,20 @@ export function PaymentGate({
       const { orderId, paymentSessionId } = orderData;
       setActiveOrderId(orderId);
 
+      // Cache pending order to survive payment redirect and mobile auth re-hydration
+      try {
+        const pendingPayload = JSON.stringify({
+          orderId,
+          uid: user.uid,
+          courseId,
+          legalName: confirmedName,
+          timestamp: Date.now(),
+        });
+        sessionStorage.setItem(`veyskill_pending_order_${courseId}`, pendingPayload);
+        localStorage.setItem(`veyskill_pending_order_${courseId}`, pendingPayload);
+        localStorage.setItem(`veyskill_paid_name_${courseId}`, confirmedName);
+      } catch {}
+
       // 2. Dynamically load Cashfree JS Web SDK (client-only)
       const { load } = await import("@cashfreepayments/cashfree-js");
       const mode = (orderData.mode || process.env.NEXT_PUBLIC_CASHFREE_MODE || "sandbox") as

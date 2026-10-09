@@ -87,6 +87,13 @@ export interface CashfreeOrderStatusResponse {
   order_amount: number;
   order_currency: string;
   order_note?: string;
+  customer_details?: {
+    customer_id?: string;
+    customer_name?: string;
+    customer_email?: string;
+    customer_phone?: string;
+  };
+  order_tags?: Record<string, string>;
 }
 
 // ---------------------------------------------------------------------------

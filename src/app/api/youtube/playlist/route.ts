@@ -161,7 +161,10 @@ export async function GET(request: NextRequest) {
       html = await res.text();
     }
 
-    const match = html.match(/ytInitialData\s*=\s*({.+?});<\/script>/);
+    const match =
+      html.match(
+        /(?:window\["ytInitialData"\]|var ytInitialData|ytInitialData)\s*=\s*({[\s\S]+?});\s*<\/script>/
+      ) || html.match(/ytInitialData\s*=\s*({[\s\S]+?});/);
 
     // If scraping was blocked or returned no data, attempt official API fallback
     if (!match || !match[1]) {

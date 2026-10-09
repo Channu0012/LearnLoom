@@ -7,8 +7,13 @@ export function Footer() {
   const pathname = usePathname();
   const year = 2026;
 
-  // Footer is only visible on the home page
-  if (pathname !== "/") return null;
+  // Hide footer only on immersive full-screen cinema players and editor canvas
+  const isImmersivePlayer =
+    pathname?.startsWith("/course/") ||
+    pathname?.startsWith("/quick-watch") ||
+    pathname?.startsWith("/edit/");
+
+  if (isImmersivePlayer) return null;
 
   return (
     <footer className="border-t border-border bg-card mt-16 w-full overflow-x-hidden pb-20 md:pb-6">

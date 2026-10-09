@@ -116,6 +116,11 @@ export function MobileBottomNav() {
     },
   ];
 
+  // Hide mobile bottom nav in cinema player and course studio so controls and chat are never obscured
+  if (pathname?.startsWith("/course/") || pathname?.startsWith("/edit/")) {
+    return null;
+  }
+
   return (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom,0px)]"

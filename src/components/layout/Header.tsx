@@ -81,7 +81,7 @@ export function Header() {
               <span className="text-[#14b8a6]">skill</span>
             </span>
             <span className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5">
-              Turn playlists into courses
+              Structured Masterclasses &amp; Verified Credentials
             </span>
           </div>
         </Link>
@@ -111,6 +111,28 @@ export function Header() {
               <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
             </svg>
             <span>Explore</span>
+          </Link>
+
+          {/* Verify Credentials */}
+          <Link
+            href="/verify"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <polyline points="9 12 11 14 15 10" />
+            </svg>
+            <span>Verify</span>
           </Link>
 
           {/* Quick Watch */}

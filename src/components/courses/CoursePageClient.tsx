@@ -198,6 +198,7 @@ function CoursePlayerContent({
   user: ReturnType<typeof useAuth>["user"];
   openAuthModal: (_mode?: "signin" | "signup") => void;
 }) {
+  const { loading: authLoading } = useAuth();
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -282,18 +283,34 @@ function CoursePlayerContent({
   // 3. Handle return redirect from Cashfree payment gateway
   useEffect(() => {
     if (typeof window === "undefined" || !courseId) return;
+    if (authLoading) return; // Wait for Firebase client auth state to finish re-hydrating
+
     try {
       const params = new URLSearchParams(window.location.search);
       const paymentStatus = params.get("payment_status");
       const returnedOrderId = params.get("order_id");
 
       if (returnedOrderId && (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))) {
+        // Resolve uid from user or storage
+        let effectiveUid = user?.uid || "";
+        if (!effectiveUid) {
+          try {
+            const raw =
+              sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+              localStorage.getItem(`veyskill_pending_order_${courseId}`);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed?.uid) effectiveUid = parsed.uid;
+            }
+          } catch {}
+        }
+
         fetch("/api/payment/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId: returnedOrderId,
-            uid: user?.uid || "",
+            uid: effectiveUid,
             courseId,
           }),
         })
@@ -315,7 +332,7 @@ function CoursePlayerContent({
           .catch((err) => console.warn("[Payment] Redirect verify notice:", err));
       }
     } catch {}
-  }, [courseId, user?.uid]);
+  }, [courseId, user?.uid, authLoading]);
 
   // Listen to fullscreen changes
   useEffect(() => {
@@ -869,7 +886,7 @@ function CoursePlayerContent({
   }, [isCompleted, completedIds.size, showCourseComplete]);
 
   return (
-    <div className="container-page py-6 sm:py-8 max-w-7xl">
+    <div className="container-page pt-6 sm:pt-8 pb-28 sm:pb-16 max-w-7xl">
       {/* Draft notice */}
       {isDraft && isOwner && (
         <div
@@ -1174,23 +1191,47 @@ function CoursePlayerContent({
                   </div>
                 </div>
 
-                {!exemptIds.has(activeLesson.id) ? (
-                  <button
-                    type="button"
-                    onClick={handleMarkLessonExempt}
-                    className="btn-primary text-xs px-4 py-2 flex-shrink-0 w-full sm:w-auto shadow-md"
+                <div className="flex flex-wrap items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                  <a
+                    href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost text-xs px-3.5 py-2 inline-flex items-center justify-center gap-1.5 border border-border text-foreground hover:bg-muted font-heading font-bold rounded-xl transition-all"
                   >
-                    Mark Exempt &amp; Proceed
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={goToNext}
-                    className="btn-ghost text-xs px-3.5 py-2 flex-shrink-0 w-full sm:w-auto text-amber-600 dark:text-amber-400 font-semibold"
-                  >
-                    Next Lesson →
-                  </button>
-                )}
+                    <span>Watch on YouTube</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                  {!exemptIds.has(activeLesson.id) ? (
+                    <button
+                      type="button"
+                      onClick={handleMarkLessonExempt}
+                      className="btn-primary text-xs px-4 py-2 flex-shrink-0 shadow-md font-heading font-bold"
+                    >
+                      Mark Exempt &amp; Proceed
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={goToNext}
+                      className="btn-ghost text-xs px-3.5 py-2 flex-shrink-0 text-amber-600 dark:text-amber-400 font-heading font-bold"
+                    >
+                      Next Lesson →
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 

@@ -35,18 +35,30 @@ export async function POST(request: NextRequest) {
     }
 
     const orderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
-    const uid = typeof body.uid === "string" ? body.uid.trim() : "";
-    const courseId = typeof body.courseId === "string" ? body.courseId.trim() : "";
+    let uid = typeof body.uid === "string" ? body.uid.trim() : "";
+    let courseId = typeof body.courseId === "string" ? body.courseId.trim() : "";
 
-    if (!orderId || !uid || !courseId) {
-      return NextResponse.json(
-        { error: "Missing required fields: orderId, uid, courseId" },
-        { status: 400 }
-      );
+    if (!orderId) {
+      return NextResponse.json({ error: "Missing required field: orderId" }, { status: 400 });
     }
 
     // 3. Verify order status directly with Cashfree
     const orderStatus = await getCashfreeOrderStatus(orderId);
+
+    // If uid was delayed during client auth re-hydration, retrieve from Cashfree order
+    if (!uid && orderStatus?.customer_details?.customer_id) {
+      uid = String(orderStatus.customer_details.customer_id).trim();
+    }
+    if (!courseId && orderStatus?.order_tags?.courseId) {
+      courseId = String(orderStatus.order_tags.courseId).trim();
+    }
+
+    if (!uid || !courseId) {
+      return NextResponse.json(
+        { error: "Missing required fields: uid or courseId cannot be resolved." },
+        { status: 400 }
+      );
+    }
 
     const isPaid = orderStatus.order_status === "PAID";
 
