@@ -164,6 +164,54 @@ async function getCertificateTemplateDataUrl(): Promise<string | null> {
   return null;
 }
 
+let cachedBrowserSignatureDataUrl: string | null = null;
+
+async function getSignatureDataUrl(): Promise<string | null> {
+  // 1. Browser runtime
+  if (typeof window !== "undefined") {
+    if (cachedBrowserSignatureDataUrl) {
+      return cachedBrowserSignatureDataUrl;
+    }
+    try {
+      const res = await fetch("/images/signature.png");
+      if (res.ok) {
+        const blob = await res.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            cachedBrowserSignatureDataUrl = dataUrl;
+            resolve(dataUrl);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
+  }
+
+  // 2. Node runtime (vitest / build / test)
+  if (typeof window === "undefined") {
+    try {
+      const req = new Function("moduleName", "return require(moduleName)");
+      const fs = req("fs");
+      const path = req("path");
+      const imagePath = path.join(process.cwd(), "public", "images", "signature.png");
+      if (fs.existsSync(imagePath)) {
+        const buffer = fs.readFileSync(imagePath);
+        return `data:image/png;base64,${buffer.toString("base64")}`;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return null;
+}
+
 export async function createPdfCertificateDoc(options: CertificatePdfOptions): Promise<jsPDF> {
   const { id, userName, courseTitle, issuedDate, verifyUrl } = options;
 
@@ -325,54 +373,35 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setTextColor(11, 118, 110); // Teal-600
   doc.text("SCAN TO VERIFY", qrCenterX, qrY + qrSize + 8, { align: "center" });
 
-  // 9. Executive Signature Block (Bottom-Right: Clean Channabasav Signature)
+  // 9. Executive Signature Block (Bottom-Right: Natural Channabasav Signature)
   const sigCenterX = 215; // 215mm
-  const sigY = 153;
-  // Mask old scribble from template
-  doc.setFillColor(250, 252, 251);
-  doc.roundedRect(sigCenterX - 32, sigY - 15, 64, 28, 2, 2, "F");
+  const sigY = 150;
 
-  // Elegant cursive signature strokes for "Channabasav"
-  doc.setDrawColor(10, 58, 55); // #0A3A37
-  doc.setLineWidth(0.65);
-  doc.lines(
-    [
-      [4, -7],
-      [4, 6],
-      [-3, 5],
-      [-3, -4],
-      [6, -2],
-      [3, 3],
-      [3, -3],
-      [3, 3],
-      [3, -3],
-      [3, 3],
-      [4, -4],
-      [3, 4],
-      [3, -3],
-      [4, 3],
-      [3, -2],
-      [3, 3],
-      [4, -3],
-      [3, 3],
-      [12, -2],
-    ],
-    sigCenterX - 22,
-    sigY - 2
-  );
-  doc.setLineWidth(0.35);
-  doc.line(sigCenterX - 24, sigY + 2, sigCenterX + 24, sigY + 1);
+  const signatureDataUrl = await getSignatureDataUrl();
+  if (signatureDataUrl) {
+    try {
+      // 46mm wide x 13mm high transparent PNG signature centered at sigCenterX
+      doc.addImage(signatureDataUrl, "PNG", sigCenterX - 23, sigY - 14, 46, 13);
+    } catch (err) {
+      console.warn("Could not draw signature image onto PDF:", err);
+    }
+  }
 
-  // Signatory Name & Title
+  // Thin architectural underline anchor
+  doc.setDrawColor(11, 118, 110);
+  doc.setLineWidth(0.4);
+  doc.line(sigCenterX - 22, sigY + 1.5, sigCenterX + 22, sigY + 1.5);
+
+  // Signatory Name & Title (Prestigious Executive Typography)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(10, 58, 55);
-  doc.text("Channabasav Patil", sigCenterX, sigY + 7, { align: "center" });
+  doc.setFontSize(10.5);
+  doc.setTextColor(10, 58, 55); // #0A3A37 Deep Teal
+  doc.text("Channabasav Patil", sigCenterX, sigY + 6.5, { align: "center" });
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
-  doc.setTextColor(100, 116, 139);
-  doc.text("FOUNDER / PROGRAM INSTRUCTOR", sigCenterX, sigY + 10.5, { align: "center" });
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139); // Slate-500
+  doc.text("FOUNDER & PROGRAM INSTRUCTOR", sigCenterX, sigY + 10.5, { align: "center" });
 
   return doc;
 }

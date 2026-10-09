@@ -65,6 +65,11 @@ export async function POST(request: NextRequest) {
     // 4. Save/update payment record in Firestore (if Admin SDK configured)
     if (isFirebaseAdminConfigured) {
       try {
+        const customerName =
+          (typeof orderStatus?.customer_details?.customer_name === "string"
+            ? orderStatus.customer_details.customer_name.trim()
+            : "") || (typeof body.legalName === "string" ? body.legalName.trim() : "");
+
         const paymentRef = adminDb.collection("payments").doc(orderId);
         const paymentSnap = await paymentRef.get();
 
@@ -74,6 +79,7 @@ export async function POST(request: NextRequest) {
             cfOrderId: orderStatus.cf_order_id,
             uid,
             courseId,
+            customerName: customerName || null,
             amount: orderStatus.order_amount,
             currency: orderStatus.order_currency || "INR",
             status: orderStatus.order_status,
@@ -85,6 +91,7 @@ export async function POST(request: NextRequest) {
           await paymentRef.update({
             status: orderStatus.order_status,
             isPaid,
+            ...(customerName ? { customerName } : {}),
             verifiedAt: new Date().toISOString(),
           });
         }
@@ -93,12 +100,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const verifiedCustomerName =
+      typeof orderStatus?.customer_details?.customer_name === "string"
+        ? orderStatus.customer_details.customer_name.trim()
+        : typeof body.legalName === "string"
+          ? body.legalName.trim()
+          : "";
+
     return NextResponse.json(
       {
         orderId,
         status: orderStatus.order_status,
         isPaid,
         amount: orderStatus.order_amount,
+        customerName: verifiedCustomerName || undefined,
       },
       { status: 200 }
     );

@@ -71,7 +71,16 @@ export function PaymentGate({
 
         const data = await res.json();
         if (res.ok && data.isPaid) {
-          const finalLegalName = legalName.trim() || user?.displayName || "Learner";
+          const finalLegalName =
+            (typeof data.customerName === "string" && data.customerName.trim().length >= 2
+              ? data.customerName.trim()
+              : null) ||
+            legalName.trim() ||
+            user?.displayName ||
+            "Distinguished Scholar";
+          try {
+            localStorage.setItem(`veyskill_paid_name_${courseId}`, finalLegalName);
+          } catch {}
           onPaymentSuccess(orderId, finalLegalName);
           return true;
         } else {
@@ -123,6 +132,9 @@ export function PaymentGate({
     try {
       // 1. Create order on server with confirmed legal details
       const confirmedName = legalName.trim();
+      try {
+        localStorage.setItem(`veyskill_paid_name_${courseId}`, confirmedName);
+      } catch {}
       const orderRes = await fetch("/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

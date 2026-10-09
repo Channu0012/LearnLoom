@@ -111,10 +111,10 @@ export function OfficialCertificateView({
           className="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"
         />
 
-        {/* 2. Recipient Full Legal Name (Positioned at y = 37% — Cleanly Above the Divider Line at y = 48%) */}
+        {/* 2. Recipient Full Legal Name (Positioned at y = 41% — Cleanly Above the Divider Line at y = 48.8%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex items-center justify-center pointer-events-none"
-          style={{ top: "37%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex items-center justify-center pointer-events-none"
+          style={{ top: "41%" }}
         >
           {isInteractive && onNameChange ? (
             <input
@@ -220,36 +220,31 @@ export function OfficialCertificateView({
           </div>
         </div>
 
-        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Clean Channabasav Signature) */}
+        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Natural Channabasav Signature) */}
         <div
           className="absolute z-20 flex flex-col items-center text-center select-none"
-          style={{ right: "13%", top: "71%" }}
+          style={{ right: "13.5%", top: "70.5%" }}
         >
-          {/* Subtle clean backdrop to mask old scribble */}
-          <div className="absolute -inset-1.5 bg-[#FAFCFB] rounded-xl pointer-events-none opacity-95" />
-
-          {/* Clean flowing cursive signature for Channabasav */}
-          <div className="relative z-10 w-24 sm:w-32 md:w-40 h-8 sm:h-10 md:h-11 flex items-center justify-center">
-            <svg
-              viewBox="0 0 220 54"
-              className="w-full h-full text-[#0A3A37] overflow-visible"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18,38 C14,18 28,12 36,18 C44,24 38,42 26,44 C16,46 24,30 36,32 C44,33 50,22 55,34 C60,40 65,22 72,32 C78,39 84,24 92,33 C98,39 104,22 112,32 C118,38 126,24 134,34 C140,40 148,22 156,32 C162,38 168,26 178,34 C184,38 190,28 196,36 M24,46 Q100,52 205,42" />
-            </svg>
+          {/* Authentic executive signature of Channabasav Patil */}
+          <div className="relative z-10 w-24 sm:w-32 md:w-40 h-8 sm:h-10 md:h-12 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/signature.png"
+              alt="Official Signature of Channabasav Patil"
+              className="w-full h-full object-contain filter drop-shadow-sm pointer-events-none"
+            />
           </div>
+
+          {/* Underline divider */}
+          <div className="w-20 sm:w-28 md:w-32 h-[1px] bg-[#0B766E]/40 my-0.5" />
 
           {/* Signatory Details */}
           <div className="relative z-10 mt-0.5 flex flex-col items-center">
-            <span className="font-heading font-extrabold text-[#0A3A37] tracking-tight text-[8px] sm:text-xs md:text-sm leading-tight">
+            <span className="font-heading font-black text-[#0A3A37] tracking-tight text-[8px] sm:text-xs md:text-sm leading-tight">
               Channabasav Patil
             </span>
-            <span className="font-mono font-semibold text-slate-500 uppercase tracking-widest text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 leading-none">
-              Founder / Program Instructor
+            <span className="font-mono font-bold text-slate-500 uppercase tracking-widest text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 leading-none">
+              Founder & Program Instructor
             </span>
           </div>
         </div>

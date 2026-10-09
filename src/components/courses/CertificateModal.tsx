@@ -61,10 +61,19 @@ export function CertificateModal({
 
   // Sync recipient name when prop changes or modal opens
   useEffect(() => {
+    if (courseId) {
+      try {
+        const storedPaidName = localStorage.getItem(`veyskill_paid_name_${courseId}`);
+        if (storedPaidName && storedPaidName.trim() && storedPaidName !== "Learner") {
+          setRecipientName(storedPaidName.trim());
+          return;
+        }
+      } catch {}
+    }
     if (userName && userName.trim() && userName !== "Learner") {
       setRecipientName(userName.trim());
     }
-  }, [userName]);
+  }, [userName, courseId]);
 
   const generateCertificate = useCallback(async () => {
     setLoading(true);
@@ -145,7 +154,11 @@ export function CertificateModal({
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed?.id) {
-            setCertificate(parsed);
+            const confirmedLegalName =
+              (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||
+              parsed.userName ||
+              recipientName;
+            setCertificate({ ...parsed, userName: confirmedLegalName });
             return;
           }
         }
@@ -157,9 +170,13 @@ export function CertificateModal({
         generateCertificate();
       }
     }
-  }, [isOpen, certificate, courseId, hasFetched, loading, generateCertificate]);
+  }, [isOpen, certificate, courseId, hasFetched, loading, generateCertificate, recipientName]);
 
-  const effectiveName = recipientName.trim() || certificate?.userName || "Distinguished Scholar";
+  const effectiveName =
+    (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||
+    recipientName.trim() ||
+    certificate?.userName ||
+    "Distinguished Scholar";
 
   const handleDownloadPdf = useCallback(async () => {
     if (!certificate) return;

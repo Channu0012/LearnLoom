@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const courseId = typeof body?.courseId === "string" ? body.courseId.trim() : "";
     const orderId = typeof body?.orderId === "string" ? body.orderId.trim() : "";
 
-    const userName = sanitizeInput(rawUserName, 100);
+    let userName = sanitizeInput(rawUserName, 100);
     const sanitizedTitle = sanitizeInput(rawCourseTitle, 200);
     const courseTitle = formatExecutiveCourseTitle(sanitizedTitle);
 
@@ -99,6 +99,13 @@ export async function POST(request: NextRequest) {
               const p = orderDoc.data();
               if (p?.isPaid === true && p?.uid === uid && p?.courseId === courseId) {
                 isVerified = true;
+                if (
+                  p?.customerName &&
+                  typeof p.customerName === "string" &&
+                  p.customerName.trim()
+                ) {
+                  userName = sanitizeInput(p.customerName.trim(), 100);
+                }
               }
             }
           }
@@ -114,6 +121,10 @@ export async function POST(request: NextRequest) {
 
             if (!snap.empty) {
               isVerified = true;
+              const p = snap.docs[0].data();
+              if (p?.customerName && typeof p.customerName === "string" && p.customerName.trim()) {
+                userName = sanitizeInput(p.customerName.trim(), 100);
+              }
             }
           }
         } catch (dbErr) {

@@ -946,7 +946,13 @@ export default function MyLearningPage() {
             <CertificateModal
               isOpen={Boolean(selectedCertCourse)}
               onClose={() => setSelectedCertCourse(null)}
-              userName={user?.displayName || "Distinguished Scholar"}
+              userName={
+                (typeof window !== "undefined"
+                  ? localStorage.getItem(`veyskill_paid_name_${selectedCertCourse.course.id}`)
+                  : null) ||
+                user?.displayName ||
+                "Distinguished Scholar"
+              }
               courseTitle={selectedCertCourse.course.title}
               lessonCount={selectedCertCourse.course.lessonCount || 12}
               quizScore={avgQuizScore}
@@ -988,11 +994,14 @@ export default function MyLearningPage() {
                 }
               : null
           }
-          onPaymentSuccess={(orderId) => {
+          onPaymentSuccess={(orderId, confirmedName) => {
             paidCourseIds.add(payingCourse.course.id);
             setPaidCourseIds(new Set(paidCourseIds));
             try {
               localStorage.setItem(`veyskill_paid_${payingCourse.course.id}`, orderId);
+              if (confirmedName) {
+                localStorage.setItem(`veyskill_paid_name_${payingCourse.course.id}`, confirmedName);
+              }
             } catch {}
             if (user?.uid) {
               recordPaidCertificate(user.uid, payingCourse.course.id, orderId);
