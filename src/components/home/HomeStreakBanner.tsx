@@ -107,3 +107,5 @@ export function HomeStreakBanner() {
     </div>
   );
 }
+
+export default HomeStreakBanner;

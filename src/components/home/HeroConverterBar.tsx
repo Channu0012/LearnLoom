@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { startPageLoading } from "@/components/layout/NavigationProgress";
+import { HomeStreakBanner } from "@/components/home/HomeStreakBanner";
 
 export function HeroConverterBar() {
   const router = useRouter();
@@ -151,6 +152,11 @@ export function HeroConverterBar() {
             {chip.label}
           </button>
         ))}
+      </div>
+
+      {/* Google Skills-Style Daily Streak & XP Banner */}
+      <div className="mt-6">
+        <HomeStreakBanner />
       </div>
     </div>
   );

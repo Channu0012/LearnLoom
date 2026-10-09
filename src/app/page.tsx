@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
 import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
-import { HomeStreakBanner } from "@/components/home/HomeStreakBanner";
 
 export default function HomePage() {
   const disciplines = [
@@ -102,14 +101,9 @@ export default function HomePage() {
             comprehension quizzes, and cryptographically verified certificates.
           </p>
 
-          {/* HERO CONVERTER INPUT (Google-Grade Instant Utility) */}
-          <div className="mb-4 animate-slide-up">
-            <HeroConverterBar />
-          </div>
-
-          {/* GOOGLE SKILLS-STYLE DAILY STREAK & XP REWARDS BANNER */}
+          {/* HERO CONVERTER INPUT (Google-Grade Instant Utility) & STREAK BANNER */}
           <div className="mb-8 animate-slide-up">
-            <HomeStreakBanner />
+            <HeroConverterBar />
           </div>
 
           {/* Institutional Trust Ribbon */}
