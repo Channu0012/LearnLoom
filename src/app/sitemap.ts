@@ -3,6 +3,8 @@ import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CourseDoc } from "@/lib/types";
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://veyskill.in";
   const lastModified = new Date();
@@ -77,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const q = query(collection(db, "courses"), where("status", "==", "published"), limit(100));
+    const q = query(collection(db, "courses"), where("status", "==", "published"), limit(1000));
     const snap = await getDocs(q);
     const courseRoutes: MetadataRoute.Sitemap = snap.docs.map((doc) => {
       const data = doc.data() as CourseDoc;

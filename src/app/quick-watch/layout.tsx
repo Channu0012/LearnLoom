@@ -31,6 +31,30 @@ export const metadata: Metadata = {
   },
 };
 
+const quickWatchJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Quick Watch — Distraction-Free Video Player",
+  description:
+    "Paste any online video lecture link and watch in pure cinema focus mode with zero algorithmic clutter, zero ads, and private scratchpad notes.",
+  url: "https://veyskill.in/quick-watch",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "All",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "INR",
+  },
+};
+
 export default function QuickWatchLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(quickWatchJsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

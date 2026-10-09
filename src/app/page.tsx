@@ -58,8 +58,25 @@ export default function HomePage() {
     },
   ];
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.a,
+      },
+    })),
+  };
+
   return (
     <div className="w-full overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* ── 1. Hero: Google-Grade Simplicity & Instant Converter ──────────── */}
       <section
         className="relative overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-12 sm:pb-16"

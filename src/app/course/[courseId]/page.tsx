@@ -71,26 +71,80 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const { courseId } = await params;
   const data = await getCourseData(courseId);
 
+  const courseCanonical = `https://veyskill.in/course/${courseId}`;
+
   const jsonLd = data
     ? {
         "@context": "https://schema.org",
         "@type": "Course",
+        "@id": `${courseCanonical}#course`,
+        url: courseCanonical,
         name: data.course.title,
-        description: data.course.description || `Learn ${data.course.title} online for free.`,
+        description:
+          data.course.description ||
+          `Master ${data.course.title} on VeySkill. Free structured curriculum with ${data.course.lessonCount} video modules, interactive study tools, and verifiable certificate of completion.`,
+        isAccessibleForFree: true,
+        inLanguage: "en",
         provider: {
           "@type": "Organization",
           name: "VeySkill",
+          url: "https://veyskill.in",
+          logo: "https://veyskill.in/logo.png",
           sameAs: "https://veyskill.in",
         },
         instructor: {
           "@type": "Organization",
-          name: "VeySkill Community",
+          name: "VeySkill Academic Faculty",
+          url: "https://veyskill.in",
+        },
+        offers: [
+          {
+            "@type": "Offer",
+            category: "Free",
+            price: "0",
+            priceCurrency: "INR",
+            availability: "https://schema.org/InStock",
+            url: courseCanonical,
+          },
+        ],
+        educationalCredentialAwarded: {
+          "@type": "EducationalOccupationalCredential",
+          name: `Certificate of Completion in ${data.course.title}`,
+          credentialCategory: "Certificate",
+          validFor: "P99Y",
         },
         hasCourseInstance: {
           "@type": "CourseInstance",
           courseMode: "Online",
-          courseWorkload: `PT${data.course.lessonCount * 12}M`,
+          courseWorkload: `PT${Math.max(1, data.course.lessonCount) * 15}M`,
         },
+      }
+    : null;
+
+  const breadcrumbJsonLd = data
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://veyskill.in",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Explore Courses",
+            item: "https://veyskill.in/explore",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: data.course.title,
+            item: courseCanonical,
+          },
+        ],
       }
     : null;
 
@@ -100,6 +154,12 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      {breadcrumbJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
       )}
       <CoursePageClient

@@ -33,6 +33,28 @@ export const metadata: Metadata = {
   },
 };
 
+const collectionJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Explore Free Video Courses & Curated Playlists | VeySkill",
+  description:
+    "Browse hundreds of free, distraction-free courses organized from online video playlists across Programming, Design, Business, and more.",
+  url: "https://veyskill.in/explore",
+  provider: {
+    "@type": "Organization",
+    name: "VeySkill",
+    url: "https://veyskill.in",
+  },
+};
+
 export default function ExploreLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

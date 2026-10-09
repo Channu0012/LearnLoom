@@ -109,7 +109,7 @@ const jsonLdWebsite = {
       ],
     },
     {
-      "@type": "Organization",
+      "@type": "EducationalOrganization",
       "@id": "https://veyskill.in/#organization",
       name: "VeySkill",
       url: "https://veyskill.in",
@@ -119,6 +119,9 @@ const jsonLdWebsite = {
         width: 798,
         height: 220,
       },
+      sameAs: ["https://twitter.com/veyskill", "https://github.com/Channu0012/LearnLoom"],
+      description:
+        "VeySkill transforms online video lectures and playlists into distraction-free masterclasses with interactive notes, quizzes, and cryptographic completion certificates.",
     },
     {
       "@type": "WebApplication",
@@ -130,7 +133,7 @@ const jsonLdWebsite = {
       offers: {
         "@type": "Offer",
         price: "0",
-        priceCurrency: "USD",
+        priceCurrency: "INR",
       },
     },
   ],
