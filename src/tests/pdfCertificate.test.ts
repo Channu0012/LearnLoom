@@ -65,7 +65,7 @@ describe("PDF Certificate Generator", () => {
         formatExecutiveCourseTitle(
           "Java Full Course (2026) | Complete 12 Hours Tutorial for Beginners"
         )
-      ).toBe("Java Masterclass");
+      ).toBe("Java Programming Masterclass");
       expect(formatExecutiveCourseTitle("Python for Data Science Bootcamp")).toBe(
         "Python for Data Science Bootcamp"
       );

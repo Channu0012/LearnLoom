@@ -158,7 +158,12 @@ export async function POST(request: NextRequest) {
       ...(lessonCount ? { l: String(lessonCount) } : {}),
       ...(quizScore != null ? { s: String(quizScore) } : {}),
     });
-    const verifyUrl = `https://veyskill.in/verify/${certificateId}?${queryParams.toString()}`;
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const origin = host
+      ? `${proto}://${host}`
+      : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
+    const verifyUrl = `${origin}/verify/${certificateId}?${queryParams.toString()}`;
 
     const certificate = {
       id: certificateId,

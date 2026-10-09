@@ -45,8 +45,12 @@ export function OfficialCertificateView({
   // so scanning this QR code from any external camera/phone opens this specific credential
   const effectiveVerifyUrl = (() => {
     try {
-      const base = verifyUrl || `https://veyskill.in/verify/${certificateId}`;
-      const url = new URL(base, "https://veyskill.in");
+      const origin =
+        typeof window !== "undefined" && window.location.origin
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
+      const base = verifyUrl || `${origin}/verify/${certificateId}`;
+      const url = new URL(base, origin);
       if (recipientName && !url.searchParams.has("n")) {
         url.searchParams.set("n", recipientName.trim());
       }
@@ -85,13 +89,14 @@ export function OfficialCertificateView({
     };
   }, [effectiveVerifyUrl]);
 
-  // Dynamic single-line font sizing for recipient name
+  // Proportional responsive single-line font sizing for recipient name
+  // Accommodates long Indian full names (e.g. Channabasav Bhimappa B Patil) without truncation
   const nameLength = recipientName.trim().length;
   const getNameSizeClass = () => {
-    if (nameLength > 40) return "text-sm sm:text-lg md:text-2xl lg:text-3xl";
-    if (nameLength > 28) return "text-base sm:text-xl md:text-3xl lg:text-4xl";
-    if (nameLength > 18) return "text-lg sm:text-2xl md:text-4xl lg:text-5xl";
-    return "text-xl sm:text-3xl md:text-5xl lg:text-6xl";
+    if (nameLength > 36) return "text-[11px] sm:text-base md:text-xl lg:text-2xl";
+    if (nameLength > 24) return "text-xs sm:text-lg md:text-2xl lg:text-3xl";
+    if (nameLength > 16) return "text-sm sm:text-xl md:text-3xl lg:text-4xl";
+    return "text-base sm:text-2xl md:text-4xl lg:text-5xl";
   };
 
   return (
@@ -106,22 +111,22 @@ export function OfficialCertificateView({
           className="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"
         />
 
-        {/* 2. Recipient Full Legal Name (Above the Teal Divider Line at y = 46.2%) */}
+        {/* 2. Recipient Full Legal Name (Positioned at y = 37% — Cleanly Above the Divider Line at y = 48%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[72%] text-center z-10"
-          style={{ top: "42.5%" }}
+          className="absolute left-1/2 -translate-x-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex items-center justify-center pointer-events-none"
+          style={{ top: "37%" }}
         >
           {isInteractive && onNameChange ? (
             <input
               type="text"
               value={recipientName}
               onChange={(e) => onNameChange(e.target.value)}
-              className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center border-b-2 border-[#0B766E]/40 focus:border-[#0B766E] focus:outline-none whitespace-nowrap overflow-hidden text-ellipsis ${getNameSizeClass()}`}
+              className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center border-b-2 border-[#0B766E]/40 focus:border-[#0B766E] focus:outline-none whitespace-nowrap leading-tight ${getNameSizeClass()}`}
               placeholder="Enter your name"
             />
           ) : (
             <h3
-              className={`font-heading font-black text-[#0A3A37] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-tight ${getNameSizeClass()}`}
+              className={`font-heading font-black text-[#0A3A37] tracking-tight whitespace-nowrap leading-none ${getNameSizeClass()}`}
               title={recipientName}
             >
               {recipientName.trim() || "Distinguished Scholar"}
@@ -131,7 +136,7 @@ export function OfficialCertificateView({
 
         {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 52.4%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[80%] text-center z-10 pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 w-[84%] text-center z-10 pointer-events-none"
           style={{ top: "52.4%" }}
         >
           <p className="font-heading font-medium text-[8px] sm:text-xs md:text-sm text-slate-600 leading-tight">
@@ -141,7 +146,7 @@ export function OfficialCertificateView({
 
         {/* 4. Normalized Executive Masterclass Course Title (at y = 56.2%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[78%] text-center z-10 pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 w-[82%] text-center z-10 pointer-events-none"
           style={{ top: "56.2%" }}
         >
           <h4
@@ -154,7 +159,7 @@ export function OfficialCertificateView({
 
         {/* 4b. Professional Credential Validation Statement (at y = 62.5%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[72%] text-center z-10 pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 w-[76%] text-center z-10 pointer-events-none"
           style={{ top: "62.5%" }}
         >
           <p className="font-heading font-medium text-[6px] sm:text-[9px] md:text-[11px] text-slate-500 leading-tight">
@@ -163,14 +168,15 @@ export function OfficialCertificateView({
           </p>
         </div>
 
-        {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 70.5%) */}
+        {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 69.8%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 text-center z-10 pointer-events-none"
-          style={{ top: "70.5%" }}
+          className="absolute left-1/2 -translate-x-1/2 text-center z-10 pointer-events-none flex flex-col items-center"
+          style={{ top: "69.8%" }}
         >
           <p className="font-heading font-bold text-slate-800 text-[8px] sm:text-xs md:text-sm leading-tight">
             {cleanDate}
           </p>
+          <div className="w-16 sm:w-24 h-[1.5px] bg-[#0B766E]/40 mt-0.5 rounded-full" />
         </div>
 
         {/* 6. Scannable QR Code & Cryptographic ID Block (Bottom-Left Quadrant) */}
@@ -210,6 +216,40 @@ export function OfficialCertificateView({
             </span>
             <span className="font-heading font-bold text-[#0B766E] uppercase tracking-wider text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 block leading-none">
               SCAN TO VERIFY
+            </span>
+          </div>
+        </div>
+
+        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Clean Channabasav Signature) */}
+        <div
+          className="absolute z-20 flex flex-col items-center text-center select-none"
+          style={{ right: "13%", top: "71%" }}
+        >
+          {/* Subtle clean backdrop to mask old scribble */}
+          <div className="absolute -inset-1.5 bg-[#FAFCFB] rounded-xl pointer-events-none opacity-95" />
+
+          {/* Clean flowing cursive signature for Channabasav */}
+          <div className="relative z-10 w-24 sm:w-32 md:w-40 h-8 sm:h-10 md:h-11 flex items-center justify-center">
+            <svg
+              viewBox="0 0 220 54"
+              className="w-full h-full text-[#0A3A37] overflow-visible"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18,38 C14,18 28,12 36,18 C44,24 38,42 26,44 C16,46 24,30 36,32 C44,33 50,22 55,34 C60,40 65,22 72,32 C78,39 84,24 92,33 C98,39 104,22 112,32 C118,38 126,24 134,34 C140,40 148,22 156,32 C162,38 168,26 178,34 C184,38 190,28 196,36 M24,46 Q100,52 205,42" />
+            </svg>
+          </div>
+
+          {/* Signatory Details */}
+          <div className="relative z-10 mt-0.5 flex flex-col items-center">
+            <span className="font-heading font-extrabold text-[#0A3A37] tracking-tight text-[8px] sm:text-xs md:text-sm leading-tight">
+              Channabasav Patil
+            </span>
+            <span className="font-mono font-semibold text-slate-500 uppercase tracking-widest text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 leading-none">
+              Founder / Program Instructor
             </span>
           </div>
         </div>

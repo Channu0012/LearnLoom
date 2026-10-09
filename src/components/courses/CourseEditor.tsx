@@ -5,7 +5,7 @@
 // /create → new course
 // /edit/[courseId] → edit existing draft (owner only)
 // ---------------------------------------------------------------------------
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -24,6 +24,7 @@ import {
   clearLessons,
   getLessons,
   getCourse,
+  invalidateExploreCoursesCache,
 } from "@/lib/firestore";
 import { serverTimestamp } from "firebase/firestore";
 import {
@@ -197,6 +198,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [loadingCourse, setLoadingCourse] = useState(!!courseId);
+  const isSubmittingRef = useRef(false);
 
   const searchParams = useSearchParams();
   const [initialUrlHandled, setInitialUrlHandled] = useState(false);
@@ -681,6 +683,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   // ── Save logic ──────────────────────────────────────────────────────────
 
   async function saveCourse(status: "draft" | "published") {
+    if (isSubmittingRef.current || saving) return;
     if (!user) return;
     if (!validate(status === "published")) return;
 
@@ -702,11 +705,13 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           course: courseCheck.reason || "Educational integrity verification failed.",
         }));
         setSaving(false);
+        isSubmittingRef.current = false;
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
     }
 
+    isSubmittingRef.current = true;
     setSaving(true);
     setSaveError("");
 
@@ -760,6 +765,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           thumbnailUrl: lesson.thumbnailUrl,
         }));
         await batchSetLessons(id, lessonDocs);
+        if (status === "published") {
+          invalidateExploreCoursesCache();
+        }
         const targetPath = status === "published" ? `/course/${id}` : "/my-courses";
         router.push(targetPath);
         router.refresh();
@@ -767,6 +775,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
     } catch {
       setSaveError("An error occurred while saving your course. Please try again.");
     } finally {
+      isSubmittingRef.current = false;
       setSaving(false);
     }
   }
@@ -1368,7 +1377,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           <button
             onClick={() => saveCourse("draft")}
             disabled={saving}
-            className="btn-ghost flex-1 py-3.5 min-h-[48px] text-sm cursor-pointer"
+            className="btn-ghost flex-1 py-3.5 min-h-[48px] text-sm cursor-pointer disabled:pointer-events-none disabled:opacity-60"
             type="button"
           >
             {saving ? "Saving…" : "Save as draft"}
@@ -1376,7 +1385,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           <button
             onClick={() => saveCourse("published")}
             disabled={saving}
-            className="btn-accent flex-1 py-3.5 min-h-[48px] text-sm inline-flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="btn-accent flex-1 py-3.5 min-h-[48px] text-sm inline-flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:pointer-events-none disabled:opacity-60"
             type="button"
           >
             {saving ? (

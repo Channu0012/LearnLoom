@@ -10,6 +10,7 @@ import { CertificateModal } from "@/components/courses/CertificateModal";
 import { PaymentGate } from "@/components/courses/PaymentGate";
 import { normalizeCertificateId, verifyCertificateId } from "@/lib/security";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
+import { StreakWidget } from "@/components/layout/StreakWidget";
 
 interface CourseWithProgress {
   course: CourseDoc;
@@ -322,6 +323,7 @@ export default function MyLearningPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <StreakWidget />
             <Link
               href="/verify"
               className="btn-ghost text-xs font-heading font-bold px-3.5 py-2 inline-flex items-center gap-1.5 border border-border"

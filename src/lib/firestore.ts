@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -136,9 +137,21 @@ export async function updateCourse(courseId: string, data: CourseUpdatePayload):
   });
 }
 
+export function invalidateExploreCoursesCache(): void {
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.removeItem("learnloom_explore_courses_cache_v1");
+      window.dispatchEvent(new Event("learnloom:courses-updated"));
+    } catch {
+      // Ignore
+    }
+  }
+}
+
 export async function deleteCourse(courseId: string): Promise<void> {
   await clearLessons(courseId);
   await deleteDoc(doc(db, COLLECTIONS.COURSES, courseId));
+  invalidateExploreCoursesCache();
 }
 
 /** Get published courses — paginated without requiring undeployed composite indexes */
@@ -442,6 +455,57 @@ export async function getLivePlatformStats(): Promise<{
       activeLearners: 520,
     };
   }
+}
+
+/** Save an issued certificate directly to user's verified credentials in Firestore */
+export async function saveUserCertificate(
+  uid: string,
+  cert: {
+    id: string;
+    userName: string;
+    courseTitle: string;
+    lessonCount: number;
+    quizScore?: number | null;
+    issuedDate: string;
+    verifyUrl: string;
+    [key: string]: any;
+  }
+): Promise<void> {
+  try {
+    if (!uid || !cert?.id) return;
+    await setDoc(doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.CERTIFICATES, cert.id), {
+      ...cert,
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.warn("Notice saving user certificate to Firestore subcollection:", err);
+  }
+}
+
+/** Check and retrieve a certificate from Firestore registry (global or user subcollection) */
+export async function getCertificateRecord(certId: string): Promise<any | null> {
+  try {
+    if (!certId) return null;
+    // 1. Check root certificates collection
+    const rootSnap = await getDoc(doc(db, COLLECTIONS.CERTIFICATES, certId));
+    if (rootSnap.exists()) {
+      return rootSnap.data();
+    }
+
+    // 2. Fallback check across all user certificate subcollections via collectionGroup
+    const groupQuery = query(
+      collectionGroup(db, COLLECTIONS.CERTIFICATES),
+      where("id", "==", certId),
+      limit(1)
+    );
+    const groupSnap = await getDocs(groupQuery);
+    if (!groupSnap.empty) {
+      return groupSnap.docs[0]?.data();
+    }
+  } catch (err) {
+    console.warn("Notice querying certificate in Firestore:", err);
+  }
+  return null;
 }
 
 export { startAfter, orderBy, where, limit };

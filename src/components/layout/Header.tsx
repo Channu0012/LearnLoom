@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import { StreakWidget } from "@/components/layout/StreakWidget";
 
 export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
@@ -210,6 +211,7 @@ export function Header() {
             <>
               {user ? (
                 <div className="flex items-center gap-2 relative">
+                  <StreakWidget />
                   <button
                     id="user-menu-btn"
                     onClick={() => setUserDropdownOpen((o) => !o)}

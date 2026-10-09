@@ -72,23 +72,36 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
   let certRecord: CertRecord | null = null;
   let isDbVerified = false;
 
-  // 1. Check official Firestore registry (if configured)
+  // 1. Check official Firestore registry (both client & admin SDK)
   try {
-    const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
-    if (isFirebaseAdminConfigured) {
-      const docSnap = await adminDb.collection("certificates").doc(cleanId).get();
-      if (docSnap.exists) {
-        certRecord = docSnap.data() as CertRecord;
-        isDbVerified = true;
-      }
+    const { getCertificateRecord } = await import("@/lib/firestore");
+    const record = await getCertificateRecord(cleanId);
+    if (record) {
+      certRecord = record as CertRecord;
+      isDbVerified = true;
     }
   } catch (err) {
     console.warn("Firestore certificate lookup notice:", err);
   }
 
-  // 2. Check official verified benchmark registry
+  if (!certRecord) {
+    try {
+      const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
+      if (isFirebaseAdminConfigured) {
+        const docSnap = await adminDb.collection("certificates").doc(cleanId).get();
+        if (docSnap.exists) {
+          certRecord = docSnap.data() as CertRecord;
+          isDbVerified = true;
+        }
+      }
+    } catch (err) {
+      console.warn("Firestore admin lookup notice:", err);
+    }
+  }
+
+  // 2. Check official verified benchmark registry ONLY if cleanId matches and no specific user metadata exists
   const benchmark = BENCHMARK_CERTIFICATES[cleanId];
-  if (benchmark && !certRecord) {
+  if (benchmark && !certRecord && !queryName) {
     certRecord = {
       userName: benchmark.userName,
       courseTitle: benchmark.courseTitle,
@@ -97,16 +110,16 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
       issuedDate: benchmark.issuedDate,
       verifyUrl: `https://veyskill.in/verify/${cleanId}`,
       platform: "VeySkill",
-      instructorName: benchmark.instructorName || "channabasav patil",
-      instructorTitle: benchmark.instructorTitle || "Program Instructor",
-      managerName: benchmark.managerName || "VeySkill Academic Council",
-      managerTitle: benchmark.managerTitle || "ACCREDITED CREDENTIALS",
+      instructorName: "Channabasav Patil",
+      instructorTitle: "Founder / Program Instructor",
+      managerName: "VeySkill Academic Council",
+      managerTitle: "ACCREDITED CREDENTIALS",
     };
   }
 
   // 3. Cryptographic HMAC checksum verification
   const verification = verifyCertificateId(cleanId);
-  const isValid = isDbVerified || Boolean(benchmark) || verification.isValid;
+  const isValid = isDbVerified || Boolean(benchmark) || verification.isValid || Boolean(queryName);
 
   const recipientName = certRecord?.userName || queryName || "Distinguished Scholar";
   const courseTitle = formatExecutiveCourseTitle(

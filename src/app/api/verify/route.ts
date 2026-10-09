@@ -55,7 +55,34 @@ async function handleVerification(request: NextRequest, rawId: string) {
     );
   }
 
-  // 1. Check Firestore database registry first (if configured)
+  // 1. Check Firestore database registry first (client & admin SDK)
+  try {
+    const { getCertificateRecord } = await import("@/lib/firestore");
+    const data = await getCertificateRecord(cleanId);
+    if (data) {
+      return NextResponse.json({
+        isValid: true,
+        id: cleanId,
+        source: "database",
+        certificate: {
+          id: cleanId,
+          userName: data?.userName || "Distinguished Scholar",
+          courseTitle: data?.courseTitle || "Accredited Curriculum",
+          lessonCount: data?.lessonCount || 12,
+          quizScore: data?.quizScore ?? null,
+          issuedDate: data?.issuedDate || "October 2026",
+          verifyUrl: data?.verifyUrl || `https://veyskill.in/verify/${cleanId}`,
+          verificationMethod: "Cryptographic HMAC-SHA256 & Firestore Registry",
+          platform: "VeySkill",
+          instructorName: "Channabasav Patil",
+          instructorTitle: "Founder / Program Instructor",
+        },
+      });
+    }
+  } catch (dbErr) {
+    console.warn("[Verify API] Client Firestore notice:", dbErr);
+  }
+
   try {
     const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
     if (isFirebaseAdminConfigured) {
@@ -76,12 +103,14 @@ async function handleVerification(request: NextRequest, rawId: string) {
             verifyUrl: `https://veyskill.in/verify/${cleanId}`,
             verificationMethod: "Cryptographic HMAC-SHA256 & Firestore Registry",
             platform: "VeySkill",
+            instructorName: "Channabasav Patil",
+            instructorTitle: "Founder / Program Instructor",
           },
         });
       }
     }
   } catch (dbErr) {
-    console.warn("[Verify API] Firestore notice:", dbErr);
+    console.warn("[Verify API] Admin Firestore notice:", dbErr);
   }
 
   // 2. Check official accredited benchmark records
@@ -101,10 +130,10 @@ async function handleVerification(request: NextRequest, rawId: string) {
         verifyUrl: `https://veyskill.in/verify/${cleanId}`,
         verificationMethod: "Cryptographic HMAC-SHA256 Benchmark Record",
         platform: "VeySkill",
-        instructorName: benchmark.instructorName || "Jane Kane",
-        instructorTitle: benchmark.instructorTitle || "CURRICULUM DIRECTOR",
-        managerName: benchmark.managerName || "Thomson Loewe",
-        managerTitle: benchmark.managerTitle || "HEAD OF ACADEMIC CREDENTIALS",
+        instructorName: "Channabasav Patil",
+        instructorTitle: "Founder / Program Instructor",
+        managerName: "VeySkill Academic Council",
+        managerTitle: "ACCREDITED CREDENTIALS",
       },
     });
   }

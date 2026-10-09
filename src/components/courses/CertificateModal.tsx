@@ -10,6 +10,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { generatePdfCertificate, formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
+import { saveUserCertificate } from "@/lib/firestore";
 
 interface CertificateData {
   id: string;
@@ -95,6 +96,16 @@ export function CertificateModal({
       if (!res.ok) throw new Error("Failed to generate certificate");
       const data = await res.json();
       setCertificate(data.certificate);
+
+      // Persist permanently to Firestore user registry
+      if (uid && data.certificate) {
+        saveUserCertificate(uid, {
+          ...data.certificate,
+          courseId,
+          orderId,
+        }).catch((err) => console.warn("Notice saving user certificate to Firestore:", err));
+      }
+
       try {
         if (typeof window !== "undefined" && data.certificate?.id) {
           localStorage.setItem(
@@ -343,42 +354,37 @@ export function CertificateModal({
 
           {certificate && (
             <>
-              {/* Recipient Legal Name Confirmation Bar (Coursera/Google style) */}
+              {/* Recipient Legal Name Display Bar (Permanent & Cryptographically Locked) */}
               <div className="p-3 sm:p-4 rounded-2xl bg-muted/60 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
                     <svg
-                      width="14"
-                      height="14"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                     >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      <polyline points="9 12 11 14 15 10" />
                     </svg>
                   </div>
                   <div>
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block leading-none">
-                      Certificate Name Verification
+                      Accredited Recipient Name (Locked)
                     </span>
-                    <span className="text-[11px] text-foreground font-body leading-none mt-0.5 block">
-                      Confirm your full legal name as it appears on this credential:
+                    <span className="text-xs sm:text-sm font-heading font-extrabold text-foreground block mt-1 tracking-tight">
+                      {effectiveName}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <input
-                    type="text"
-                    value={recipientName}
-                    onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="Enter your name"
-                    maxLength={70}
-                    className="w-full sm:w-56 px-3 py-1.5 text-xs font-heading font-bold rounded-xl bg-card border border-border focus:border-amber-500 focus:outline-none text-foreground"
-                    aria-label="Recipient Legal Name"
-                  />
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Cryptographically Locked
+                  </span>
                 </div>
               </div>
 

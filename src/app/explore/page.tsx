@@ -186,6 +186,23 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetchCourses();
+
+    const handleCoursesUpdated = () => {
+      memoryCoursesCache = null;
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.removeItem(COURSES_CACHE_KEY);
+        } catch {
+          // Ignore
+        }
+      }
+      fetchCourses(true);
+    };
+
+    window.addEventListener("learnloom:courses-updated", handleCoursesUpdated);
+    return () => {
+      window.removeEventListener("learnloom:courses-updated", handleCoursesUpdated);
+    };
   }, [fetchCourses]);
 
   // ── Full-Strength Instant Search & Filtering ──────────────────────────

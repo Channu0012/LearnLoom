@@ -35,10 +35,34 @@ export function formatExecutiveCourseTitle(rawTitle: string): string {
 
   let title = rawTitle.trim();
 
+  // 1. Aggressively strip all emojis, symbols, and pictographs
+  title = title
+    .replace(
+      /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{200D}\u{FE0F}\u{20E3}\u{E0020}-\u{E007F}]/gu,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Strip YouTube playlist / clickbait noise while preserving the academic subject
+  title = title
+    .replace(/\[.*?\]/g, "")
+    .replace(/\(.*?\)/g, "")
+    .replace(
+      /\b(full\s+course|complete\s+course|complete\s+full|full\s+tutorial|tutorial\s+for\s+beginners|crash\s+course|free\s+course|202[0-9]|in\s+one\s+video|in\s+1\s+video|for\s+beginners|masterclass)\b/gi,
+      ""
+    )
+    .replace(/\|\s*.*$/g, "")
+    .replace(/[-:]\s*(full\s+course|tutorial).*$/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
   // Handle single words or common abbreviations
   const lower = title.toLowerCase().replace(/[^a-z0-9+#]/g, "");
   const knownShortTitles: Record<string, string> = {
     java: "Java Programming Masterclass",
+    corejava: "Java Programming Masterclass",
+    advancedjava: "Advanced Java Architecture Masterclass",
     python: "Python Architecture & Concurrency Masterclass",
     javascript: "Modern JavaScript & TypeScript Masterclass",
     js: "Modern JavaScript Masterclass",
@@ -60,27 +84,21 @@ export function formatExecutiveCourseTitle(rawTitle: string): string {
     html: "Modern Web Foundations & Semantic HTML Masterclass",
     css: "Modern CSS Architecture & Design Systems Masterclass",
     dsa: "Data Structures & Algorithms Masterclass",
+    webdev: "Full Stack Web Development Masterclass",
+    webdevelopment: "Full Stack Web Development Masterclass",
   };
 
   if (knownShortTitles[lower]) {
     return knownShortTitles[lower];
   }
 
-  // Strip YouTube playlist / clickbait noise while preserving the academic subject
-  title = title
-    .replace(/\[.*?\]/g, "")
-    .replace(/\(.*?\)/g, "")
-    .replace(
-      /\b(full\s+course|complete\s+course|full\s+tutorial|tutorial\s+for\s+beginners|crash\s+course|free\s+course|202[0-9]|in\s+one\s+video)\b/gi,
-      ""
-    )
-    .replace(/\|\s*.*$/g, "")
-    .replace(/[-:]\s*(full\s+course|tutorial).*$/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
   if (title.length < 3) {
-    title = rawTitle.trim();
+    title = rawTitle
+      .replace(
+        /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/gu,
+        ""
+      )
+      .trim();
   }
 
   // Ensure title ends with an authoritative academic term
@@ -196,15 +214,15 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
 
   // 3. Recipient Full Legal Name (Auto-Scaled Single Line sitting cleanly above the teal line)
   const cleanName = userName.trim() || "Distinguished Scholar";
-  let nameSize = 26;
-  if (cleanName.length > 22) nameSize = 22;
-  if (cleanName.length > 32) nameSize = 18;
-  if (cleanName.length > 42) nameSize = 15;
+  let nameSize = 25;
+  if (cleanName.length > 20) nameSize = 21;
+  if (cleanName.length > 28) nameSize = 17.5;
+  if (cleanName.length > 38) nameSize = 14.5;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(nameSize);
   doc.setTextColor(10, 58, 55); // Deep Teal (#0A3A37)
-  doc.text(cleanName, centerX, 97, { align: "center" });
+  doc.text(cleanName, centerX, 88, { align: "center" });
 
   // 4. Subheading Statement below the teal dividing line
   doc.setFont("helvetica", "normal");
@@ -241,12 +259,15 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
     { align: "center" }
   );
 
-  // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text)
+  // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text with underline)
   const cleanDate = issuedDate.trim() || "October 2026";
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10.5);
+  doc.setFontSize(10);
   doc.setTextColor(30, 41, 59); // Slate-800
-  doc.text(cleanDate, centerX, 148, { align: "center" });
+  doc.text(cleanDate, centerX, 146.5, { align: "center" });
+  doc.setDrawColor(11, 118, 110);
+  doc.setLineWidth(0.35);
+  doc.line(centerX - 16, 148.5, centerX + 16, 148.5);
 
   // 7. Scannable QR Code (Bottom-Left Quadrant, creating perfect balance with Instructor Signature)
   const buildPdfVerifyUrl = () => {
@@ -303,6 +324,55 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFontSize(5.5);
   doc.setTextColor(11, 118, 110); // Teal-600
   doc.text("SCAN TO VERIFY", qrCenterX, qrY + qrSize + 8, { align: "center" });
+
+  // 9. Executive Signature Block (Bottom-Right: Clean Channabasav Signature)
+  const sigCenterX = 215; // 215mm
+  const sigY = 153;
+  // Mask old scribble from template
+  doc.setFillColor(250, 252, 251);
+  doc.roundedRect(sigCenterX - 32, sigY - 15, 64, 28, 2, 2, "F");
+
+  // Elegant cursive signature strokes for "Channabasav"
+  doc.setDrawColor(10, 58, 55); // #0A3A37
+  doc.setLineWidth(0.65);
+  doc.lines(
+    [
+      [4, -7],
+      [4, 6],
+      [-3, 5],
+      [-3, -4],
+      [6, -2],
+      [3, 3],
+      [3, -3],
+      [3, 3],
+      [3, -3],
+      [3, 3],
+      [4, -4],
+      [3, 4],
+      [3, -3],
+      [4, 3],
+      [3, -2],
+      [3, 3],
+      [4, -3],
+      [3, 3],
+      [12, -2],
+    ],
+    sigCenterX - 22,
+    sigY - 2
+  );
+  doc.setLineWidth(0.35);
+  doc.line(sigCenterX - 24, sigY + 2, sigCenterX + 24, sigY + 1);
+
+  // Signatory Name & Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(10, 58, 55);
+  doc.text("Channabasav Patil", sigCenterX, sigY + 7, { align: "center" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6);
+  doc.setTextColor(100, 116, 139);
+  doc.text("FOUNDER / PROGRAM INSTRUCTOR", sigCenterX, sigY + 10.5, { align: "center" });
 
   return doc;
 }

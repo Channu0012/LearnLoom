@@ -15,7 +15,9 @@ function initAdmin() {
 
   // In emulator/CI environments without credentials, fall back to projectId only
   if (!clientEmail || !privateKey) {
-    return initializeApp({ projectId: projectId ?? "veyskill-dev" });
+    return initializeApp({
+      projectId: projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "learnloom-27899",
+    });
   }
 
   return initializeApp({

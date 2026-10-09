@@ -40,7 +40,16 @@ export function PaymentGate({
   const [error, setError] = useState<string | null>(null);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [legalName, setLegalName] = useState(user?.displayName || "");
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "9876543210");
+  const [phoneNumber, setPhoneNumber] = useState(
+    user?.phoneNumber?.replace(/[^0-9]/g, "").slice(-10) || ""
+  );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Strict Phone & Name Validation Check
+  const cleanPhone = phoneNumber.replace(/[^0-9]/g, "");
+  const isPhoneValid = cleanPhone.length === 10 && /^[6-9]/.test(cleanPhone);
+  const isNameValid = legalName.trim().length >= 2;
+  const isFormReady = isNameValid && isPhoneValid;
 
   // -------------------------------------------------------------------------
   // Verify Payment Status with Server
@@ -62,7 +71,8 @@ export function PaymentGate({
 
         const data = await res.json();
         if (res.ok && data.isPaid) {
-          onPaymentSuccess(orderId, legalName.trim() || user?.displayName || "Learner");
+          const finalLegalName = legalName.trim() || user?.displayName || "Learner";
+          onPaymentSuccess(orderId, finalLegalName);
           return true;
         } else {
           setError(
@@ -92,11 +102,27 @@ export function PaymentGate({
       return;
     }
 
+    if (!isNameValid) {
+      setValidationError(
+        "Please enter your full legal name as it should appear on your verified certificate."
+      );
+      return;
+    }
+
+    if (!isPhoneValid) {
+      setValidationError(
+        "Please enter a valid 10-digit mobile number (starts with 6-9) for payment receipt & SMS verification."
+      );
+      return;
+    }
+
+    setValidationError(null);
     setLoading(true);
     setError(null);
 
     try {
-      // 1. Create order on server
+      // 1. Create order on server with confirmed legal details
+      const confirmedName = legalName.trim();
       const orderRes = await fetch("/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,9 +133,9 @@ export function PaymentGate({
           lessonCount,
           description,
           duration,
-          customerName: legalName.trim() || user.displayName || "Learner",
+          customerName: confirmedName,
           customerEmail: user.email || `${user.uid.slice(0, 8)}@veyskill.in`,
-          customerPhone: phoneNumber.replace(/[^0-9]/g, "") || "9876543210",
+          customerPhone: cleanPhone,
         }),
       });
 
@@ -161,8 +187,10 @@ export function PaymentGate({
     lessonCount,
     description,
     duration,
-    phoneNumber,
+    cleanPhone,
     legalName,
+    isNameValid,
+    isPhoneValid,
     verifyOrderPayment,
   ]);
 
@@ -347,8 +375,33 @@ export function PaymentGate({
             </div>
           </div>
 
+          {/* Identity & Issuance Notice Banner */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-1">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>Identity Lock &amp; Official Issuance</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground font-body leading-relaxed">
+              Your accredited certificate is cryptographically sealed with this name and phone
+              number.
+              <strong className="text-foreground font-semibold">
+                {" "}
+                Once unlocked, the name cannot be changed.
+              </strong>
+            </p>
+          </div>
+
           {/* Full Legal Name for Certificate */}
-          <div className="space-y-1.5 p-3.5 rounded-2xl bg-muted/30 border border-border">
+          <div className="space-y-1.5 p-3.5 rounded-2xl bg-muted/40 border border-border">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="recipient-legal-name"
@@ -365,38 +418,89 @@ export function PaymentGate({
               id="recipient-legal-name"
               type="text"
               value={legalName}
-              onChange={(e) => setLegalName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full px-3 py-2 text-xs font-heading font-medium rounded-xl bg-card border border-border focus:border-primary focus:outline-none text-foreground"
+              onChange={(e) => {
+                setLegalName(e.target.value);
+                if (validationError) setValidationError(null);
+              }}
+              placeholder="e.g. Channabasav Bhimappa B Patil"
+              className={`w-full px-3.5 py-2.5 text-xs font-heading font-medium rounded-xl bg-card border ${
+                legalName.trim().length > 0 && !isNameValid
+                  ? "border-destructive focus:border-destructive"
+                  : "border-border focus:border-primary"
+              } focus:outline-none text-foreground shadow-sm`}
               required
             />
-            <p className="text-[10px] text-muted-foreground font-body">
-              Confirm your name as it should appear on your verified certificate.
-            </p>
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-muted-foreground font-body">
+                Enter your complete legal name as on your Govt ID / Degree.
+              </span>
+              {legalName.trim().length >= 2 ? (
+                <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                  ✓ Ready
+                </span>
+              ) : (
+                <span className="text-amber-500 font-mono font-medium">Required (min 2 chars)</span>
+              )}
+            </div>
           </div>
 
-          {/* Phone number input if not registered */}
-          {!user?.phoneNumber && (
-            <div className="space-y-1">
+          {/* 10-Digit Mobile Number (Mandatory) */}
+          <div className="space-y-1.5 p-3.5 rounded-2xl bg-muted/40 border border-border">
+            <div className="flex items-center justify-between">
               <label
                 htmlFor="payment-phone"
-                className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground"
+                className="text-[11px] font-mono font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5"
               >
-                Mobile Number
+                <span>10-Digit Mobile Number</span>
+                <span className="text-amber-500">*</span>
               </label>
+              <span className="text-[10px] text-muted-foreground font-mono">SMS / UPI Receipt</span>
+            </div>
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-xs font-mono font-semibold text-muted-foreground select-none">
+                +91
+              </span>
               <input
                 id="payment-phone"
                 type="tel"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Enter number"
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                  setPhoneNumber(cleaned);
+                  if (validationError) setValidationError(null);
+                }}
+                placeholder="9876543210"
                 maxLength={10}
-                className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-card border border-border focus:border-primary focus:outline-none text-foreground"
+                className={`w-full pl-11 pr-3.5 py-2.5 text-xs font-mono font-medium rounded-xl bg-card border ${
+                  cleanPhone.length > 0 && !isPhoneValid
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
+                } focus:outline-none text-foreground tracking-wider shadow-sm`}
+                required
               />
+            </div>
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-muted-foreground font-body">
+                Required for Cashfree instant payment confirmation.
+              </span>
+              {isPhoneValid ? (
+                <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                  ✓ Valid 10-Digit
+                </span>
+              ) : (
+                <span className="text-amber-500 font-mono font-medium">10 Digits (6-9 start)</span>
+              )}
+            </div>
+          </div>
+
+          {/* Validation Warning Notice */}
+          {validationError && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-1 font-body">
+              <p className="font-semibold">{validationError}</p>
             </div>
           )}
 
-          {/* Error Message */}
+          {/* Server Error Message */}
           {error && (
             <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-2">
               <p className="font-semibold">{error}</p>
@@ -418,8 +522,12 @@ export function PaymentGate({
             <button
               type="button"
               onClick={handleInitiatePayment}
-              disabled={loading || verifying}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white font-heading font-bold text-sm shadow-xl shadow-amber-500/25 cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 disabled:opacity-60"
+              disabled={!isFormReady || loading || verifying}
+              className={`w-full py-3.5 px-4 rounded-2xl font-heading font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2.5 ${
+                isFormReady && !loading && !verifying
+                  ? "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white shadow-amber-500/25 cursor-pointer active:scale-[0.99]"
+                  : "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-70"
+              }`}
             >
               {loading ? (
                 <>
