@@ -101,13 +101,14 @@ export function formatExecutiveCourseTitle(rawTitle: string): string {
       .trim();
   }
 
-  // Ensure title ends with an authoritative academic term
+  // Keep title clean — only add a suffix if title is very short and bare
   if (
-    !/masterclass|certification|curriculum|bootcamp|foundations|specialization|mastery|engineering|architecture/i.test(
+    title.split(/\s+/).length <= 2 &&
+    !/masterclass|certification|curriculum|bootcamp|foundations|specialization|mastery|engineering|architecture|programming|development/i.test(
       title
     )
   ) {
-    title = `${title} Masterclass`;
+    title = `${title} Programming`;
   }
 
   return title;
@@ -277,7 +278,7 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFontSize(9.5);
   doc.setTextColor(71, 85, 105); // Slate-600
   doc.text(
-    "for successfully completing the curriculum and demonstrating mastery in",
+    "for successfully completing the accredited curriculum and demonstrating professional mastery in",
     centerX,
     110,
     {
@@ -296,16 +297,11 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setTextColor(11, 92, 88); // Prestigious Dark Teal (#0B5C58)
   doc.text(executiveTitle, centerX, 118, { align: "center" });
 
-  // 5b. Professional Completion Validation Statement (fills space elegantly)
+  // 5b. Architectural Diamond Accent (elegant visual spacer)
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(100, 116, 139); // Slate-500
-  doc.text(
-    "This accredited credential validates professional-grade competency through curriculum mastery and verified evaluation.",
-    centerX,
-    128,
-    { align: "center" }
-  );
+  doc.setFontSize(8);
+  doc.setTextColor(11, 118, 110); // Teal
+  doc.text("\u25C6  \u25C6  \u25C6", centerX, 128, { align: "center" });
 
   // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text with underline)
   const cleanDate = issuedDate.trim() || "October 2026";
@@ -319,21 +315,25 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
 
   // 7. Scannable QR Code (Bottom-Left Quadrant, creating perfect balance with Instructor Signature)
   const buildPdfVerifyUrl = () => {
-    let base = verifyUrl || `https://veyskill.in/verify/${id}`;
     try {
-      const url = new URL(base, "https://veyskill.in");
-      if (cleanName && !url.searchParams.has("n")) {
+      const origin =
+        typeof window !== "undefined" && window.location.origin
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
+      const base = verifyUrl || `${origin}/verify/${id}`;
+      const url = new URL(base, origin);
+      if (cleanName) {
         url.searchParams.set("n", cleanName);
       }
-      if (executiveTitle && !url.searchParams.has("c")) {
+      if (executiveTitle) {
         url.searchParams.set("c", executiveTitle);
       }
-      if (cleanDate && !url.searchParams.has("d")) {
+      if (cleanDate) {
         url.searchParams.set("d", cleanDate);
       }
       return url.toString();
     } catch {
-      return base;
+      return verifyUrl || `https://veyskill.in/verify/${id}`;
     }
   };
   const effectiveVerifyUrl = buildPdfVerifyUrl();
@@ -401,7 +401,7 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   doc.setTextColor(100, 116, 139); // Slate-500
-  doc.text("FOUNDER & PROGRAM INSTRUCTOR", sigCenterX, sigY + 10.5, { align: "center" });
+  doc.text("FOUNDER", sigCenterX, sigY + 10.5, { align: "center" });
 
   return doc;
 }

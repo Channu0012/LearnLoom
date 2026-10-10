@@ -72,31 +72,18 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
   let certRecord: CertRecord | null = null;
   let isDbVerified = false;
 
-  // 1. Check official Firestore registry (both client & admin SDK)
+  // 1. Check official Firestore registry via Firebase Admin SDK
   try {
-    const { getCertificateRecord } = await import("@/lib/firestore");
-    const record = await getCertificateRecord(cleanId);
-    if (record) {
-      certRecord = record as CertRecord;
-      isDbVerified = true;
+    const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
+    if (isFirebaseAdminConfigured) {
+      const docSnap = await adminDb.collection("certificates").doc(cleanId).get();
+      if (docSnap.exists) {
+        certRecord = docSnap.data() as CertRecord;
+        isDbVerified = true;
+      }
     }
   } catch (err) {
-    console.warn("Firestore certificate lookup notice:", err);
-  }
-
-  if (!certRecord) {
-    try {
-      const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
-      if (isFirebaseAdminConfigured) {
-        const docSnap = await adminDb.collection("certificates").doc(cleanId).get();
-        if (docSnap.exists) {
-          certRecord = docSnap.data() as CertRecord;
-          isDbVerified = true;
-        }
-      }
-    } catch (err) {
-      console.warn("Firestore admin lookup notice:", err);
-    }
+    console.warn("Firestore admin lookup notice:", err);
   }
 
   // 2. Check official verified benchmark registry ONLY if cleanId matches and no specific user metadata exists
@@ -111,7 +98,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
       verifyUrl: `https://veyskill.in/verify/${cleanId}`,
       platform: "VeySkill",
       instructorName: "Channabasav Patil",
-      instructorTitle: "Founder / Program Instructor",
+      instructorTitle: "FOUNDER",
       managerName: "VeySkill Academic Council",
       managerTitle: "ACCREDITED CREDENTIALS",
     };

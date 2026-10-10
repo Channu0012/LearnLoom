@@ -51,13 +51,13 @@ export function OfficialCertificateView({
           : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
       const base = verifyUrl || `${origin}/verify/${certificateId}`;
       const url = new URL(base, origin);
-      if (recipientName && !url.searchParams.has("n")) {
+      if (recipientName) {
         url.searchParams.set("n", recipientName.trim());
       }
-      if (executiveTitle && !url.searchParams.has("c")) {
+      if (executiveTitle) {
         url.searchParams.set("c", executiveTitle);
       }
-      if (cleanDate && !url.searchParams.has("d")) {
+      if (cleanDate) {
         url.searchParams.set("d", cleanDate);
       }
       return url.toString();
@@ -134,20 +134,22 @@ export function OfficialCertificateView({
           )}
         </div>
 
-        {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 52.4%) */}
+        {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 51.6%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[84%] text-center z-10 pointer-events-none"
-          style={{ top: "52.4%" }}
+          className="absolute left-1/2 -translate-x-1/2 w-[86%] text-center z-10 pointer-events-none"
+          style={{ top: "51.6%" }}
         >
-          <p className="font-heading font-medium text-[8px] sm:text-xs md:text-sm text-slate-600 leading-tight">
-            for successfully completing the curriculum and demonstrating mastery in
+          <p className="font-heading font-medium text-[7px] sm:text-[10px] md:text-xs text-slate-600 leading-tight">
+            for successfully completing the accredited curriculum
+            <br />
+            and demonstrating professional mastery in
           </p>
         </div>
 
-        {/* 4. Normalized Executive Masterclass Course Title (at y = 56.2%) */}
+        {/* 4. Normalized Executive Course Title (at y = 57.2%) */}
         <div
           className="absolute left-1/2 -translate-x-1/2 w-[82%] text-center z-10 pointer-events-none"
-          style={{ top: "56.2%" }}
+          style={{ top: "57.2%" }}
         >
           <h4
             className="font-heading font-extrabold text-[#0B5C58] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-tight text-[10px] sm:text-base md:text-xl lg:text-2xl"
@@ -157,15 +159,14 @@ export function OfficialCertificateView({
           </h4>
         </div>
 
-        {/* 4b. Professional Credential Validation Statement (at y = 62.5%) */}
+        {/* 4b. Architectural Accent Line & Diamond (y = 61.2%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[76%] text-center z-10 pointer-events-none"
-          style={{ top: "62.5%" }}
+          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 w-40 sm:w-64 md:w-80 pointer-events-none z-10"
+          style={{ top: "61.2%" }}
         >
-          <p className="font-heading font-medium text-[6px] sm:text-[9px] md:text-[11px] text-slate-500 leading-tight">
-            This credential validates professional-grade competency through comprehensive curriculum
-            mastery and verified assessment performance.
-          </p>
+          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
+          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#0B766E]/80 rotate-45 shrink-0" />
+          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
         </div>
 
         {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 69.8%) */}
@@ -244,7 +245,7 @@ export function OfficialCertificateView({
               Channabasav Patil
             </span>
             <span className="font-mono font-bold text-slate-500 uppercase tracking-widest text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 leading-none">
-              Founder & Program Instructor
+              FOUNDER
             </span>
           </div>
         </div>

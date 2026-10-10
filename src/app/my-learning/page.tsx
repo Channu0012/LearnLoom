@@ -771,6 +771,23 @@ export default function MyLearningPage() {
                           </svg>
                           <span>View Official Diploma</span>
                         </button>
+                        <Link
+                          href={`/course/${course.id}?start=true`}
+                          className="px-3 py-2 text-xs font-heading font-bold rounded-xl border border-border bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center justify-center gap-1 transition-all min-h-[38px]"
+                          title="Review course material"
+                        >
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                          </svg>
+                          <span>Review</span>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => handleOpenVerifyForCourse(item)}
