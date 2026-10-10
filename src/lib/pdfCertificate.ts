@@ -49,7 +49,7 @@ export function formatExecutiveCourseTitle(rawTitle: string): string {
     .replace(/\[.*?\]/g, "")
     .replace(/\(.*?\)/g, "")
     .replace(
-      /\b(full\s+course|complete\s+course|complete\s+full|full\s+tutorial|tutorial\s+for\s+beginners|crash\s+course|free\s+course|202[0-9]|in\s+one\s+video|in\s+1\s+video|for\s+beginners|masterclass)\b/gi,
+      /\b(full\s+course|complete\s+course|complete\s+full|full\s+tutorial|tutorial\s+for\s+beginners|crash\s+course|free\s+course|202[0-9]|in\s+one\s+video|in\s+1\s+video|for\s+beginners|masterclass|tutorial)\b/gi,
       ""
     )
     .replace(/\|\s*.*$/g, "")
