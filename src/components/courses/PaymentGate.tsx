@@ -37,6 +37,7 @@ export function PaymentGate({
 }: PaymentGateProps) {
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [legalName, setLegalName] = useState(user?.displayName || "");
@@ -81,7 +82,10 @@ export function PaymentGate({
           try {
             localStorage.setItem(`veyskill_paid_name_${courseId}`, finalLegalName);
           } catch {}
-          onPaymentSuccess(orderId, finalLegalName);
+          setIsRedirecting(true);
+          setTimeout(() => {
+            onPaymentSuccess(orderId, finalLegalName);
+          }, 1100);
           return true;
         } else {
           setError(
@@ -236,6 +240,48 @@ export function PaymentGate({
       />
 
       <div className="relative w-full max-w-lg bg-card border-2 border-border/80 rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[92dvh] flex flex-col">
+        {/* Redirecting Overlay */}
+        {isRedirecting && (
+          <div className="absolute inset-0 z-50 bg-card/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+            <div className="w-16 h-16 rounded-3xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 shadow-xl shadow-emerald-500/10">
+              <svg
+                className="w-8 h-8 animate-scale-in"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+              Official Authorization Confirmed
+            </span>
+            <h3 className="font-heading font-black text-xl text-foreground mb-1.5">
+              Payment Verified Successfully
+            </h3>
+            <p className="text-xs font-body text-muted-foreground mb-5 max-w-xs leading-relaxed">
+              Issuing your accredited credentials and preparing cryptographic verification record…
+            </p>
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-semibold">
+              <svg
+                className="animate-spin w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+              >
+                <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                <path d="M12 2a10 10 0 0 1 10 10" />
+              </svg>
+              <span>Redirecting to your certificate…</span>
+            </div>
+          </div>
+        )}
+
         {/* Header with decorative badge */}
         <div className="relative p-5 sm:p-6 border-b border-border bg-gradient-to-b from-amber-500/10 via-background to-background">
           <div className="flex items-start justify-between gap-4">
@@ -448,7 +494,7 @@ export function PaymentGate({
                 setLegalName(e.target.value);
                 if (validationError) setValidationError(null);
               }}
-              placeholder="e.g. Channabasav Bhimappa B Patil"
+              placeholder="Enter your name"
               className={`w-full px-3.5 py-2.5 text-xs font-heading font-medium rounded-xl bg-card border ${
                 legalName.trim().length > 0 && !isNameValid
                   ? "border-destructive focus:border-destructive"

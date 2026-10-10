@@ -81,16 +81,57 @@ export default function AdminPage() {
 
   if (loading || fetching) {
     return (
-      <div className="container-page py-12">
-        <div className="skeleton h-8 w-48 mb-6 rounded" />
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="skeleton h-24 rounded-xl mb-4" />
-        ))}
+      <div
+        className="container-page py-16 text-center max-w-lg mx-auto"
+        role="status"
+        aria-label="Verifying credentials"
+      >
+        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 mx-auto mb-4">
+          <svg
+            className="animate-spin w-6 h-6"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+            <path d="M12 2a10 10 0 0 1 10 10" />
+          </svg>
+        </div>
+        <h2 className="font-heading font-extrabold text-lg text-foreground mb-1">
+          Verifying Admin Credentials
+        </h2>
+        <p className="text-xs font-body text-muted-foreground">
+          Checking security authorizations and incident reports…
+        </p>
       </div>
     );
   }
 
-  if (!userDoc?.isAdmin) return null;
+  if (!userDoc?.isAdmin) {
+    return (
+      <div
+        className="container-page py-16 text-center max-w-md mx-auto"
+        role="status"
+        aria-label="Redirecting"
+      >
+        <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-3">
+          <svg
+            className="animate-spin w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+            <path d="M12 2a10 10 0 0 1 10 10" />
+          </svg>
+        </div>
+        <p className="text-sm font-heading font-semibold text-foreground mb-1">Access Restricted</p>
+        <p className="text-xs font-body text-muted-foreground">Redirecting to VeySkill home…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container-page py-12 max-w-4xl">

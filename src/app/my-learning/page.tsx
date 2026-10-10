@@ -243,13 +243,43 @@ export default function MyLearningPage() {
 
   if (loading || fetching) {
     return (
-      <div className="container-page py-10 max-w-6xl mx-auto px-4 animate-pulse">
-        <div className="h-8 w-56 bg-muted/80 rounded-xl mb-3" />
-        <div className="h-4 w-72 bg-muted/60 rounded-lg mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
-          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
-          <div className="h-64 bg-muted/50 rounded-2xl border border-border/40" />
+      <div
+        className="container-page py-12 max-w-5xl mx-auto px-4"
+        role="status"
+        aria-label="Loading your courses"
+      >
+        <div className="flex flex-col items-center justify-center text-center mb-8">
+          <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-3">
+            <svg
+              className="animate-spin w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" />
+            </svg>
+          </div>
+          <h2 className="font-heading font-bold text-base text-foreground">
+            Synchronizing Your Learning Progress
+          </h2>
+          <p className="text-xs font-body text-muted-foreground mt-0.5">
+            Loading your active courses and accredited certifications…
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="p-4 rounded-2xl bg-card border border-border/60 shadow-sm space-y-3"
+            >
+              <div className="aspect-video w-full rounded-xl bg-muted/60" />
+              <div className="h-4 w-4/5 bg-muted/70 rounded-md" />
+              <div className="h-2 w-full bg-muted/50 rounded-full" />
+              <div className="h-3 w-1/3 bg-muted/50 rounded-md" />
+            </div>
+          ))}
         </div>
       </div>
     );

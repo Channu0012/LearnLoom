@@ -90,7 +90,7 @@ export function OfficialCertificateView({
   }, [effectiveVerifyUrl]);
 
   // Proportional responsive single-line font sizing for recipient name
-  // Accommodates long Indian full names (e.g. Channabasav Bhimappa B Patil) without truncation
+  // Accommodates long candidate names gracefully without truncation
   const nameLength = recipientName.trim().length;
   const getNameSizeClass = () => {
     if (nameLength > 36) return "text-[11px] sm:text-base md:text-xl lg:text-2xl";

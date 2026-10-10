@@ -105,7 +105,7 @@ export const BENCHMARK_CERTIFICATES: Record<
   }
 > = {
   "VS-9A3F1B8E2C": {
-    userName: "Channabasav Patil",
+    userName: "Alex Morgan",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 24,
     quizScore: 98,
@@ -116,7 +116,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "ACCREDITED CREDENTIALS",
   },
   "VS-88421099FF": {
-    userName: "Channabasav Bhimappa B Patil",
+    userName: "Alex Morgan",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 36,
     quizScore: 95,
@@ -127,7 +127,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "ACCREDITED CREDENTIALS",
   },
   "VS-1122334455": {
-    userName: "Channabasav Patil",
+    userName: "Sarah Jenkins",
     courseTitle: "Cloud Architecture & Java Distributed Systems Masterclass",
     lessonCount: 15,
     quizScore: 100,
@@ -138,7 +138,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "ACCREDITED CREDENTIALS",
   },
   "VC-DEMO": {
-    userName: "Channabasav Patil",
+    userName: "David Chen",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,
@@ -149,7 +149,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "ACCREDITED CREDENTIALS",
   },
   "VS-DEMO": {
-    userName: "Channabasav Patil",
+    userName: "Alex Morgan",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,

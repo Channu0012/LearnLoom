@@ -129,7 +129,7 @@ export function CertificateLookupClient() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>VS-9A3F1B8E2C</span>
-            <span className="text-[10px] text-muted-foreground font-body">(Channabasav Patil)</span>
+            <span className="text-[10px] text-muted-foreground font-body">(Alex Morgan)</span>
           </button>
           <button
             type="button"

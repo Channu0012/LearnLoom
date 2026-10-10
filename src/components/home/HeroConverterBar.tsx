@@ -108,7 +108,7 @@ export function HeroConverterBar() {
                   />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <span>Importing…</span>
+                <span>Redirecting to studio…</span>
               </>
             ) : (
               <>
