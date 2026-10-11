@@ -125,7 +125,7 @@ async function getCertificateTemplateDataUrl(): Promise<string | null> {
       return cachedBrowserTemplateDataUrl;
     }
     try {
-      const res = await fetch("/images/certificate-template.jpg");
+      const res = await fetch("/images/certificate-template.jpg?v=20261011_star");
       if (res.ok) {
         const blob = await res.blob();
         return await new Promise<string>((resolve, reject) => {
@@ -174,7 +174,7 @@ async function getSignatureDataUrl(): Promise<string | null> {
       return cachedBrowserSignatureDataUrl;
     }
     try {
-      const res = await fetch("/images/signature.png");
+      const res = await fetch("/images/signature.png?v=20261011");
       if (res.ok) {
         const blob = await res.blob();
         return await new Promise<string>((resolve, reject) => {

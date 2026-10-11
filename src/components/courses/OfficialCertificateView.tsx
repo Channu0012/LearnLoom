@@ -103,18 +103,18 @@ export function OfficialCertificateView({
     <div className="relative w-full max-w-4xl mx-auto rounded-3xl p-1 sm:p-2.5 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 shadow-2xl border border-border">
       {/* Certificate Frame: Standard ISO A4 Landscape Aspect Ratio (297 / 210 = 1.414) */}
       <div className="relative w-full aspect-[297/210] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white select-none">
-        {/* 1. Master Template High-Resolution Background */}
+        {/* 1. Master Template High-Resolution Background (Cache-busted to ensure instant update across all devices) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/certificate-template.jpg"
+          src="/images/certificate-template.jpg?v=20261011_star"
           alt="VeySkill Official Certificate Template"
-          className="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
         />
 
-        {/* 2. Recipient Full Legal Name (Positioned at y = 41% — Cleanly Above the Divider Line at y = 48.8%) */}
+        {/* 2. Recipient Full Legal Name (Positioned at y = 41.5% — Cleanly Above the Divider Line at y = 48.8%) */}
         <div
           className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex items-center justify-center pointer-events-none"
-          style={{ top: "41%" }}
+          style={{ top: "41.5%" }}
         >
           {isInteractive && onNameChange ? (
             <input
@@ -134,50 +134,49 @@ export function OfficialCertificateView({
           )}
         </div>
 
-        {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 51.6%) */}
+        {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 51.8% — Single Line Matching PDF) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[86%] text-center z-10 pointer-events-none"
-          style={{ top: "51.6%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] text-center z-10 pointer-events-none"
+          style={{ top: "51.8%" }}
         >
-          <p className="font-heading font-medium text-[7px] sm:text-[10px] md:text-xs text-slate-600 leading-tight">
-            for successfully completing the accredited curriculum
-            <br />
-            and demonstrating professional mastery in
+          <p className="font-heading font-medium text-[6.5px] sm:text-[9.5px] md:text-[11px] lg:text-[12px] text-slate-600 tracking-normal whitespace-nowrap leading-none">
+            for successfully completing the accredited curriculum and demonstrating professional
+            mastery in
           </p>
         </div>
 
-        {/* 4. Normalized Executive Course Title (at y = 57.2%) */}
+        {/* 4. Normalized Executive Course Title (Centered at y = 55.8% matching PDF at 118mm/210mm) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 w-[82%] text-center z-10 pointer-events-none"
-          style={{ top: "57.2%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84%] text-center z-10 pointer-events-none"
+          style={{ top: "55.8%" }}
         >
           <h4
-            className="font-heading font-extrabold text-[#0B5C58] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-tight text-[10px] sm:text-base md:text-xl lg:text-2xl"
+            className="font-heading font-extrabold text-[#0B5C58] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none text-[11px] sm:text-base md:text-xl lg:text-2xl"
             title={executiveTitle}
           >
             {executiveTitle}
           </h4>
         </div>
 
-        {/* 4b. Architectural Accent Line & Diamond (y = 61.2%) */}
+        {/* 4b. Architectural Accent Line & Diamond (Centered at y = 60.8% leaving balanced breathing room above and below) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[420px] pointer-events-none z-10"
-          style={{ top: "61.2%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[420px] pointer-events-none z-10"
+          style={{ top: "60.8%" }}
         >
-          <div className="flex items-center justify-center gap-2 w-44 sm:w-64 md:w-80">
+          <div className="flex items-center justify-center gap-2 w-44 sm:w-60 md:w-72">
             <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
             <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#0B766E]/80 rotate-45 shrink-0" />
             <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
           </div>
-          <span className="font-heading font-semibold text-[5px] sm:text-[7px] md:text-[8px] text-slate-400 uppercase tracking-[0.2em] mt-0.5 sm:mt-1">
+          <span className="font-heading font-semibold text-[5px] sm:text-[7px] md:text-[8px] text-slate-400 uppercase tracking-[0.2em] mt-0.5">
             Accredited Credential Specification &middot; Verified Mastery
           </span>
         </div>
 
-        {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 69.8%) */}
+        {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 68.8%) */}
         <div
           className="absolute left-1/2 -translate-x-1/2 text-center z-10 pointer-events-none flex flex-col items-center"
-          style={{ top: "69.8%" }}
+          style={{ top: "68.8%" }}
         >
           <p className="font-heading font-bold text-slate-800 text-[8px] sm:text-xs md:text-sm leading-tight">
             {cleanDate}
@@ -226,16 +225,16 @@ export function OfficialCertificateView({
           </div>
         </div>
 
-        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Natural Channabasav Signature) */}
+        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Parallel with QR code at y = 63.8%) */}
         <div
-          className="absolute z-20 flex flex-col items-center text-center select-none"
-          style={{ right: "13.5%", top: "70.5%" }}
+          className="absolute z-20 flex flex-col items-center text-center select-none -translate-x-1/2"
+          style={{ left: "72.4%", top: "63.8%" }}
         >
           {/* Authentic executive signature of Channabasav Patil */}
-          <div className="relative z-10 w-24 sm:w-32 md:w-40 h-8 sm:h-10 md:h-12 flex items-center justify-center">
+          <div className="relative z-10 w-24 sm:w-32 md:w-36 h-7 sm:h-9 md:h-11 flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/signature.png"
+              src="/images/signature.png?v=20261011"
               alt="Official Signature of Channabasav Patil"
               className="w-full h-full object-contain filter drop-shadow-sm pointer-events-none"
             />
