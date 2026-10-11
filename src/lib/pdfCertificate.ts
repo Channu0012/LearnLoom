@@ -297,11 +297,26 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setTextColor(11, 92, 88); // Prestigious Dark Teal (#0B5C58)
   doc.text(executiveTitle, centerX, 118, { align: "center" });
 
-  // 5b. Architectural Diamond Accent (elegant visual spacer)
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(11, 118, 110); // Teal
-  doc.text("\u25C6  \u25C6  \u25C6", centerX, 128, { align: "center" });
+  // 5b. Architectural Accent Line & Diamond (Vector-rendered for razor-sharp PDF export & 100% font safety)
+  const lineY = 125.5;
+  const halfLineWidth = 42;
+  doc.setDrawColor(11, 118, 110);
+  doc.setLineWidth(0.25);
+  doc.line(centerX - halfLineWidth, lineY, centerX - 3.5, lineY);
+  doc.line(centerX + 3.5, lineY, centerX + halfLineWidth, lineY);
+
+  // Filled vector diamond at center
+  doc.setFillColor(11, 118, 110);
+  doc.triangle(centerX, lineY - 1.4, centerX - 1.4, lineY, centerX + 1.4, lineY, "F");
+  doc.triangle(centerX, lineY + 1.4, centerX - 1.4, lineY, centerX + 1.4, lineY, "F");
+
+  // Executive credential specification label underneath (Font-safe ASCII)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(5.5);
+  doc.setTextColor(148, 163, 184); // Slate-400
+  doc.text("ACCREDITED CREDENTIAL SPECIFICATION  -  VERIFIED MASTERY", centerX, lineY + 4, {
+    align: "center",
+  });
 
   // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text with underline)
   const cleanDate = issuedDate.trim() || "October 2026";

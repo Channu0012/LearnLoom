@@ -161,12 +161,17 @@ export function OfficialCertificateView({
 
         {/* 4b. Architectural Accent Line & Diamond (y = 61.2%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 w-40 sm:w-64 md:w-80 pointer-events-none z-10"
+          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[420px] pointer-events-none z-10"
           style={{ top: "61.2%" }}
         >
-          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
-          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#0B766E]/80 rotate-45 shrink-0" />
-          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
+          <div className="flex items-center justify-center gap-2 w-44 sm:w-64 md:w-80">
+            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
+            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#0B766E]/80 rotate-45 shrink-0" />
+            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
+          </div>
+          <span className="font-heading font-semibold text-[5px] sm:text-[7px] md:text-[8px] text-slate-400 uppercase tracking-[0.2em] mt-0.5 sm:mt-1">
+            Accredited Credential Specification &middot; Verified Mastery
+          </span>
         </div>
 
         {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 69.8%) */}
