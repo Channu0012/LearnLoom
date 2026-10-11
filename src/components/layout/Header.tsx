@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { StreakWidget } from "@/components/layout/StreakWidget";
@@ -10,6 +10,11 @@ export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
     useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
@@ -84,7 +89,7 @@ export function Header() {
               suppressHydrationWarning
               className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5"
             >
-              Structured Masterclasses &middot; Verified Credentials
+              {mounted ? "Structured Masterclasses · Verified Credentials" : null}
             </span>
           </div>
         </Link>
