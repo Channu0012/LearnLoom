@@ -138,6 +138,17 @@ export async function createCashfreeOrder(
   const safeCourseTag = (params.courseId || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
   const safeUserTag = (params.customerUid || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
 
+  // Cashfree API strictly requires order_meta.return_url to begin with https://
+  let safeReturnUrl = (params.returnUrl || "").trim();
+  if (
+    !safeReturnUrl ||
+    safeReturnUrl.startsWith("http://") ||
+    safeReturnUrl.includes("localhost") ||
+    safeReturnUrl.includes("127.0.0.1")
+  ) {
+    safeReturnUrl = `https://veyskill.in/course/${params.courseId}?payment_status=success&order_id={order_id}`;
+  }
+
   const requestBody = {
     order_id: safeOrderId,
     order_amount: params.orderAmount,
@@ -149,7 +160,7 @@ export async function createCashfreeOrder(
       customer_phone: phoneDigits,
     },
     order_meta: {
-      return_url: params.returnUrl,
+      return_url: safeReturnUrl,
     },
     order_note: `VeySkill Certificate: ${(params.courseTitle || "Course").slice(0, 80)}`,
     order_tags: {

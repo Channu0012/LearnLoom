@@ -67,11 +67,17 @@ export async function POST(request: NextRequest) {
     // 3. Generate unique order ID
     const orderId = generateOrderId(uid, courseId);
 
-    // 4. Build return URL
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("learnloom-zeta")
-        ? process.env.NEXT_PUBLIC_APP_URL
-        : "https://veyskill.in";
+    // 4. Build return URL — Cashfree payment gateway strictly mandates an https:// return_url
+    let appUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
+    if (
+      !appUrl ||
+      appUrl.startsWith("http://") ||
+      appUrl.includes("localhost") ||
+      appUrl.includes("127.0.0.1") ||
+      appUrl.includes("learnloom-zeta")
+    ) {
+      appUrl = "https://veyskill.in";
+    }
     const returnUrl = `${appUrl}/course/${courseId}?payment_status=success&order_id={order_id}`;
 
     // 5. Create order via Cashfree API

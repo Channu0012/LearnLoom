@@ -878,12 +878,42 @@ function CoursePlayerContent({
     }
   };
 
-  // Show course completion celebration when 100%
+  // Track whether the celebration modal was already shown or dismissed in this session
+  const celebrationDismissedRef = useRef(false);
+
   useEffect(() => {
-    if (isCompleted && completedIds.size > 0 && !showCourseComplete) {
+    if (typeof window === "undefined" || !courseId) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const isReviewMode = params.get("start") === "true";
+      const alreadyDismissed = sessionStorage.getItem(`celebration_dismissed_${courseId}`);
+      if (isReviewMode || alreadyDismissed || hasPaidCertificate) {
+        celebrationDismissedRef.current = true;
+      }
+    } catch {}
+  }, [courseId, hasPaidCertificate]);
+
+  // Handle closing course completion celebration cleanly without re-opening
+  const handleCloseCourseComplete = useCallback(() => {
+    setShowCourseComplete(false);
+    celebrationDismissedRef.current = true;
+    try {
+      if (courseId) {
+        sessionStorage.setItem(`celebration_dismissed_${courseId}`, "true");
+      }
+    } catch {}
+  }, [courseId]);
+
+  // Show course completion celebration once when reaching 100% (never when returning to review)
+  useEffect(() => {
+    if (celebrationDismissedRef.current) return;
+    if (hasPaidCertificate) return;
+
+    if (isCompleted && completedIds.size > 0) {
+      celebrationDismissedRef.current = true;
       setShowCourseComplete(true);
     }
-  }, [isCompleted, completedIds.size, showCourseComplete]);
+  }, [isCompleted, completedIds.size, hasPaidCertificate]);
 
   return (
     <div className="container-page pt-6 sm:pt-8 pb-28 sm:pb-16 max-w-7xl">
@@ -2538,17 +2568,24 @@ function CoursePlayerContent({
       {/* Course Completion & 70% Certification Milestone Modal */}
       {showCourseComplete && (
         <div
-          className="fixed inset-0 z-[65] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-[65] flex items-center justify-center p-3 sm:p-4 animate-fade-in"
           role="dialog"
           aria-modal="true"
           aria-label="Course Completion Celebration"
         >
-          <div className="relative w-full max-w-lg bg-card border-2 border-border/90 rounded-3xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92dvh]">
+          {/* Backdrop: Clicking outside closes the modal cleanly */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
+            onClick={handleCloseCourseComplete}
+            aria-hidden="true"
+          />
+
+          <div className="relative w-full max-w-lg bg-card border-2 border-border/90 rounded-3xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92dvh] z-10">
             {/* Header with celebration banner */}
             <div className="relative p-6 sm:p-7 border-b border-border bg-gradient-to-b from-amber-500/15 via-primary/5 to-background text-center overflow-hidden">
               <button
                 type="button"
-                onClick={() => setShowCourseComplete(false)}
+                onClick={handleCloseCourseComplete}
                 className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 aria-label="Close"
               >
@@ -2699,7 +2736,7 @@ function CoursePlayerContent({
                     <button
                       type="button"
                       onClick={() => {
-                        setShowCourseComplete(false);
+                        handleCloseCourseComplete();
                         setIsCertificateOpen(true);
                       }}
                       className="w-full btn-primary py-3 font-heading font-black text-sm inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-500/25 cursor-pointer"
@@ -2722,7 +2759,7 @@ function CoursePlayerContent({
                       <button
                         type="button"
                         onClick={() => {
-                          setShowCourseComplete(false);
+                          handleCloseCourseComplete();
                           if (!user) {
                             openAuthModal("signin");
                             return;
@@ -2777,7 +2814,7 @@ function CoursePlayerContent({
                   <button
                     type="button"
                     onClick={() => {
-                      setShowCourseComplete(false);
+                      handleCloseCourseComplete();
                       setIsQuizOpen(true);
                     }}
                     className="w-full btn-primary py-2.5 font-heading font-bold text-xs inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-600 text-primary-foreground shadow-md cursor-pointer"
