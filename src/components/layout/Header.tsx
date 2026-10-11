@@ -84,7 +84,7 @@ export function Header() {
               suppressHydrationWarning
               className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5"
             >
-              Structured Masterclasses &amp; Verified Credentials
+              Structured Masterclasses &middot; Verified Credentials
             </span>
           </div>
         </Link>
