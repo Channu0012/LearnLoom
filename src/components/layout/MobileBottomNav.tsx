@@ -123,10 +123,10 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom,0px)]"
+      className="md:hidden fixed bottom-3 left-3 right-3 z-40 max-w-lg mx-auto bg-card/90 backdrop-blur-2xl border border-border/80 rounded-2xl shadow-2xl transition-all"
       aria-label="Mobile Bottom Navigation"
     >
-      <div className="grid grid-cols-5 h-16 max-w-lg mx-auto px-1 items-center">
+      <div className="grid grid-cols-5 h-15 px-1 items-center">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -137,32 +137,32 @@ export function MobileBottomNav() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center min-h-[48px] min-w-[48px] py-1 px-0.5 rounded-xl transition-all duration-150 select-none group relative ${
+              className={`flex flex-col items-center justify-center min-h-[46px] min-w-[44px] py-1 px-0.5 rounded-xl transition-all duration-150 select-none group relative ${
                 isActive
-                  ? "text-primary-600 dark:text-primary-400 font-bold"
-                  : "text-muted-foreground hover:text-foreground active:text-primary-500"
+                  ? "text-teal-600 dark:text-teal-400 font-bold"
+                  : "text-muted-foreground hover:text-foreground active:text-teal-500"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
               {/* Active Indicator Top Glow Pill */}
               {isActive && (
                 <span
-                  className="absolute -top-1 w-6 h-0.5 rounded-full bg-primary-500 dark:bg-primary-400 shadow-sm"
+                  className="absolute -top-1 w-5 h-1 rounded-full bg-teal-500 shadow-sm"
                   aria-hidden="true"
                 />
               )}
 
               {/* Icon Container with subtle scale feedback on tap */}
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full transition-transform active:scale-90 ${
-                  isActive ? "bg-primary-50 dark:bg-primary-950/60" : "group-hover:bg-muted/50"
+                className={`flex items-center justify-center w-7 h-7 rounded-xl transition-transform active:scale-90 ${
+                  isActive ? "bg-teal-500/10" : "group-hover:bg-muted/50"
                 }`}
               >
                 {item.icon(isActive)}
               </div>
 
               {/* Label */}
-              <span className="text-[10px] font-heading leading-tight tracking-tight mt-0.5 truncate max-w-[64px]">
+              <span className="text-[10px] font-heading font-medium leading-tight tracking-tight mt-0.5 truncate max-w-[60px]">
                 {item.name}
               </span>
             </Link>

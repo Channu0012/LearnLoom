@@ -141,20 +141,24 @@ export function StudyCompanion({
 
   const quickPills = [
     {
-      label: "Explain Simply",
-      prompt: `Explain the core concept in "${videoTitle}" simply with step-by-step intuition.`,
+      label: "Executive Summary",
+      prompt: `Provide an executive summary of "${videoTitle}": 1. Core Thesis & Intuition, 2. Technical Mechanism, 3. Production Rules & Gotchas.`,
     },
     {
-      label: "Code Example",
+      label: "Explain Simply",
+      prompt: `Explain the fundamental concept in "${videoTitle}" simply with step-by-step intuition and a real-world analogy.`,
+    },
+    {
+      label: "Code Blueprint",
       prompt: `Provide a clean, runnable, commented code snippet illustrating the concepts in "${videoTitle}".`,
     },
     {
-      label: "Key Takeaways",
-      prompt: `Summarize the 3 most critical engineering principles and pitfalls in "${videoTitle}".`,
+      label: "Senior Pitfalls",
+      prompt: `Summarize the 3 most critical engineering pitfalls, edge cases, and memory traps in "${videoTitle}".`,
     },
     {
-      label: "Test My Knowledge",
-      prompt: `Ask me 2 targeted conceptual questions to test if I understood "${videoTitle}".`,
+      label: "Interview Check",
+      prompt: `Ask me 2 targeted senior engineering interview questions testing mastery of "${videoTitle}".`,
     },
   ];
 
@@ -163,28 +167,33 @@ export function StudyCompanion({
       <button
         type="button"
         onClick={onToggle}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-border group"
-        aria-label="Open AI Study Assistant"
-        title="Consult AI Study Coach"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-[#0F766E] to-[#0D655E] text-white shadow-2xl shadow-teal-950/40 border border-teal-400/40 flex items-center gap-2 sm:gap-2.5 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+        aria-label="Open AI Tutor Copilot"
+        title="Consult AI Academic Copilot"
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="group-hover:rotate-12 transition-transform"
-        >
-          <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-          <rect x="4" y="8" width="16" height="12" rx="2" />
-          <circle cx="9" cy="13" r="1" fill="currentColor" />
-          <circle cx="15" cy="13" r="1" fill="currentColor" />
-          <line x1="8" y1="17" x2="16" y2="17" />
-        </svg>
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-background animate-pulse" />
+        <span className="relative flex items-center justify-center">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="group-hover:rotate-12 transition-transform text-teal-200"
+          >
+            <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+            <rect x="4" y="8" width="16" height="12" rx="2" />
+            <circle cx="9" cy="13" r="1" fill="currentColor" />
+            <circle cx="15" cy="13" r="1" fill="currentColor" />
+            <line x1="8" y1="17" x2="16" y2="17" />
+          </svg>
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-teal-900 animate-pulse" />
+        </span>
+        <span className="font-heading font-extrabold text-xs tracking-tight hidden xs:inline sm:inline">
+          AI Tutor Copilot
+        </span>
       </button>
     );
   }

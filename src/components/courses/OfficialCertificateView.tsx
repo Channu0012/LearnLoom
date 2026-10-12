@@ -111,17 +111,17 @@ export function OfficialCertificateView({
           className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
         />
 
-        {/* 2. Recipient Full Legal Name (Positioned at y = 41.5% — Cleanly Above the Divider Line at y = 48.8%) */}
+        {/* 2. Recipient Full Legal Name (Sits proportionally right above the pre-printed green line at 48.7%) */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex items-center justify-center pointer-events-none"
-          style={{ top: "41.5%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex flex-col items-center justify-center pointer-events-none"
+          style={{ top: "45.0%" }}
         >
           {isInteractive && onNameChange ? (
             <input
               type="text"
               value={recipientName}
               onChange={(e) => onNameChange(e.target.value)}
-              className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center border-b-2 border-[#0B766E]/40 focus:border-[#0B766E] focus:outline-none whitespace-nowrap leading-tight ${getNameSizeClass()}`}
+              className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center focus:outline-none whitespace-nowrap leading-tight ${getNameSizeClass()}`}
               placeholder="Enter your name"
             />
           ) : (
@@ -230,7 +230,7 @@ export function OfficialCertificateView({
           style={{ left: "72.4%", top: "63.8%" }}
         >
           {/* Authentic executive signature of Channabasav Patil */}
-          <div className="relative z-10 w-28 sm:w-36 md:w-44 h-8 sm:h-10 md:h-12 flex items-center justify-center">
+          <div className="relative z-10 w-28 sm:w-36 md:w-44 h-8 sm:h-10 md:h-12 flex items-center justify-center -mb-2 sm:-mb-3 rotate-[-1deg]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/signature.png?v=20261012_pen"
@@ -240,7 +240,7 @@ export function OfficialCertificateView({
           </div>
 
           {/* Underline divider */}
-          <div className="w-20 sm:w-28 md:w-32 h-[1px] bg-[#0B766E]/40 my-0.5" />
+          <div className="w-24 sm:w-32 md:w-36 h-[1.5px] bg-[#0B766E]/70 my-0.5 rounded-full" />
 
           {/* Signatory Details */}
           <div className="relative z-10 mt-0.5 flex flex-col items-center">

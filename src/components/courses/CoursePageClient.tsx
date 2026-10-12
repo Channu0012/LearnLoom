@@ -1604,13 +1604,14 @@ function CoursePlayerContent({
                   <button
                     type="button"
                     onClick={() => setIsCompanionOpen((o) => !o)}
-                    className="btn-ghost text-xs px-3 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:bg-primary-500/10 cursor-pointer active:scale-95 font-heading font-bold"
-                    title="Open AI study companion"
+                    className="text-xs px-3.5 py-1.5 min-h-[36px] rounded-xl inline-flex items-center gap-1.5 bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/35 cursor-pointer active:scale-95 font-heading font-extrabold transition-all shadow-xs"
+                    title="Open AI Tutor Copilot"
                   >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
                     </svg>
-                    <span>AI Coach</span>
+                    <span>Ask AI Copilot</span>
                   </button>
 
                   <button

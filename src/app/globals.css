@@ -145,55 +145,81 @@ h6 {
     @apply relative pointer-events-none cursor-wait opacity-80;
   }
 
-  /* Secondary button — Crisp, flat, 8px border-radius with tactile feedback */
+  /* Secondary button — Frosted Glass Slate with refined 1px border */
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[40px] rounded-lg font-heading font-medium cursor-pointer border border-border bg-card text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[42px] rounded-xl font-heading font-semibold cursor-pointer border border-border bg-card backdrop-blur-md text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .btn-secondary:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+  .btn-secondary:active {
+    transform: translateY(0) scale(0.98);
   }
 
-  /* Primary button — Solid enterprise slate/navy with subtle 1px elevation & tactile press */
+  /* Primary button — Executive Deep Pine/Teal Slate with inner bevel highlight & tactile feedback */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[40px] rounded-lg font-heading font-semibold text-white cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
-    background-color: #0f172a;
-    border: 1px solid #0f172a;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[42px] rounded-xl font-heading font-bold text-white cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none tracking-tight;
+    background: linear-gradient(180deg, #0f766e 0%, #0d655e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 2px 4px rgba(15, 118, 110, 0.25),
+      0 1px 2px rgba(0, 0, 0, 0.08);
   }
   .btn-primary:hover {
-    background-color: #1e293b;
-    border-color: #1e293b;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 4px 14px rgba(15, 118, 110, 0.35),
+      0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
   }
   .btn-primary:active {
-    background-color: #0f172a;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05);
+    background: linear-gradient(180deg, #0d655e 0%, #0a4f4a 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(0, 0, 0, 0.2),
+      0 1px 2px rgba(0, 0, 0, 0.05);
+    transform: translateY(0) scale(0.98);
   }
 
   /* Accent / CTA button — Enterprise Tech Blue with tactile feedback */
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[40px] rounded-lg font-heading font-semibold text-white cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
-    background-color: #2563eb;
-    border: 1px solid #1d4ed8;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[42px] rounded-xl font-heading font-semibold text-white cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 2px 4px rgba(37, 99, 235, 0.25);
   }
   .btn-accent:hover {
-    background-color: #1d4ed8;
-    border-color: #1e40af;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 4px 12px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
   }
   .btn-accent:active {
-    background-color: #1e40af;
+    background: #1e40af;
+    transform: translateY(0) scale(0.98);
   }
 
   /* Ghost button — Clean borderless interaction */
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-lg font-heading font-medium cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
+    @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl font-heading font-medium cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/70 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100 transition-all text-sm select-none;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--foreground);
   }
   .btn-ghost:hover {
     background-color: var(--muted);
-    border-color: #cbd5e1;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
   }
 
   /* Destructive button — Alert with tactile feedback */

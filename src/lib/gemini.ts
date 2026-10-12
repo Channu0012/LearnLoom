@@ -174,30 +174,34 @@ export async function generateNotes(
 ): Promise<string> {
   const domain = detectDomain(courseTitle, videoTitle, courseCategory);
 
-  const prompt = `You are a technical documentation specialist generating an executive study guide for the learning platform VeySkill.
+  const prompt = `You are a Principal Software Engineer and Technical Educator generating executive Cornell-style study notes for VeySkill.
 
 Context:
 - Course: "${courseTitle}" (Category: ${courseCategory})
 - Discipline: ${domain.toUpperCase()}
 - Lesson: "${videoTitle}"
 
-Generate an authoritative, rigorous study summary for this lesson.
-Include actual code snippets, architectural trade-offs, and practical execution details.
+Synthesize a high-density, authoritative study brief for this lesson.
+Include real runnable code snippets, architectural trade-offs, and critical gotchas.
 
-Structure the guide strictly as follows:
-## Key Takeaways
-- 3 to 5 bullet points summarizing core principles and mechanisms
+Structure the guide strictly with the following Cornell Executive sections:
 
-## Technical Overview
-A 2-3 paragraph breakdown explaining the theory, architecture, and practical execution of the concepts covered in this module. Include a relevant code or architecture block.
+## Executive Summary & Core Thesis
+A razor-sharp 2-3 sentence overview explaining the fundamental purpose, problem domain, and real-world industrial relevance of this lesson.
 
-## Core Concepts & Definitions
-- 3 to 5 critical terms with concise, professional definitions
+## Architectural Invariants & Mechanics
+3 to 5 high-signal bullet points detailing core mechanisms, data flows, theoretical invariants, and computational complexity (Big O).
 
-## Knowledge Check
-- 3 targeted questions that a practitioner should be able to answer after mastering this module
+## Production Syntax & Blueprint
+A clean, runnable, syntax-highlighted code block demonstrating idiomatic usage in production (\`\`\`${domain === "python" ? "python" : domain === "database" ? "sql" : "typescript"}).
 
-STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere in the text. Maintain a refined, academic, and publication-ready standard.`;
+## Critical Pitfalls & Edge Cases
+3 common senior-level failure modes, memory leaks, concurrency hazards, or anti-patterns to avoid.
+
+## Mastery & Interview Checkpoint
+3 targeted conceptual verification questions with concise model answers.
+
+STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere in the text. Maintain a dignified, publication-ready standard.`;
 
   // 1. Try Claude
   const claudeText = await callClaude(prompt);
@@ -295,28 +299,38 @@ function stripEmojis(text: string): string {
 }
 
 function getFallbackNotes(videoTitle: string, domain: string): string {
-  return `## Key Takeaways
-- Comprehensive analysis of architectural principles underlying "${videoTitle}"
-- Deep dive into ${domain.toUpperCase()} syntax, operational parameters, and standard patterns
-- Production guidelines and defensive programming best practices
+  const codeLang = domain === "python" ? "python" : domain === "database" ? "sql" : "typescript";
+  return `## Executive Summary & Core Thesis
+This module explores the foundational mechanisms and system guarantees associated with **${videoTitle}**. In production **${domain.toUpperCase()}** architectures, this pattern guarantees deterministic state transitions, avoids resource leakage, and establishes clear separation between interface contracts and internal execution.
 
-## Technical Overview
-This module explores the foundational theories and practical mechanisms associated with ${videoTitle}. Learners should review the accompanying codebase and verify their understanding of each sub-component.
+## Architectural Invariants & Mechanics
+- **Deterministic Contract**: Enforces strict input validation and immutable state propagation across execution boundaries.
+- **Complexity Profile**: Bound to predictable time and space constraints; minimizes unnecessary memory allocation.
+- **Fault Isolation**: Encapsulates errors within local boundaries to prevent cascading application failures.
 
-\`\`\`text
-[Data Flow Architecture]
-Input Validation -> Domain Controller -> State Transition -> Error Boundary
+## Production Syntax & Blueprint
+\`\`\`${codeLang}
+// Production-grade pattern for ${videoTitle}
+export async function executeCurriculumModule(inputData: unknown) {
+  if (!inputData) throw new Error("Validation invariant failed: null input");
+  
+  // Pipeline execution
+  return {
+    status: "verified",
+    processedAt: new Date().toISOString(),
+  };
+}
 \`\`\`
 
-## Core Concepts & Definitions
-- Module Scope: Defining the operational boundary of this topic in ${domain.toUpperCase()}
-- Idiomatic Patterns: Established industry conventions and reusable designs
-- Quality Criteria: Automated test coverage, type constraints, and computational complexity
+## Critical Pitfalls & Edge Cases
+- **Unbounded Growth**: Failure to purge expired cache entries or release event listeners creates insidious memory leaks.
+- **Race Hazards**: Neglecting concurrent write isolation causes silent data corruption under heavy load.
+- **Swallowed Errors**: Catching exceptions without logging or re-throwing obscures root-cause diagnostics in production.
 
-## Knowledge Check
-- Can you articulate the core operational mechanism in your own words?
-- What are the critical edge cases to account for in production environments?
-- How does this pattern interface with adjacent modules in the syllabus?`;
+## Mastery & Interview Checkpoint
+- **Question 1**: How does this mechanism ensure idempotency across asynchronous boundaries?
+- **Question 2**: What are the primary trade-offs between this approach and its naive synchronous counterpart?
+- **Question 3**: Under what peak load scenarios would you transition this architecture to an event-driven queue?`;
 }
 
 export type { QuizQuestion };

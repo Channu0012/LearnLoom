@@ -1283,7 +1283,10 @@ export function CourseViewer({ courseId }: { courseId: string }) {
   }
 
   // ── SQL & DATABASE ERRORS & DOUBTS ──────────────────────────────────────
-  if (domain === "database" || /sql|database|query/i.test(qLower)) {
+  if (
+    (domain === "database" || /sql|database|query/i.test(qLower)) &&
+    /index|slow|explain|optimi|scan/i.test(qLower)
+  ) {
     return `### Database Query Optimization & Indexing
 
 \`\`\`sql
@@ -1303,6 +1306,101 @@ CREATE UNIQUE INDEX idx_users_email ON users (email);
 1. **Leftmost Prefix Rule**: A composite index on \`(tenant_id, created_at)\` accelerates queries on \`tenant_id\` alone or \`tenant_id + created_at\`, but NOT \`created_at\` alone.
 2. **Avoid \`SELECT *\`**: Always specify explicit columns to reduce network serialization load and leverage index-only scans.
 3. **Use Prepared Statements**: Never concatenate raw user input into SQL strings to prevent SQL Injection attacks.`;
+  }
+
+  // ── EXECUTIVE SUMMARY & SYNTHESIS HANDLER ────────────────────────────────
+  if (/summar(y|ize)|executive summary|key takeaways|overview of/i.test(qLower)) {
+    return `### Executive Brief: ${videoTitle}
+
+#### 1. Core Thesis & Intuitive Analogy:
+This module covers foundational principles in **${domain.toUpperCase()}** required for production systems. Think of this mechanism like a robust transit switchboard: inputs are validated, queued, and dispatched according to deterministic routing rules to guarantee state consistency without race conditions.
+
+#### 2. Technical Mechanism & Architecture:
+- **State Guarantee**: Enforces single-source-of-truth invariants across component lifecycles.
+- **Complexity Profile**: Designed to operate within predictable O(1) to O(n log n) time bounds with minimized allocation overhead.
+- **Fail-Safe Boundaries**: Catches edge conditions at the boundary before unhandled exceptions propagate upstream.
+
+#### 3. Production Code Blueprint:
+\`\`\`${domain === "python" ? "python" : domain === "database" ? "sql" : "typescript"}
+// Core implementation pattern for ${videoTitle}
+export function processModuleData(payload: unknown) {
+  if (!payload || typeof payload !== "object") {
+    throw new Error("Invalid payload: input validation failed");
+  }
+  // Deterministic transformation pipeline
+  return Object.freeze({ ...payload, verifiedAt: Date.now() });
+}
+\`\`\`
+
+#### 4. Senior Invariants & Critical Pitfalls:
+- **Pitfall**: Avoid unbounded memory accumulation or leaking event listeners on unmount.
+- **Defensive Rule**: Always decouple side-effects from pure data transformations.`;
+  }
+
+  // ── CONCEPT INTUITION & EXPLAIN SIMPLY HANDLER ───────────────────────────
+  if (/explain.*(simply|concept|core|intuition)|step-by-step/i.test(qLower)) {
+    return `### Conceptual Deep-Dive: ${videoTitle}
+
+#### The Big Picture:
+At its core, **${videoTitle}** solves a fundamental bottleneck in modern software engineering: how to manage complex state transitions while keeping code readable, testable, and maintainable.
+
+#### Step-by-Step Intuition:
+1. **The Problem**: Without this pattern, systems suffer from tight coupling, fragile dependencies, and unexpected runtime bugs.
+2. **The Solution**: By introducing clean separation of concerns and deterministic workflows, each layer only cares about its exact contract.
+3. **The Result**: You achieve high modularity and zero unexpected regressions in production.
+
+#### Concrete Implementation:
+\`\`\`${domain === "python" ? "python" : "typescript"}
+// Demonstrating the core concept in ${videoTitle}
+function executeOperation(input: string): boolean {
+  // 1. Guard against invalid state
+  if (!input.trim()) return false;
+  
+  // 2. Perform isolated execution
+  console.log("Executing verified step for:", input);
+  return true;
+}
+\`\`\`
+
+#### Key Mental Model:
+Treat every function as an isolated transaction: either the contract succeeds completely, or it fails cleanly with meaningful diagnostics.`;
+  }
+
+  // ── CODE BLUEPRINT & EXAMPLE HANDLER ────────────────────────────────────
+  if (/code.*(blueprint|example|snippet)|runnable.*snippet/i.test(qLower)) {
+    return `### Implementation Blueprint: ${videoTitle}
+
+#### Production-Grade Code Pattern:
+Below is a clean, runnable, and documented pattern matching industry standards for **${domain.toUpperCase()}**:
+
+\`\`\`${domain === "python" ? "python" : domain === "database" ? "sql" : "typescript"}
+/**
+ * Production pattern for: ${videoTitle}
+ * Demonstrates input guard, error isolation, and deterministic return.
+ */
+interface ExecutionContext {
+  id: string;
+  timestamp: number;
+}
+
+export async function runCurriculumTask(context: ExecutionContext): Promise<{ success: boolean }> {
+  try {
+    if (!context.id) {
+      throw new Error("Context validation failed: missing ID");
+    }
+    // Perform operations safely
+    return { success: true };
+  } catch (error) {
+    console.error("Task execution error:", error);
+    throw error;
+  }
+}
+\`\`\`
+
+#### Implementation Checklist:
+- Input sanitization verified
+- Error boundary handles all failure branches
+- Return types strictly typed without any escape hatches`;
   }
 
   // ── DEFAULT TECHNICAL PROBLEM SOLVER ─────────────────────────────────────

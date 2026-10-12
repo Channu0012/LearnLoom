@@ -80,6 +80,7 @@ export function InPlayerCodeScratchpad({
   const [isRunning, setIsRunning] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
@@ -275,20 +276,53 @@ export function InPlayerCodeScratchpad({
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
             <span className="ml-2 uppercase font-bold text-neutral-300">{language}</span>
+            {language === "html" && (
+              <button
+                type="button"
+                onClick={() => setShowHtmlPreview((p) => !p)}
+                className={`ml-3 px-2 py-0.5 rounded text-[10px] font-sans font-bold cursor-pointer transition-colors ${
+                  showHtmlPreview
+                    ? "bg-teal-500 text-white"
+                    : "bg-neutral-800 text-neutral-300 hover:text-white"
+                }`}
+              >
+                {showHtmlPreview ? "Show Source" : "Live UI Preview"}
+              </button>
+            )}
           </div>
           <span className="text-[10px] text-neutral-500 font-sans">
             Auto-saves locally for {courseTitle.slice(0, 25)}…
           </span>
         </div>
 
-        <textarea
-          value={code}
-          onChange={(e) => handleCodeChange(e.target.value)}
-          rows={10}
-          spellCheck={false}
-          className="w-full p-3.5 bg-transparent text-neutral-200 font-mono text-xs sm:text-sm focus:outline-none leading-relaxed resize-y selection:bg-teal-500/30"
-          placeholder="Type or paste code snippets here..."
-        />
+        {language === "html" && showHtmlPreview ? (
+          <div className="p-3 bg-neutral-900 min-h-[220px]">
+            <iframe
+              title="HTML Sandbox Preview"
+              sandbox="allow-scripts"
+              srcDoc={code}
+              className="w-full h-56 bg-white rounded-lg border border-neutral-700 shadow-sm"
+            />
+          </div>
+        ) : (
+          <div className="flex relative min-h-[220px]">
+            {/* Line number gutter */}
+            <div className="select-none py-3.5 px-2.5 text-right bg-neutral-900/60 border-r border-neutral-800/80 text-neutral-500 font-mono text-xs sm:text-sm leading-relaxed min-w-[38px]">
+              {Array.from({ length: Math.max(code.split("\n").length, 8) }).map((_, i) => (
+                <div key={i}>{i + 1}</div>
+              ))}
+            </div>
+
+            <textarea
+              value={code}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              rows={10}
+              spellCheck={false}
+              className="flex-1 p-3.5 bg-transparent text-neutral-200 font-mono text-xs sm:text-sm focus:outline-none leading-relaxed resize-y selection:bg-teal-500/30"
+              placeholder="Type or paste code snippets here..."
+            />
+          </div>
+        )}
       </div>
 
       {/* Terminal / Console Output Drawer */}

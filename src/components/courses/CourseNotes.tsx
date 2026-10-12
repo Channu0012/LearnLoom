@@ -189,8 +189,8 @@ export function CourseNotes({
             type="button"
             onClick={handleGenerateAINotes}
             disabled={aiLoading}
-            className="inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-heading font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-sm min-h-[34px]"
-            title="Synthesize verified technical notes for this lesson"
+            className="btn-primary text-xs px-3.5 py-1.5 inline-flex items-center gap-1.5 disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-sm min-h-[34px] font-heading font-extrabold"
+            title="Synthesize verified Cornell-style executive notes for this lesson"
           >
             {aiLoading ? (
               <>
@@ -205,7 +205,7 @@ export function CourseNotes({
                   />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <span>Synthesizing…</span>
+                <span>Synthesizing Brief…</span>
               </>
             ) : (
               <>
@@ -219,7 +219,7 @@ export function CourseNotes({
                 >
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                 </svg>
-                <span>AI Technical Summary</span>
+                <span>Synthesize Executive Notes</span>
               </>
             )}
           </button>
