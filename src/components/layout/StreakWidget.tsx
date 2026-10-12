@@ -161,6 +161,91 @@ export function StreakWidget() {
             </div>
           </div>
 
+          {/* 7-Day Habit Tracker */}
+          <div className="my-3 p-3 rounded-xl bg-muted/40 border border-border/60">
+            <div className="flex items-center justify-between text-[11px] font-heading font-bold text-muted-foreground mb-2">
+              <span>Weekly Habit Tracker</span>
+              <span className="font-mono text-[10px]">Last 7 Days</span>
+            </div>
+            <div className="grid grid-cols-7 gap-1.5 text-center">
+              {Array.from({ length: 7 }).map((_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                const isToday = i === 6;
+                const dayName = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][d.getDay()];
+                const isCompleted =
+                  (streak.recentActiveDates && streak.recentActiveDates.includes(dateStr)) ||
+                  (isToday && isTodayComplete) ||
+                  streak.lastActiveDate === dateStr;
+
+                return (
+                  <div key={dateStr} className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-mono font-medium text-muted-foreground uppercase">
+                      {dayName}
+                    </span>
+                    <div
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${
+                        isCompleted
+                          ? "bg-amber-500 text-white shadow-xs"
+                          : isToday
+                            ? "border-2 border-dashed border-amber-500/60 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                            : "bg-muted/80 text-muted-foreground/50 border border-border/40"
+                      }`}
+                      title={`${dateStr}: ${isCompleted ? "Completed" : isToday ? "Pending today" : "Not completed"}`}
+                    >
+                      {isCompleted ? (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <span>{d.getDate()}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Monthly Streak Shield (Anti-Break Defense) */}
+          <div className="mb-3 p-2.5 rounded-xl bg-card border border-border flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base" role="img" aria-label="Shield">
+                🛡️
+              </span>
+              <div>
+                <span className="font-heading font-bold text-foreground text-xs block leading-tight">
+                  {streak.shieldUsedRecently
+                    ? "Streak Shield Deployed!"
+                    : streak.streakShieldAvailable
+                      ? "Streak Shield Active"
+                      : "Streak Shield Depleted"}
+                </span>
+                <span className="text-[10px] text-muted-foreground leading-tight block">
+                  {streak.shieldUsedRecently
+                    ? "Protected 1 missed day without breaking your streak."
+                    : streak.streakShieldAvailable
+                      ? "1 free shield available this month for study breaks."
+                      : "Renews on the 1st of next month."}
+                </span>
+              </div>
+            </div>
+            <span
+              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                streak.shieldUsedRecently || streak.streakShieldAvailable
+                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                  : "bg-muted text-muted-foreground border border-border"
+              }`}
+            >
+              {streak.shieldUsedRecently
+                ? "Protected"
+                : streak.streakShieldAvailable
+                  ? "1 Ready"
+                  : "0 Ready"}
+            </span>
+          </div>
+
           {/* Daily Goal Status */}
           <div className="flex items-center gap-2 text-xs font-body text-muted-foreground">
             <div

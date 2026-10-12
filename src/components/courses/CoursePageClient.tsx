@@ -32,6 +32,7 @@ import { CertificateModal } from "@/components/courses/CertificateModal";
 import { PaymentGate } from "@/components/courses/PaymentGate";
 import { StreakDashboard } from "@/components/courses/StreakDashboard";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
+import { InPlayerCodeScratchpad } from "@/components/courses/InPlayerCodeScratchpad";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -202,7 +203,9 @@ function CoursePlayerContent({
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "notes" | "quiz" | "report">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "notes" | "quiz" | "code" | "report">(
+    "overview"
+  );
   const [tabTransitioning, setTabTransitioning] = useState<string | null>(null);
 
   // AI & Certificate Feature States
@@ -800,7 +803,7 @@ function CoursePlayerContent({
     handleMarkLessonExempt,
   ]);
 
-  const handleTabChange = (tab: "overview" | "notes" | "quiz" | "report") => {
+  const handleTabChange = (tab: "overview" | "notes" | "quiz" | "code" | "report") => {
     setTabTransitioning(tab);
     setActiveTab(tab);
     setTimeout(() => setTabTransitioning(null), 200);
@@ -1191,6 +1194,36 @@ function CoursePlayerContent({
             </div>
           )}
 
+          {/* Interactive Lesson Checkpoint Scrub Bar */}
+          {activeLesson && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2.5 px-1 mb-2 text-xs">
+              <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase flex-shrink-0 mr-1 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Key Checkpoints:
+              </span>
+              {[
+                { label: "00:00 Intro", sec: 0 },
+                { label: "05:00 Architecture", sec: 300 },
+                { label: "15:00 Implementation", sec: 900 },
+                { label: "25:00 Summary & Review", sec: 1500 },
+              ].map((cp) => (
+                <a
+                  key={cp.label}
+                  href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}&t=${cp.sec}s`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 text-[11px] font-mono whitespace-nowrap transition-all shadow-2xs inline-flex items-center gap-1 hover:border-teal-500/50"
+                  title={`Jump to ${cp.label} on YouTube`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500/80" />
+                  <span>{cp.label}</span>
+                </a>
+              ))}
+            </div>
+          )}
+
           {/* Privatized / Restricted Video Fallback Alert */}
           {activeLesson &&
             (videoError?.lessonId === activeLesson.id || exemptIds.has(activeLesson.id)) && (
@@ -1268,7 +1301,7 @@ function CoursePlayerContent({
           {/* Player Controls & Action Deck (Coursera / Big Company Grade) */}
           {activeLesson && (
             <div className="enterprise-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border/80 rounded-xl mb-6 shadow-xs space-y-4">
-              {/* Row 1: Lesson Meta + Big Screen + Autoplay Pill */}
+              {/* Row 1: Lesson Meta + Creator Attribution + Right Controls */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -1299,10 +1332,68 @@ function CoursePlayerContent({
                   <h2 className="font-heading font-bold text-base sm:text-lg text-foreground line-clamp-1">
                     {activeLesson.title}
                   </h2>
+                  {/* Original Creator Attribution & Direct Source Link */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap font-body">
+                    <span>Curated lecture by</span>
+                    <span className="font-semibold text-foreground">
+                      {course.creatorName || "Featured Instructor"}
+                    </span>
+                    <span className="text-muted-foreground/60">&middot;</span>
+                    <a
+                      href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline font-heading font-semibold"
+                      title="Watch original source lecture directly on YouTube"
+                    >
+                      <span>YouTube Source</span>
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  </div>
                 </div>
 
-                {/* Right controls: Big Screen + Autoplay Toggle */}
+                {/* Right controls: Playback Help + Big Screen + Autoplay Toggle */}
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  {/* Playback Help / Direct YouTube Fallback Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeLesson) {
+                        setVideoError({
+                          lessonId: activeLesson.id,
+                          errorCode: 150,
+                          message: "Video playback restricted or interrupted.",
+                        });
+                      }
+                    }}
+                    className="text-xs px-2.5 py-2 min-h-[40px] rounded-xl font-heading font-semibold text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition-all cursor-pointer inline-flex items-center gap-1.5"
+                    title="If this video fails to play or is embed-blocked, click for zero-penalty exemption"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span className="hidden sm:inline">Playback Help</span>
+                  </button>
                   {/* Big Screen / Theater Fullscreen Button */}
                   <button
                     type="button"
@@ -1638,6 +1729,32 @@ function CoursePlayerContent({
             </button>
             <button
               type="button"
+              onClick={() => handleTabChange("code")}
+              className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                activeTab === "code"
+                  ? "border-teal-500 text-teal-600 dark:text-teal-400"
+                  : "border-transparent text-muted-foreground hover:text-foreground active:bg-muted/50"
+              } ${tabTransitioning === "code" ? "animate-pulse" : ""}`}
+            >
+              {tabTransitioning === "code" ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+              ) : (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+              )}
+              <span>Code Sandbox</span>
+            </button>
+            <button
+              type="button"
               onClick={() => handleTabChange("quiz")}
               className={`px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "quiz"
@@ -1934,6 +2051,15 @@ function CoursePlayerContent({
               courseId={courseId}
               courseTitle={course.title}
               courseCategory={course.category}
+              activeLessonTitle={activeLesson?.title ?? "Lesson"}
+            />
+          )}
+
+          {/* Tab 2.5: Interactive Code Scratchpad */}
+          {activeTab === "code" && (
+            <InPlayerCodeScratchpad
+              courseId={courseId}
+              courseTitle={course.title}
               activeLessonTitle={activeLesson?.title ?? "Lesson"}
             />
           )}

@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// Streak & XP Gamification Engine
-// Drives daily user retention through streaks, XP, and milestone badges.
+// Streak & XP Gamification Engine (Duolingo-Grade Habit Defense)
+// Drives daily user retention through streaks, XP, monthly shields, and weekly habit tracking.
 // ---------------------------------------------------------------------------
 
 export interface StreakData {
@@ -9,6 +9,10 @@ export interface StreakData {
   lastActiveDate: string; // YYYY-MM-DD
   totalXp: number;
   todayLessonsCompleted: number;
+  streakShieldAvailable?: boolean;
+  lastShieldUsedMonth?: string; // YYYY-MM
+  shieldUsedRecently?: boolean;
+  recentActiveDates?: string[]; // List of YYYY-MM-DD in the last 14 days
 }
 
 const STORAGE_KEY = "veyskill_streak_data_v1";
@@ -20,19 +24,40 @@ const DEFAULT_STREAK: StreakData = {
   lastActiveDate: "",
   totalXp: 0,
   todayLessonsCompleted: 0,
+  streakShieldAvailable: true,
+  lastShieldUsedMonth: "",
+  shieldUsedRecently: false,
+  recentActiveDates: [],
 };
 
-function getLocalDateString(d = new Date()): string {
+export function getLocalDateString(d = new Date()): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
+export function getCurrentMonthString(d = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
 function getYesterdayDateString(): string {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   return getLocalDateString(d);
+}
+
+function getDaysDiff(dateStr1: string, dateStr2: string): number {
+  try {
+    const d1 = new Date(dateStr1 + "T00:00:00");
+    const d2 = new Date(dateStr2 + "T00:00:00");
+    const diffTime = Math.abs(d2.getTime() - d1.getTime());
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
+  } catch {
+    return 999;
+  }
 }
 
 export function getStreakData(): StreakData {
@@ -42,20 +67,43 @@ export function getStreakData(): StreakData {
     if (!raw) return DEFAULT_STREAK;
     const parsed = JSON.parse(raw) as StreakData;
 
-    // Check if streak broke (more than 1 day missed)
     const today = getLocalDateString();
     const yesterday = getYesterdayDateString();
+    const currentMonth = getCurrentMonthString();
+
+    const isShieldAvailable = parsed.lastShieldUsedMonth !== currentMonth;
 
     if (
       parsed.lastActiveDate &&
       parsed.lastActiveDate !== today &&
       parsed.lastActiveDate !== yesterday
     ) {
-      // Missed yesterday — streak resets to 0 until they study today
+      // User missed at least yesterday. Check if missed exactly 1 day and can use monthly shield
+      const daysDiff = getDaysDiff(parsed.lastActiveDate, today);
+
+      if (daysDiff === 2 && isShieldAvailable && (parsed.currentStreak || 0) > 0) {
+        // Automatically activate the 1 free monthly Streak Shield!
+        const protectedData: StreakData = {
+          ...parsed,
+          lastActiveDate: yesterday, // Preserved via shield
+          lastShieldUsedMonth: currentMonth,
+          shieldUsedRecently: true,
+          streakShieldAvailable: false,
+          todayLessonsCompleted: 0,
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(protectedData));
+        } catch {}
+        return protectedData;
+      }
+
+      // Missed more than 1 day or shield already spent this month — streak resets
       return {
         ...parsed,
         currentStreak: 0,
         todayLessonsCompleted: 0,
+        streakShieldAvailable: isShieldAvailable,
+        shieldUsedRecently: false,
       };
     }
 
@@ -63,10 +111,15 @@ export function getStreakData(): StreakData {
       return {
         ...parsed,
         todayLessonsCompleted: 0,
+        streakShieldAvailable: isShieldAvailable,
+        shieldUsedRecently: false,
       };
     }
 
-    return parsed;
+    return {
+      ...parsed,
+      streakShieldAvailable: isShieldAvailable,
+    };
   } catch {
     return DEFAULT_STREAK;
   }
@@ -94,6 +147,7 @@ export function recordStudyActivity(xpEarned = 10): ActivityResult {
   const current = getStreakData();
   const today = getLocalDateString();
   const yesterday = getYesterdayDateString();
+  const currentMonth = getCurrentMonthString();
 
   let newStreak = current.currentStreak;
   let streakIncreased = false;
@@ -104,7 +158,7 @@ export function recordStudyActivity(xpEarned = 10): ActivityResult {
     streakIncreased = false;
     isFirstToday = false;
   } else if (current.lastActiveDate === yesterday) {
-    // Active yesterday — streak increments!
+    // Active yesterday (or shielded yesterday) — streak increments!
     newStreak = (current.currentStreak || 0) + 1;
     streakIncreased = true;
     isFirstToday = true;
@@ -115,6 +169,10 @@ export function recordStudyActivity(xpEarned = 10): ActivityResult {
     isFirstToday = true;
   }
 
+  // Update recent active dates (keep last 14 days)
+  const existingRecent = Array.isArray(current.recentActiveDates) ? current.recentActiveDates : [];
+  const updatedRecent = Array.from(new Set([...existingRecent, today])).slice(-14);
+
   const updated: StreakData = {
     currentStreak: newStreak,
     bestStreak: Math.max(current.bestStreak, newStreak),
@@ -122,6 +180,10 @@ export function recordStudyActivity(xpEarned = 10): ActivityResult {
     totalXp: (current.totalXp || 0) + xpEarned,
     todayLessonsCompleted:
       (current.lastActiveDate === today ? current.todayLessonsCompleted : 0) + 1,
+    lastShieldUsedMonth: current.lastShieldUsedMonth,
+    streakShieldAvailable: current.lastShieldUsedMonth !== currentMonth,
+    shieldUsedRecently: false,
+    recentActiveDates: updatedRecent,
   };
 
   try {
