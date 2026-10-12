@@ -102,8 +102,15 @@ export function Header() {
               <span className="text-foreground">Vey</span>
               <span className="text-[#14b8a6]">skill</span>
             </span>
-            <span className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5">
-              Structured Masterclasses · Verified Credentials
+            <span
+              suppressHydrationWarning
+              className="text-[10px] font-body font-medium text-muted-foreground hidden xl:inline-flex items-center gap-1 tracking-wide mt-0.5 select-none"
+            >
+              <span>Structured Masterclasses</span>
+              <span className="opacity-40" aria-hidden="true">
+                &bull;
+              </span>
+              <span>Verified Credentials</span>
             </span>
           </div>
         </Link>

@@ -95,7 +95,10 @@ export default function HomePage() {
           {/* Institutional Trust Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 backdrop-blur-md border border-border/80 text-xs font-heading font-bold mb-6 shadow-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <span className="text-teal-600 dark:text-teal-400 font-extrabold">
+            <span
+              suppressHydrationWarning
+              className="text-teal-600 dark:text-teal-400 font-extrabold"
+            >
               Structured Open Academy · Distraction-Free · Verified Credentials
             </span>
           </div>

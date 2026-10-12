@@ -44,9 +44,12 @@ export function Footer() {
               Complete comprehensive lecture quizzes, build continuous learning streaks, and earn
               verifiable Certificates of Completion with 1-click LinkedIn endorsement.
             </p>
-            <div className="pt-2 flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+            <div
+              suppressHydrationWarning
+              className="pt-2 flex items-center gap-2 text-[11px] text-muted-foreground font-mono"
+            >
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>DPDP Act (India) Compliant · PCI-DSS Secured</span>
+              <span>DPDP Act (India) Compliant &middot; PCI-DSS Secured</span>
             </div>
           </div>
 
