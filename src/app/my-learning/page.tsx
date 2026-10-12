@@ -11,6 +11,7 @@ import { PaymentGate } from "@/components/courses/PaymentGate";
 import { normalizeCertificateId, verifyCertificateId } from "@/lib/security";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { StreakWidget } from "@/components/layout/StreakWidget";
+import { generatePdfCertificate } from "@/lib/pdfCertificate";
 
 interface CourseWithProgress {
   course: CourseDoc;
@@ -27,6 +28,7 @@ export default function MyLearningPage() {
   const [courseToRemove, setCourseToRemove] = useState<CourseWithProgress | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [paidCourseIds, setPaidCourseIds] = useState<Set<string>>(new Set());
+  const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
 
   // Payment & Certificate Modal States
   const [selectedCertCourse, setSelectedCertCourse] = useState<CourseWithProgress | null>(null);
@@ -34,7 +36,6 @@ export default function MyLearningPage() {
 
   // Quick Inline Verification Dialog State
   const [quickVerifyOpen, setQuickVerifyOpen] = useState(false);
-  const [activeVerifyCourse, setActiveVerifyCourse] = useState<CourseWithProgress | null>(null);
   const [testInputId, setTestInputId] = useState("");
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{
@@ -153,7 +154,7 @@ export default function MyLearningPage() {
       (item.course.lessonCount || 0) > 0
   );
 
-  // Certificates tab ONLY shows courses that are completed, paid/issued, AND eligible for accredited credentials
+  // Certificates tab ONLY shows courses that are completed, paid/issued, AND eligible for verified credentials
   const certificateItems = completedItems.filter(
     (item) =>
       checkCertificateEligibility(
@@ -192,12 +193,61 @@ export default function MyLearningPage() {
     }
   };
 
-  // Open Quick Verify for a specific completed course
-  const handleOpenVerifyForCourse = (item: CourseWithProgress) => {
-    setActiveVerifyCourse(item);
-    setTestResult(null);
-    setTestInputId("");
-    setQuickVerifyOpen(true);
+  // 1-Click Instant Vector PDF Download
+  const handleDownloadCertificate = async (item: CourseWithProgress) => {
+    const certId =
+      item.progress.certificateId ||
+      `VS-${item.course.id
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 8)
+        .toUpperCase()}`;
+    const userName = user?.displayName || "Verified Learner";
+    const courseTitle = item.course.title;
+    const lessonCount = item.course.lessonCount || 12;
+    const quizScoreValues = item.progress.quizScores ? Object.values(item.progress.quizScores) : [];
+    const quizScore =
+      quizScoreValues.length > 0
+        ? Math.round(
+            (quizScoreValues.reduce((acc, q) => acc + q.score / (q.total || 1), 0) /
+              quizScoreValues.length) *
+              100
+          )
+        : null;
+    const issuedDate = (() => {
+      try {
+        const raw = item.progress.updatedAt;
+        const d =
+          raw && typeof raw.toDate === "function"
+            ? raw.toDate()
+            : raw && typeof raw.seconds === "number"
+              ? new Date(raw.seconds * 1000)
+              : new Date();
+        return d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+      } catch {
+        return "October 2026";
+      }
+    })();
+
+    setDownloadingCertId(item.course.id);
+    try {
+      await generatePdfCertificate({
+        id: certId,
+        userName,
+        courseTitle,
+        lessonCount,
+        quizScore,
+        issuedDate,
+        verifyUrl: `https://veyskill.in/verify/${certId}`,
+      });
+    } catch (err) {
+      console.error("PDF download failed:", err);
+    } finally {
+      setDownloadingCertId(null);
+    }
   };
 
   // Perform live API verification
@@ -265,7 +315,7 @@ export default function MyLearningPage() {
             Synchronizing Your Learning Progress
           </h2>
           <p className="text-xs font-body text-muted-foreground mt-0.5">
-            Loading your active courses and accredited certifications…
+            Loading your active courses and verified certifications…
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
@@ -288,7 +338,7 @@ export default function MyLearningPage() {
   if (!user) {
     return (
       <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="clay-card p-8 bg-card border border-border text-center rounded-3xl">
+        <div className="enterprise-card p-8 bg-card border border-border text-center rounded-2xl">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-950/60 flex items-center justify-center text-primary-600 dark:text-primary-400">
             <svg
               width="28"
@@ -309,7 +359,7 @@ export default function MyLearningPage() {
             Sign In for Learning Progress
           </h1>
           <p className="text-muted-foreground font-body text-sm mb-6 leading-relaxed">
-            Sign in to track your started courses, claim accredited completion certificates, and
+            Sign in to track your started courses, claim verified completion certificates, and
             resume where you left off across all devices.
           </p>
           <button
@@ -348,7 +398,8 @@ export default function MyLearningPage() {
               My Learning
             </h1>
             <p className="font-body text-sm text-muted-foreground mt-1">
-              Pick up right where you left off across your enrolled courses and accredited diplomas.
+              Pick up right where you left off across your enrolled courses and certificates of
+              completion.
             </p>
           </div>
 
@@ -380,7 +431,7 @@ export default function MyLearningPage() {
 
       {/* Earned Credentials Highlight Banner (ONLY in Certificates tab when earned certificates exist) */}
       {filter === "certificates" && certificateItems.length > 0 && (
-        <div className="clay-card p-5 sm:p-6 mb-8 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-card border border-emerald-500/30 shadow-lg">
+        <div className="enterprise-card p-5 sm:p-6 mb-8 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-card border border-emerald-500/30 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -401,18 +452,18 @@ export default function MyLearningPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-heading font-black tracking-widest uppercase bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    ACCREDITED HONORS
+                    VERIFIED CREDENTIALS
                   </span>
                   <span className="text-xs font-mono text-muted-foreground">
                     {certificateItems.length} Issued
                   </span>
                 </div>
                 <h2 className="font-heading font-extrabold text-base sm:text-lg text-foreground mt-0.5">
-                  Academic Certificates &amp; Tamper-Proof Credentials
+                  Certificates of Completion &amp; Verified Credentials
                 </h2>
                 <p className="font-body text-xs text-muted-foreground mt-0.5 max-w-xl">
-                  You have successfully completed and unlocked official vector PDF diplomas with
-                  scannable QR codes and verifiable IDs.
+                  You have successfully completed and unlocked official vector PDF certificates of
+                  completion with scannable QR codes and verifiable IDs.
                 </p>
               </div>
             </div>
@@ -434,7 +485,7 @@ export default function MyLearningPage() {
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
-                <span>View Diploma</span>
+                <span>View Certificate</span>
               </button>
             </div>
           </div>
@@ -505,7 +556,7 @@ export default function MyLearningPage() {
       )}
 
       {items.length === 0 ? (
-        <div className="clay-card p-12 text-center max-w-2xl mx-auto bg-card border-2 border-dashed border-border rounded-3xl">
+        <div className="enterprise-card p-12 text-center max-w-2xl mx-auto bg-card border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center">
             <svg
               width="32"
@@ -533,7 +584,7 @@ export default function MyLearningPage() {
           </Link>
         </div>
       ) : displayedItems.length === 0 ? (
-        <div className="clay-card p-12 text-center max-w-md mx-auto bg-card border border-border rounded-2xl">
+        <div className="enterprise-card p-12 text-center max-w-md mx-auto bg-card border border-border rounded-2xl">
           <p className="font-heading font-bold text-base text-foreground mb-2">
             {filter === "completed"
               ? "No completed courses yet"
@@ -545,7 +596,7 @@ export default function MyLearningPage() {
             {filter === "completed"
               ? "Finish watching all lessons in any course to unlock your official verified certificate."
               : filter === "certificates"
-                ? "Complete a course and verify curriculum requirements to claim and display your accredited diploma here."
+                ? "Complete a course and verify curriculum requirements to claim and display your Certificate of Completion here."
                 : "All your active courses have been finished!"}
           </p>
           <button
@@ -579,7 +630,7 @@ export default function MyLearningPage() {
             return (
               <div
                 key={course.id}
-                className={`clay-card p-5 flex flex-col justify-between bg-card border rounded-2xl transition-all shadow-sm hover:shadow-md relative ${
+                className={`enterprise-card p-5 flex flex-col justify-between bg-card border rounded-2xl transition-all shadow-xs hover:shadow-sm relative ${
                   filter === "certificates" || isCertUnlocked
                     ? "border-emerald-500/50 hover:border-emerald-500 shadow-emerald-500/5"
                     : isFinished
@@ -771,26 +822,75 @@ export default function MyLearningPage() {
 
                 {/* Footer Action Area — Contextual to Selected Tab */}
                 <div className="pt-3 border-t border-border mt-3 space-y-2">
-                  {/* Case 1: In Certificates Tab — Full Accredited Diploma View */}
+                  {/* Case 1: In Certificates Tab — Google Skills / Credly 3-Action Row */}
                   {filter === "certificates" ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5 pt-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[10px] font-heading font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                          Accredited Credential
+                        <span className="text-[10px] font-heading font-bold uppercase text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md border border-emerald-200/80 dark:border-emerald-800/60 inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Verified Certificate
                         </span>
                         <span className="text-[11px] text-muted-foreground font-mono">
-                          100% Verified
+                          {item.progress.certificateId || "Active Record"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      {/* Clean 3-Action Row: [Download PDF], [Add to LinkedIn], [View Certificate] */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadCertificate(item)}
+                          disabled={downloadingCertId === item.course.id}
+                          className="btn-primary py-2 px-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-1.5 min-h-[38px] rounded-xl shadow-xs cursor-pointer"
+                          title="Download official vector PDF certificate"
+                        >
+                          {downloadingCertId === item.course.id ? (
+                            <div className="simple-loader !w-3.5 !h-3.5 !border-2" />
+                          ) : (
+                            <svg
+                              width="13"
+                              height="13"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                            >
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                              <polyline points="7 10 12 15 17 10" />
+                              <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                          )}
+                          <span>Download PDF</span>
+                        </button>
+
+                        <a
+                          href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(item.course.title)}&organizationName=${encodeURIComponent("VeySkill")}&certUrl=${encodeURIComponent(`https://veyskill.in/verify/${item.progress.certificateId || item.course.id}`)}&certId=${encodeURIComponent(item.progress.certificateId || item.course.id)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-secondary py-2 px-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-1.5 min-h-[38px] rounded-xl border border-border hover:bg-muted text-foreground transition-colors"
+                          title="Add to your LinkedIn profile"
+                        >
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="text-[#0A66C2]"
+                          >
+                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+                          </svg>
+                          <span>Add to LinkedIn</span>
+                        </a>
+
                         <button
                           type="button"
                           onClick={() => setSelectedCertCourse(item)}
-                          className="btn-primary flex-1 py-2 px-3 text-xs font-heading font-extrabold inline-flex items-center justify-center gap-1.5 shadow-sm min-h-[38px] cursor-pointer"
+                          className="btn-secondary py-2 px-2.5 text-xs font-heading font-bold inline-flex items-center justify-center gap-1.5 min-h-[38px] rounded-xl border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                          title="View certificate full preview"
                         >
                           <svg
-                            width="14"
-                            height="14"
+                            width="13"
+                            height="13"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -798,45 +898,29 @@ export default function MyLearningPage() {
                           >
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                             <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
                           </svg>
-                          <span>View Official Diploma</span>
+                          <span>View Certificate</span>
                         </button>
+                      </div>
+
+                      <div className="pt-1 flex items-center justify-between text-xs">
                         <Link
                           href={`/course/${course.id}?start=true`}
-                          className="px-3 py-2 text-xs font-heading font-bold rounded-xl border border-border bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center justify-center gap-1 transition-all min-h-[38px]"
-                          title="Review course material"
+                          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors font-medium"
                         >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                          <span>Review</span>
+                          <span>Review Modules &amp; Code</span>
+                          <span>&rarr;</span>
                         </Link>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenVerifyForCourse(item)}
-                          className="px-3 py-2 text-xs font-heading font-bold rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 inline-flex items-center justify-center gap-1 transition-all min-h-[38px] cursor-pointer"
-                          title="Verify cryptographic authenticity"
+                        <Link
+                          href={`/verify/${item.progress.certificateId || item.course.id}`}
+                          target="_blank"
+                          className="text-teal-600 dark:text-teal-400 hover:underline text-[11px] font-mono"
                         >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                          >
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            <polyline points="9 12 11 14 15 10" />
-                          </svg>
-                          <span>Verify</span>
-                        </button>
+                          Verify Registry URL ↗
+                        </Link>
                       </div>
                     </div>
                   ) : isFinished ? (
@@ -932,7 +1016,7 @@ export default function MyLearningPage() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="clay-card p-6 bg-card border border-border rounded-3xl max-w-sm w-full shadow-2xl text-center">
+          <div className="enterprise-card p-6 bg-card border border-border rounded-2xl max-w-sm w-full shadow-xl text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
               <svg
                 width="24"
@@ -1068,7 +1152,7 @@ export default function MyLearningPage() {
           aria-modal="true"
           aria-labelledby="verify-modal-title"
         >
-          <div className="clay-card w-full max-w-lg bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="enterprise-card w-full max-w-lg bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
@@ -1107,44 +1191,6 @@ export default function MyLearningPage() {
                 ✕
               </button>
             </div>
-
-            {/* Course Status Summary */}
-            {activeVerifyCourse && (
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-2 text-xs font-body">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Certified Course:</span>
-                  <span className="font-heading font-bold text-foreground truncate max-w-[240px]">
-                    {activeVerifyCourse.course.title}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Candidate:</span>
-                  <span className="font-semibold text-foreground">
-                    {user?.displayName || "Distinguished Scholar"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Status:</span>
-                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    100% Completed &amp; Eligible
-                  </span>
-                </div>
-
-                <div className="pt-2 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuickVerifyOpen(false);
-                      setSelectedCertCourse(activeVerifyCourse);
-                    }}
-                    className="btn-primary text-xs w-full py-2 font-heading font-bold inline-flex items-center justify-center gap-1.5"
-                  >
-                    <span>Open Official Certificate</span>
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Strict ID Verification Tester */}
             <div className="space-y-3">
@@ -1195,12 +1241,12 @@ export default function MyLearningPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setTestInputId("VC-DEMO");
-                    handleTestVerify("VC-DEMO");
+                    setTestInputId("VS-88421099FF");
+                    handleTestVerify("VS-88421099FF");
                   }}
                   className="font-mono text-teal-600 dark:text-teal-400 hover:underline"
                 >
-                  VC-DEMO
+                  VS-88421099FF
                 </button>
               </div>
             </div>

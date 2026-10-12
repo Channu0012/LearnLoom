@@ -36,7 +36,7 @@ export function CertificateLookupClient() {
   };
 
   return (
-    <div className="clay-card p-6 sm:p-10 bg-card border border-border rounded-3xl shadow-xl">
+    <div className="enterprise-card p-6 sm:p-10 bg-card border border-border rounded-2xl shadow-sm">
       <form onSubmit={handleVerify} className="space-y-6">
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -119,7 +119,7 @@ export function CertificateLookupClient() {
       {/* Quick Test Benchmark Credentials */}
       <div className="mt-6 pt-5 border-t border-border/60">
         <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
-          Quick-Check Verified Academic Benchmark Credentials:
+          Quick-Check Sample Verified Credentials:
         </p>
         <div className="flex flex-wrap gap-2">
           <button
@@ -129,17 +129,19 @@ export function CertificateLookupClient() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>VS-9A3F1B8E2C</span>
-            <span className="text-[10px] text-muted-foreground font-body">(Alex Morgan)</span>
+            <span className="text-[10px] text-muted-foreground font-body">
+              (Sample Certificate)
+            </span>
           </button>
           <button
             type="button"
-            onClick={() => handleSelectSample("VC-DEMO")}
+            onClick={() => handleSelectSample("VS-88421099FF")}
             className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted border border-border/80 text-foreground font-mono text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-            <span>VC-DEMO</span>
+            <span>VS-88421099FF</span>
             <span className="text-[10px] text-muted-foreground font-body">
-              (Masterclass Honors)
+              (Sample Certificate)
             </span>
           </button>
         </div>

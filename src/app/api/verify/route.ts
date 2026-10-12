@@ -68,7 +68,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
           certificate: {
             id: cleanId,
             userName: data?.userName || "Distinguished Scholar",
-            courseTitle: data?.courseTitle || "Accredited Curriculum",
+            courseTitle: data?.courseTitle || "Verified Course Curriculum",
             lessonCount: data?.lessonCount || 12,
             quizScore: data?.quizScore ?? null,
             issuedDate: data?.issuedDate || "October 2026",
@@ -85,7 +85,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
     console.warn("[Verify API] Admin Firestore notice:", dbErr);
   }
 
-  // 2. Check official accredited benchmark records
+  // 2. Check official verified benchmark records
   const benchmark = BENCHMARK_CERTIFICATES[cleanId];
   if (benchmark) {
     return NextResponse.json({
@@ -105,7 +105,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
         instructorName: "Channabasav Patil",
         instructorTitle: "FOUNDER",
         managerName: "VeySkill Academic Council",
-        managerTitle: "ACCREDITED CREDENTIALS",
+        managerTitle: benchmark.managerTitle || "VERIFIED CREDENTIALS",
       },
     });
   }
@@ -126,7 +126,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
       certificate: {
         id: cleanId,
         userName: qName || "Distinguished Scholar",
-        courseTitle: qCourse || "Accredited Continuing Computational Education",
+        courseTitle: qCourse || "Continuing Technical Education Masterclass",
         lessonCount: qLessons ? Number(qLessons) : 12,
         quizScore: qScore ? Number(qScore) : 100,
         issuedDate: qDate || "October 2026",

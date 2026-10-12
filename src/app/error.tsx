@@ -32,7 +32,7 @@ export default function ErrorBoundary({
 
   return (
     <div className="container-page py-20 text-center">
-      <div className="max-w-md mx-auto clay-card p-8 bg-card border border-border rounded-3xl">
+      <div className="max-w-md mx-auto enterprise-card p-8 bg-card border border-border rounded-2xl shadow-sm">
         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive">
           <svg
             width="32"

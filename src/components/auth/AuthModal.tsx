@@ -224,7 +224,7 @@ export function AuthModal() {
             {authModalMode === "signin"
               ? "Sign in to track syllabus progress, view verified certificates, and continue learning."
               : authModalMode === "signup"
-                ? "Create a free account to track lessons, take AI notes, and earn accredited diplomas."
+                ? "Create a free account to track lessons, take AI notes, and earn verified certificates of completion."
                 : "Enter your registered email and we'll send a secure password reset link."}
           </p>
         </div>

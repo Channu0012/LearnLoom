@@ -41,7 +41,7 @@ export function StreakDashboard() {
   });
 
   return (
-    <div className="clay-card p-4 sm:p-5 bg-card border border-border rounded-2xl space-y-4">
+    <div className="enterprise-card p-4 sm:p-5 bg-card border border-border rounded-xl space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-bold text-sm sm:text-base text-foreground flex items-center gap-2">

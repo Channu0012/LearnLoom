@@ -29,7 +29,7 @@ export default function ContactPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         {/* Card 1: Payment & Order Help */}
-        <div className="clay-card p-6 border border-border flex flex-col justify-between">
+        <div className="enterprise-card p-6 border border-border flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@ export default function ContactPage() {
         </div>
 
         {/* Card 2: Creator & Copyright */}
-        <div className="clay-card p-6 border border-border flex flex-col justify-between">
+        <div className="enterprise-card p-6 border border-border flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +87,7 @@ export default function ContactPage() {
         </div>
 
         {/* Card 3: Credential Verification */}
-        <div className="clay-card p-6 border border-border flex flex-col justify-between">
+        <div className="enterprise-card p-6 border border-border flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@ export default function ContactPage() {
 
       {/* Operational & Compliance Details */}
       <div className="space-y-6">
-        <div className="clay-card p-6 border border-border">
+        <div className="enterprise-card p-6 border border-border">
           <h2 className="font-heading font-bold text-xl mb-4 text-foreground">
             Operational &amp; Grievance Officer Details
           </h2>

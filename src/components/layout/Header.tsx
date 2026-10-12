@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { StreakWidget } from "@/components/layout/StreakWidget";
@@ -10,11 +10,28 @@ export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
     useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Dismiss dropdown menu on click outside or Escape key
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!userDropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userDropdownOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
@@ -80,16 +97,13 @@ export function Header() {
             height={34}
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
-          <div className="flex flex-col leading-none" suppressHydrationWarning>
+          <div className="flex flex-col leading-none">
             <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight">
               <span className="text-foreground">Vey</span>
               <span className="text-[#14b8a6]">skill</span>
             </span>
-            <span
-              suppressHydrationWarning
-              className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5"
-            >
-              {mounted ? "Structured Masterclasses · Verified Credentials" : null}
+            <span className="text-[10px] font-body font-medium text-muted-foreground hidden xl:block tracking-wide mt-0.5">
+              Structured Masterclasses · Verified Credentials
             </span>
           </div>
         </Link>
@@ -218,12 +232,12 @@ export function Header() {
           {!loading && (
             <>
               {user ? (
-                <div className="flex items-center gap-2 relative">
+                <div ref={dropdownRef} className="flex items-center gap-2 relative">
                   <StreakWidget />
                   <button
                     id="user-menu-btn"
                     onClick={() => setUserDropdownOpen((o) => !o)}
-                    className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-85 transition-opacity p-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-85 active:scale-95 transition-all p-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     aria-label="User profile menu"
                     aria-expanded={userDropdownOpen}
                     aria-haspopup="true"
@@ -246,7 +260,7 @@ export function Header() {
                   {/* Desktop / Tablet User Dropdown Menu */}
                   {userDropdownOpen && (
                     <div
-                      className="absolute top-12 right-0 clay-card p-2 min-w-[220px] z-50 bg-card border border-border shadow-2xl rounded-2xl animate-scale-in"
+                      className="absolute top-12 right-0 enterprise-card p-2 min-w-[220px] z-50 bg-card border border-border shadow-xl rounded-xl animate-scale-in"
                       role="menu"
                       aria-labelledby="user-menu-btn"
                     >

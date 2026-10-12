@@ -160,7 +160,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 1,
     });
     expect(sql3HourCourse.eligible).toBe(true);
-    expect(sql3HourCourse.label).toBe("Accredited Single-Video Masterclass");
+    expect(sql3HourCourse.label).toBe("Verified Single-Video Masterclass");
     expect(sql3HourCourse.detectedHours).toBe(3);
 
     // 6. Single mega-video 7-hour course SHOULD be eligible
@@ -170,7 +170,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 1,
     });
     expect(react7HourCourse.eligible).toBe(true);
-    expect(react7HourCourse.label).toBe("Accredited Single-Video Masterclass");
+    expect(react7HourCourse.label).toBe("Verified Single-Video Masterclass");
     expect(react7HourCourse.detectedHours).toBe(7);
 
     // 7. Single mega-video 11-hour bootcamp SHOULD be eligible
@@ -180,7 +180,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 1,
     });
     expect(freeCodeCampCourse.eligible).toBe(true);
-    expect(freeCodeCampCourse.label).toBe("Accredited Single-Video Masterclass");
+    expect(freeCodeCampCourse.label).toBe("Verified Single-Video Masterclass");
     expect(freeCodeCampCourse.detectedHours).toBe(11);
 
     // 8. Single video with player duration >= 1 hour (e.g., 7 hours = 25200s)
@@ -191,7 +191,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       duration: 25200, // 7 hours
     });
     expect(runtimeLongCourse.eligible).toBe(true);
-    expect(runtimeLongCourse.label).toBe("Accredited Single-Video Masterclass");
+    expect(runtimeLongCourse.label).toBe("Verified Single-Video Masterclass");
     expect(runtimeLongCourse.detectedHours).toBe(7);
 
     // 9. Multi-module comprehensive masterclass SHOULD be eligible
@@ -201,7 +201,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 24,
     });
     expect(masterclassCheck.eligible).toBe(true);
-    expect(masterclassCheck.label).toBe("Accredited Masterclass");
+    expect(masterclassCheck.label).toBe("Verified Masterclass");
 
     // 10. Single video with [4h] bracketed hour tag
     const bracket4h = checkCertificateEligibility({
@@ -210,7 +210,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 1,
     });
     expect(bracket4h.eligible).toBe(true);
-    expect(bracket4h.label).toBe("Accredited Single-Video Masterclass");
+    expect(bracket4h.label).toBe("Verified Single-Video Masterclass");
     expect(bracket4h.detectedHours).toBe(4);
 
     // 11. Single video with description containing "what is" and "how to learn"
@@ -222,7 +222,7 @@ describe("Curriculum Engine & Domain Intelligence", () => {
       lessonCount: 1,
     });
     expect(longCourseWithWhatIs.eligible).toBe(true);
-    expect(longCourseWithWhatIs.label).toBe("Accredited Single-Video Masterclass");
+    expect(longCourseWithWhatIs.label).toBe("Verified Single-Video Masterclass");
 
     // 12. Single video timestamp formatted title [03:45:00]
     const timestampCourse = checkCertificateEligibility({

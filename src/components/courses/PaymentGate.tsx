@@ -264,7 +264,7 @@ export function PaymentGate({
               Payment Verified Successfully
             </h3>
             <p className="text-xs font-body text-muted-foreground mb-5 max-w-xs leading-relaxed">
-              Issuing your accredited credentials and preparing cryptographic verification record…
+              Issuing your verified credential and preparing public verification record…
             </p>
             <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-semibold">
               <svg
@@ -334,7 +334,7 @@ export function PaymentGate({
           <p className="text-xs text-muted-foreground mt-3 font-body leading-relaxed">
             You completed 100% of{" "}
             <span className="font-semibold text-foreground">&ldquo;{courseTitle}&rdquo;</span>.
-            Unlock your accredited, tamper-proof diploma to share on your resume and LinkedIn.
+            Unlock your verified Certificate of Completion to share on your resume and LinkedIn.
           </p>
         </div>
 
@@ -463,7 +463,7 @@ export function PaymentGate({
               <span>Identity Lock &amp; Official Issuance</span>
             </div>
             <p className="text-[11px] text-muted-foreground font-body leading-relaxed">
-              Your accredited certificate is cryptographically sealed with this name and phone
+              Your Certificate of Completion is permanently registered with this name and phone
               number.
               <strong className="text-foreground font-semibold">
                 {" "}

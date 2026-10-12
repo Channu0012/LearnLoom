@@ -1,7 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
-import { PlaylistGuideVideo } from "@/components/home/PlaylistGuideVideo";
+import { PlatformShowcasePreview } from "@/components/home/PlatformShowcasePreview";
 
 export default function HomePage() {
   const disciplines = [
@@ -42,11 +41,11 @@ export default function HomePage() {
   const faqs = [
     {
       q: "How does VeySkill transform YouTube videos?",
-      a: "VeySkill strips away algorithm rabbit holes, intrusive mid-roll commercials, and distracting comment sections. We organize playlists into structured chapters with auto-advancing theater playback, Coursera-grade AI study notes, and comprehension quizzes.",
+      a: "VeySkill wraps educational video series in a focused, distraction-free study environment. We organize playlists into structured chapters with auto-advancing theater playback, AI study scratchpad, and comprehension quizzes.",
     },
     {
       q: "Are the completion certificates verifiable?",
-      a: "Yes. Every multi-module certificate carries a unique cryptographic ID and public verification URL at veyskill.in/verify/[id]. Employers, universities, and recruiters can scan the certificate QR code to inspect curriculum completion records.",
+      a: "Yes. Every multi-module certificate carries a unique certificate ID and public verification URL at veyskill.in/verify/[id]. Employers and recruiters can scan the certificate QR code to directly view official completion records.",
     },
     {
       q: "Can I convert any public YouTube playlist?",
@@ -54,7 +53,7 @@ export default function HomePage() {
     },
     {
       q: "Is VeySkill free to use for learners?",
-      a: "100% free. You can enroll, take notes, maintain study streaks, and complete entire masterclass curricula without paying a single rupee. Accredited physical-grade digital certificates can be unlocked for an administrative fee of just ₹29 upon completion.",
+      a: "100% free. You can enroll, take notes, maintain study streaks, and complete entire curricula without paying a single rupee. Official verifiable digital certificates of completion can be unlocked for an administrative fee of just ₹29 upon completion.",
     },
   ];
 
@@ -97,7 +96,7 @@ export default function HomePage() {
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 backdrop-blur-md border border-border/80 text-xs font-heading font-bold mb-6 shadow-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
             <span className="text-teal-600 dark:text-teal-400 font-extrabold">
-              Free Open Academy · Ad-Free · Verified Credentials
+              Structured Open Academy · Distraction-Free · Verified Credentials
             </span>
           </div>
 
@@ -107,15 +106,15 @@ export default function HomePage() {
             className="font-heading font-black text-3xl sm:text-5xl lg:text-6xl text-foreground tracking-tight leading-[1.1] mb-5 animate-slide-up"
           >
             Turn Any YouTube Playlist Into A{" "}
-            <span className="bg-gradient-to-r from-teal-600 via-primary-500 to-amber-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               Structured Masterclass.
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed animate-slide-up">
-            Distraction-free theater playback, Coursera-grade AI study companion, automated
-            comprehension quizzes, and cryptographically verified certificates.
+            Distraction-free theater playback, structured curriculum tracking, comprehension
+            quizzes, and public verifiable certificates of completion.
           </p>
 
           {/* HERO CONVERTER INPUT (Google-Grade Instant Utility) & STREAK BANNER */}
@@ -124,22 +123,24 @@ export default function HomePage() {
           </div>
 
           {/* Institutional Trust Ribbon */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-2 px-5 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/70 text-xs text-muted-foreground font-body max-w-2xl mx-auto">
+          <div className="inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-2.5 px-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border text-xs text-muted-foreground font-body max-w-2xl mx-auto shadow-xs">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-              <span className="font-heading font-bold text-foreground">Zero Commercials</span>
+              <span className="font-heading font-semibold text-foreground">Distraction-Free</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-              <span className="font-heading font-bold text-foreground">AI Study Notes</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <span className="font-heading font-semibold text-foreground">AI Study Notes</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span className="font-heading font-bold text-foreground">Quiz Gates</span>
+              <span className="font-heading font-semibold text-foreground">Quiz Gates</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="font-heading font-bold text-foreground">QR Certificates</span>
+              <span className="font-heading font-semibold text-foreground">
+                Verified Credentials
+              </span>
             </span>
           </div>
         </div>
@@ -165,17 +166,17 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Step 1 */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-sm hover:border-teal-500/50 transition-all flex flex-col justify-between group">
+            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-teal-500/40 hover:shadow-md transition-all">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4 border border-teal-500/20 font-heading font-black text-base">
+                <div className="w-11 h-11 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4 border border-teal-500/20 font-heading font-black text-sm">
                   01
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
                   Import Any Playlist
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Paste any YouTube tutorial, university lecture series, or technical bootcamp URL.
-                  VeySkill instantly structures chapters into an interactive syllabus.
+                  Paste any YouTube tutorial series, university lecture track, or coding bootcamp
+                  URL. VeySkill instantly indexes chapters into a structured syllabus.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-teal-600 dark:text-teal-400">
@@ -184,28 +185,28 @@ export default function HomePage() {
             </div>
 
             {/* Step 2 */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-sm hover:border-primary-500/50 transition-all flex flex-col justify-between group">
+            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-indigo-500/40 hover:shadow-md transition-all">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center mb-4 border border-primary-500/20 font-heading font-black text-base">
+                <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20 font-heading font-black text-sm">
                   02
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
                   Focus in Theater Mode
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Learn without recommendations, sidebar distractions, or mid-roll commercials.
-                  Harness our Coursera-grade AI study companion and structured notes.
+                  Study without algorithmic feeds, comment distractions, or rabbit holes. Harness
+                  structured chapters, time bookmarks, and private study notes.
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-primary-600 dark:text-primary-400">
-                <span>Pure Immersion &amp; AI Coach</span>
+              <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-indigo-600 dark:text-indigo-400">
+                <span>Distraction-Free Workspace</span>
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-sm hover:border-emerald-500/50 transition-all flex flex-col justify-between group">
+            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/40 hover:shadow-md transition-all">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20 font-heading font-black text-base">
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20 font-heading font-black text-sm">
                   03
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
@@ -213,11 +214,11 @@ export default function HomePage() {
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   Pass comprehension assessments with a 70% threshold, build daily streaks, and
-                  claim a cryptographic, QR-verifiable certificate for your LinkedIn profile.
+                  claim a permanent Certificate of Completion with instant public QR verification.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-400">
-                <span>Public Employer Validation</span>
+                <span>Public Web Credential Record</span>
               </div>
             </div>
           </div>
@@ -262,7 +263,7 @@ export default function HomePage() {
               <Link
                 key={idx}
                 href={`/explore?q=${encodeURIComponent(item.query)}`}
-                className="p-5 rounded-2xl bg-card border border-border/80 hover:border-teal-500/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group active:scale-[0.98]"
+                className="enterprise-card p-5 rounded-xl hover:border-teal-500/60 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group active:scale-[0.98]"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -321,50 +322,26 @@ export default function HomePage() {
             employer-ready certification.
           </p>
 
-          {/* Banner image with shadow and border */}
-          <div className="relative group max-w-4xl mx-auto mb-10">
-            <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-teal-500/30 via-indigo-500/20 to-amber-500/30 rounded-3xl blur-2xl opacity-70 group-hover:opacity-100 transition-opacity -z-10" />
-
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-border/80 dark:border-white/10 shadow-2xl bg-neutral-950">
-              <Image
-                src="/images/veyskill-showcase-banner.webp"
-                alt="VeySkill Application Showcase Banner — Distraction-Free Video Learning with 7-Day Streaks and Verified Credentials"
-                width={1920}
-                height={1080}
-                priority
-                className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-              />
-
-              <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-white text-xs font-heading font-semibold shadow-lg">
-                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-                  <span>Cinema Flow Mode</span>
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-white text-xs font-heading font-semibold shadow-lg">
-                  <span className="text-amber-400">🔥</span>
-                  <span>Streaks &amp; Verified Diplomas</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Live Platform Workspace Showcase and 3-Step Flow */}
+          <PlatformShowcasePreview />
 
           {/* 4 Stat pillars */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8 text-left">
-            <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-sm">
+            <div className="enterprise-card p-4 rounded-xl">
               <div className="text-teal-600 dark:text-teal-400 font-heading font-black text-xl mb-1">
                 100%
               </div>
               <div className="font-heading font-bold text-xs text-foreground mb-0.5">Focused</div>
               <div className="text-[11px] font-body text-muted-foreground">Zero distractions</div>
             </div>
-            <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-sm">
+            <div className="enterprise-card p-4 rounded-xl">
               <div className="text-amber-600 dark:text-amber-400 font-heading font-black text-xl mb-1">
                 70%
               </div>
               <div className="font-heading font-bold text-xs text-foreground mb-0.5">Quiz Gate</div>
               <div className="text-[11px] font-body text-muted-foreground">Prove your mastery</div>
             </div>
-            <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-sm">
+            <div className="enterprise-card p-4 rounded-xl">
               <div className="text-emerald-600 dark:text-emerald-400 font-heading font-black text-xl mb-1">
                 Auto
               </div>
@@ -373,8 +350,8 @@ export default function HomePage() {
               </div>
               <div className="text-[11px] font-body text-muted-foreground">Accurate tracking</div>
             </div>
-            <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-sm">
-              <div className="text-primary-600 dark:text-primary-400 font-heading font-black text-xl mb-1">
+            <div className="enterprise-card p-4 rounded-xl">
+              <div className="text-indigo-600 dark:text-indigo-400 font-heading font-black text-xl mb-1">
                 Free
               </div>
               <div className="font-heading font-bold text-xs text-foreground mb-0.5">Forever</div>
@@ -413,11 +390,17 @@ export default function HomePage() {
 
             <div className="divide-y divide-border/60 text-xs sm:text-sm font-body">
               {[
-                ["Ads every 7 minutes", "Zero ads, pure cinema"],
-                ["Sidebar rabbit holes & clickbait", "Distraction-free syllabus navigation"],
+                [
+                  "Algorithmic rabbit holes & endless feeds",
+                  "Structured, distraction-free study theater",
+                ],
+                [
+                  "Sidebar distractions & clickbait comments",
+                  "Focused syllabus & module progression",
+                ],
                 ["No comprehension checks", "70% quiz gate per module"],
                 ["Lost progress across devices", "Cloud-synced progress & 7-day streak"],
-                ["No proof of completion", "Cryptographically verifiable diploma + QR"],
+                ["No proof of completion", "Permanent Certificate of Completion + Scannable QR"],
               ].map(([yt, vs], i) => (
                 <div
                   key={i}
@@ -532,9 +515,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── 8. Walkthrough Video Guide ────────────────────────────────────── */}
-      <PlaylistGuideVideo />
     </div>
   );
 }

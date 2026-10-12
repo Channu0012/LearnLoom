@@ -76,7 +76,7 @@ export default function TermsPage() {
         </section>
 
         {/* ── 3. YouTube Creator Respect ───────────────────────── */}
-        <section className="clay-card p-6 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
+        <section className="enterprise-card p-6 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
           <h2 className="font-heading font-bold text-xl mb-3 flex items-center gap-2">
             <svg
               width="22"
@@ -276,7 +276,7 @@ export default function TermsPage() {
         </section>
 
         {/* ── 10. Credential Fees & Refund Policy ───────────────── */}
-        <section className="clay-card p-6 border-border">
+        <section className="enterprise-card p-6 border-border">
           <h2 className="font-heading font-bold text-xl mb-3">
             10. Verifiable Credentials &amp; Payment Terms
           </h2>

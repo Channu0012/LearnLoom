@@ -42,11 +42,11 @@ export function Footer() {
             <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-sm">
               Transform open video playlists into structured, distraction-free masterclasses.
               Complete comprehensive lecture quizzes, build continuous learning streaks, and earn
-              cryptographically verifiable career credentials with 1-click LinkedIn endorsement.
+              verifiable Certificates of Completion with 1-click LinkedIn endorsement.
             </p>
             <div className="pt-2 flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>PCI-DSS Secured · Cashfree Payments</span>
+              <span>DPDP Act (India) Compliant · PCI-DSS Secured</span>
             </div>
           </div>
 

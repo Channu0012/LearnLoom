@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import { CertificateLookupClient } from "@/components/verify/CertificateLookupClient";
 
 export const metadata: Metadata = {
-  title: "Verify Academic Credential | VeySkill Accredited Registry",
+  title: "Verify Credential | VeySkill Certificate Registry",
   description:
-    "Official cryptographic verification portal for VeySkill certificates. Enter any Credential ID to validate authenticity, student honors, and completion records.",
+    "Official verification portal for VeySkill certificates. Enter any Credential ID to validate authenticity, student honors, and completion records.",
   alternates: {
     canonical: "/verify",
   },
   openGraph: {
     title: "Verify Academic Credential | VeySkill Registry",
     description:
-      "Official cryptographic verification portal for VeySkill certificates. Validate authenticity and completion records.",
+      "Official verification portal for VeySkill certificates. Validate authenticity and completion records.",
     url: "https://veyskill.in/verify",
     type: "website",
     images: [{ url: "/logo.png", width: 798, height: 220, alt: "VeySkill Credential Registry" }],
@@ -37,7 +37,7 @@ export default function VerifyPortalPage() {
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             <polyline points="9 12 11 14 15 10" />
           </svg>
-          <span>Cryptographic Credential Registry</span>
+          <span>Credential Verification Registry</span>
         </div>
         <h1 className="font-heading font-black text-3xl sm:text-5xl text-foreground tracking-tight mb-3">
           Verify VeySkill Credential

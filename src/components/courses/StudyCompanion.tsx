@@ -278,7 +278,7 @@ export function StudyCompanion({
             </div>
             <div>
               <p className="font-heading font-extrabold text-sm text-foreground">
-                Coursera-Grade Academic Assistant
+                Technical Study Assistant
               </p>
               <p className="text-xs text-muted-foreground mt-1 max-w-[290px] mx-auto leading-relaxed">
                 Stuck on a concept, syntax error, or algorithm? Ask below for step-by-step

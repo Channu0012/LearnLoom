@@ -5,8 +5,8 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div className="container-page py-20 sm:py-28 text-center max-w-2xl mx-auto">
-      <div className="clay-card p-8 sm:p-12 bg-card border border-border rounded-3xl shadow-xl">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-primary-100 dark:bg-primary-950/60 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-6 shadow-sm">
+      <div className="enterprise-card p-8 sm:p-12 bg-card border border-border rounded-2xl shadow-sm">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-6 shadow-xs">
           <svg
             width="36"
             height="36"

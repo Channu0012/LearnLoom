@@ -16,7 +16,7 @@ export default function CookiesPage() {
       <p className="text-muted-foreground font-body text-sm mb-8">Last updated: September 2026</p>
 
       <div className="font-body text-foreground space-y-8">
-        <section className="clay-card p-6 bg-card border-border">
+        <section className="enterprise-card p-6 bg-card border-border">
           <h2 className="font-heading font-bold text-xl mb-3 text-primary-500">
             Summary: Privacy First
           </h2>

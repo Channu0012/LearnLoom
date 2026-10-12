@@ -36,7 +36,7 @@ const quickWatchJsonLd = {
   "@type": "WebApplication",
   name: "Quick Watch — Distraction-Free Video Player",
   description:
-    "Paste any online video lecture link and watch in pure cinema focus mode with zero algorithmic clutter, zero ads, and private scratchpad notes.",
+    "Paste any online video lecture link and watch in pure cinema focus mode with zero algorithmic clutter, clean layout, and private scratchpad notes.",
   url: "https://veyskill.in/quick-watch",
   applicationCategory: "MultimediaApplication",
   operatingSystem: "All",

@@ -30,7 +30,7 @@ export default function ExploreLoading() {
       {/* Grid of courses skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="clay-card p-4 bg-card border border-border">
+          <div key={i} className="enterprise-card p-4 bg-card border border-border">
             <div className="skeleton aspect-video w-full rounded-xl mb-4" />
             <div className="skeleton h-5 w-4/5 mb-2.5 rounded-lg" />
             <div className="skeleton h-3.5 w-1/2 mb-4 rounded-md" />

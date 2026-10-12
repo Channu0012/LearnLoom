@@ -241,7 +241,7 @@ export async function askStudyCompanion(
     .join("\n");
 
   const prompt = `You are an elite Staff Engineer, Computer Science Professor, and Technical Mentor for VeySkill.
-You are directly mentoring a student working through an accredited course.
+You are directly mentoring a student working through a structured course.
 
 Context:
 - Curriculum: "${courseTitle}" (Discipline: ${courseCategory})

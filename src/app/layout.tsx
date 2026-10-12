@@ -171,7 +171,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="overflow-x-hidden w-full max-w-full bg-background text-foreground antialiased selection:bg-primary-500 selection:text-white">
+      <body
+        suppressHydrationWarning
+        className="overflow-x-hidden w-full max-w-full bg-background text-foreground antialiased selection:bg-primary-500 selection:text-white"
+      >
         {/* Skip to Content for Accessibility */}
         <a
           href="#main-content"

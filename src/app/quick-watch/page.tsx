@@ -436,7 +436,7 @@ function QuickWatchContent() {
           <div className="mb-8 text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 text-xs font-heading font-bold mb-3 border border-teal-500/20 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-              <span>Zero Ads · Instant Playlist &amp; Video Cinema Mode</span>
+              <span>Distraction-Free · Instant Playlist &amp; Video Cinema Mode</span>
             </div>
 
             <h1 className="font-heading font-black text-3xl sm:text-5xl tracking-tight text-foreground">
@@ -1098,14 +1098,14 @@ function QuickWatchContent() {
                 <div className="p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-teal-500/10 via-primary-500/5 to-amber-500/10 border border-teal-500/20 shadow-sm space-y-3">
                   <div>
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-                      Upgrade to Accredited Track
+                      Upgrade to Verified Course Track
                     </span>
                     <h4 className="font-heading font-bold text-sm text-foreground mt-0.5">
                       Turn this into a full course
                     </h4>
                     <p className="text-xs text-muted-foreground font-body leading-relaxed mt-1">
-                      Unlock AI-generated quizzes, 7-day habit streaks, and cryptographic completion
-                      credentials.
+                      Unlock AI-generated quizzes, 7-day habit streaks, and verified Certificates of
+                      Completion.
                     </p>
                   </div>
 
@@ -1325,8 +1325,8 @@ function QuickWatchContent() {
                   2. Pure Cinema Mode
                 </h4>
                 <p className="text-xs text-muted-foreground font-body leading-relaxed">
-                  Zero ads, zero algorithmic rabbit holes, and dimmed cinema lights for
-                  uninterrupted study sessions.
+                  Focused study layout, zero algorithmic rabbit holes, and dimmed cinema lights for
+                  uninterrupted learning sessions.
                 </p>
               </div>
 

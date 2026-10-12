@@ -37,7 +37,7 @@ export function CookieBanner() {
       aria-label="Cookie consent banner"
       className="fixed bottom-20 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-md z-50 animate-slide-up"
     >
-      <div className="clay-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl">
+      <div className="enterprise-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border shadow-xl rounded-xl">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0 text-primary-600">
             <svg

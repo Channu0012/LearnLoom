@@ -105,7 +105,7 @@ export const BENCHMARK_CERTIFICATES: Record<
   }
 > = {
   "VS-9A3F1B8E2C": {
-    userName: "Alex Morgan",
+    userName: "Sample Learner",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 24,
     quizScore: 98,
@@ -113,10 +113,10 @@ export const BENCHMARK_CERTIFICATES: Record<
     instructorName: "Channabasav Patil",
     instructorTitle: "FOUNDER",
     managerName: "VeySkill Academic Council",
-    managerTitle: "ACCREDITED CREDENTIALS",
+    managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-88421099FF": {
-    userName: "Alex Morgan",
+    userName: "Sample Learner",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 36,
     quizScore: 95,
@@ -124,10 +124,10 @@ export const BENCHMARK_CERTIFICATES: Record<
     instructorName: "Channabasav Patil",
     instructorTitle: "FOUNDER",
     managerName: "VeySkill Academic Council",
-    managerTitle: "ACCREDITED CREDENTIALS",
+    managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-1122334455": {
-    userName: "Sarah Jenkins",
+    userName: "Sample Learner",
     courseTitle: "Cloud Architecture & Java Distributed Systems Masterclass",
     lessonCount: 15,
     quizScore: 100,
@@ -135,10 +135,10 @@ export const BENCHMARK_CERTIFICATES: Record<
     instructorName: "Channabasav Patil",
     instructorTitle: "FOUNDER",
     managerName: "VeySkill Academic Council",
-    managerTitle: "ACCREDITED CREDENTIALS",
+    managerTitle: "VERIFIED CREDENTIALS",
   },
   "VC-DEMO": {
-    userName: "David Chen",
+    userName: "Sample Learner",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,
@@ -146,10 +146,10 @@ export const BENCHMARK_CERTIFICATES: Record<
     instructorName: "Channabasav Patil",
     instructorTitle: "FOUNDER",
     managerName: "VeySkill Academic Council",
-    managerTitle: "ACCREDITED CREDENTIALS",
+    managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-DEMO": {
-    userName: "Alex Morgan",
+    userName: "Sample Learner",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,
@@ -157,7 +157,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     instructorName: "Channabasav Patil",
     instructorTitle: "FOUNDER",
     managerName: "VeySkill Academic Council",
-    managerTitle: "ACCREDITED CREDENTIALS",
+    managerTitle: "VERIFIED CREDENTIALS",
   },
 };
 

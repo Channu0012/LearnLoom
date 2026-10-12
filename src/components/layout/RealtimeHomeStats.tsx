@@ -60,7 +60,7 @@ export function RealtimeHomeStats() {
             {stats.publishedCourses}
           </div>
           <p className="text-xs font-heading font-bold text-muted-foreground mt-0.5">
-            Accredited Courses
+            Structured Courses
           </p>
           <span className="text-[10px] font-mono text-teal-600 dark:text-teal-400">
             Active in Catalog

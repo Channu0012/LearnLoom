@@ -131,7 +131,7 @@ export function CourseNotes({
   }, [activeLessonTitle, courseTitle, courseCategory, notes, handleChange]);
 
   return (
-    <div className="clay-card p-4 sm:p-6 bg-card border border-border rounded-2xl shadow-sm">
+    <div className="enterprise-card p-4 sm:p-6 bg-card border border-border rounded-xl shadow-xs">
       {/* Header Bar */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>

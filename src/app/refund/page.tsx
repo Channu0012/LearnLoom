@@ -28,7 +28,7 @@ export default function RefundPage() {
 
       <div className="font-body text-foreground space-y-8 leading-relaxed">
         {/* 1. Core Learning is Always Free */}
-        <section className="clay-card p-6 border-teal-500/20 bg-teal-50/20 dark:bg-teal-950/10">
+        <section className="enterprise-card p-6 border-teal-500/20 bg-teal-50/20 dark:bg-teal-950/10">
           <h2 className="font-heading font-bold text-xl text-foreground mb-2 flex items-center gap-2">
             <svg
               className="w-5 h-5 text-teal-600 dark:text-teal-400 flex-shrink-0"
@@ -99,7 +99,7 @@ export default function RefundPage() {
         </section>
 
         {/* 4. Eligible Refund Scenarios */}
-        <section className="clay-card p-6 border-amber-500/20 bg-amber-50/20 dark:bg-amber-950/10">
+        <section className="enterprise-card p-6 border-amber-500/20 bg-amber-50/20 dark:bg-amber-950/10">
           <h2 className="font-heading font-bold text-xl text-foreground mb-3 flex items-center gap-2">
             <svg
               className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0"

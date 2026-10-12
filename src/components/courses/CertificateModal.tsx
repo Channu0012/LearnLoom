@@ -389,7 +389,7 @@ export function CertificateModal({
                   </div>
                   <div>
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block leading-none">
-                      Accredited Recipient Name (Locked)
+                      Recipient Name (Verified)
                     </span>
                     <span className="text-xs sm:text-sm font-heading font-extrabold text-foreground block mt-1 tracking-tight">
                       {effectiveName}
@@ -400,7 +400,7 @@ export function CertificateModal({
                 <div className="flex items-center gap-2 self-start sm:self-auto">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Cryptographically Locked
+                    Verified &amp; Locked
                   </span>
                 </div>
               </div>
@@ -605,7 +605,7 @@ export function CertificateModal({
                 </a>
               </div>
 
-              {/* 6. Accredited Credential Plan & Lifetime Verification Breakdown */}
+              {/* 6. Verified Credential Plan & Lifetime Verification Breakdown */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-cyan-500/10 border border-emerald-500/20 space-y-3.5 mt-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -622,7 +622,7 @@ export function CertificateModal({
                       </svg>
                     </div>
                     <span className="font-heading font-black text-xs sm:text-sm text-foreground">
-                      Accredited Credential Plan &amp; Lifetime Verification
+                      Verified Credential Plan &amp; Lifetime Verification
                     </span>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">
@@ -631,9 +631,8 @@ export function CertificateModal({
                 </div>
 
                 <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
-                  Your certificate has been cryptographically signed with SHA-256 HMAC and
-                  permanently logged into the VeySkill accreditation registry. Here is your
-                  credential plan:
+                  Your Certificate of Completion is verified and permanently registered in the
+                  VeySkill credential directory. Here is your credential summary:
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">

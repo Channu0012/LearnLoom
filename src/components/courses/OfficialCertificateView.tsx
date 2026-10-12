@@ -1,7 +1,7 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// OfficialCertificateView.tsx — Official VeySkill Accredited Credential View
+// OfficialCertificateView.tsx — Official VeySkill Verified Credential View
 // Exact visual fidelity to the official VeySkill template (media_1791181434953.pdf).
 // Features: Dynamic recipient name over the teal divider, executive masterclass title,
 // high-contrast scannable QR code linked to cryptographic verification,
@@ -140,8 +140,7 @@ export function OfficialCertificateView({
           style={{ top: "51.8%" }}
         >
           <p className="font-heading font-medium text-[6.5px] sm:text-[9.5px] md:text-[11px] lg:text-[12px] text-slate-600 tracking-normal whitespace-nowrap leading-none">
-            for successfully completing the accredited curriculum and demonstrating professional
-            mastery in
+            for successfully completing the curriculum and demonstrating professional mastery in
           </p>
         </div>
 
@@ -169,7 +168,7 @@ export function OfficialCertificateView({
             <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
           </div>
           <span className="font-heading font-semibold text-[5px] sm:text-[7px] md:text-[8px] text-slate-400 uppercase tracking-[0.2em] mt-0.5">
-            Accredited Credential Specification &middot; Verified Mastery
+            Verified Credential Specification &middot; Professional Mastery
           </span>
         </div>
 
@@ -231,12 +230,12 @@ export function OfficialCertificateView({
           style={{ left: "72.4%", top: "63.8%" }}
         >
           {/* Authentic executive signature of Channabasav Patil */}
-          <div className="relative z-10 w-24 sm:w-32 md:w-36 h-7 sm:h-9 md:h-11 flex items-center justify-center">
+          <div className="relative z-10 w-28 sm:w-36 md:w-44 h-8 sm:h-10 md:h-12 flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/signature.png?v=20261011"
+              src="/images/signature.png?v=20261012_pen"
               alt="Official Signature of Channabasav Patil"
-              className="w-full h-full object-contain filter drop-shadow-sm pointer-events-none"
+              className="w-full h-full object-contain pointer-events-none"
             />
           </div>
 

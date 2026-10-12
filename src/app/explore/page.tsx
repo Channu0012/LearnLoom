@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { searchCoursesFullStrength } from "@/lib/keywords";
+import { CATEGORIES } from "@/lib/constants";
 import type { CourseDoc } from "@/lib/types";
 import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard";
 
@@ -81,6 +82,8 @@ function saveSeenCourseIds(ids: Set<string>) {
 
 export default function ExplorePage() {
   const [searchInput, setSearchInput] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState<"recommended" | "modules" | "newest">("recommended");
   const [rawCourses, setRawCourses] = useState<CourseDoc[]>([]);
   const [feedCourses, setFeedCourses] = useState<CourseDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,14 +94,14 @@ export default function ExplorePage() {
   const [fetchError, setFetchError] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial URL query param if present (?q=... or ?search=...)
+  // Sync initial URL query param if present (?q=... or ?search=... or ?category=...)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const q = params.get("q") || params.get("search") || params.get("category");
-    if (q) {
-      setSearchInput(q);
-    }
+    const q = params.get("q") || params.get("search");
+    const cat = params.get("category");
+    if (q) setSearchInput(q);
+    if (cat) setSelectedCategory(cat);
   }, []);
 
   // ── YouTube-Style Intelligent Feed Refresh (Unseen/New Prioritization) ───
@@ -205,20 +208,49 @@ export default function ExplorePage() {
     };
   }, [fetchCourses]);
 
-  // ── Full-Strength Instant Search & Filtering ──────────────────────────
+  // Compute category count breakdown for faceted navigation
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: rawCourses.length };
+    for (const c of rawCourses) {
+      if (c.category) {
+        counts[c.category] = (counts[c.category] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [rawCourses]);
+
+  // ── Full-Strength Instant Search & Filtering & Sorting ────────────────
   const courses = useMemo(() => {
+    let list: CourseDoc[];
     const queryClean = searchInput.trim();
-    if (!queryClean) return feedCourses;
+    if (queryClean) {
+      const ranked = searchCoursesFullStrength(rawCourses, queryClean);
+      list = ranked.map((r) => r.course);
+    } else {
+      list = feedCourses;
+    }
 
-    // Run full-strength search across titles, descriptions, creators, keywords & acronyms
-    const ranked = searchCoursesFullStrength(rawCourses, queryClean);
-    return ranked.map((r) => r.course);
-  }, [rawCourses, feedCourses, searchInput]);
+    if (selectedCategory !== "all") {
+      list = list.filter((c) => c.category?.toLowerCase() === selectedCategory.toLowerCase());
+    }
 
-  // Reset visibleCount on search change
+    if (sortBy === "modules") {
+      return [...list].sort((a, b) => (b.lessonCount || 0) - (a.lessonCount || 0));
+    } else if (sortBy === "newest") {
+      return [...list].sort((a, b) => {
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return bTime - aTime;
+      });
+    }
+
+    return list;
+  }, [rawCourses, feedCourses, searchInput, selectedCategory, sortBy]);
+
+  // Reset visibleCount on search, category, or sort change
   useEffect(() => {
     setVisibleCount(COURSES_PER_PAGE);
-  }, [searchInput]);
+  }, [searchInput, selectedCategory, sortBy]);
 
   const loadMore = useCallback(() => {
     if (visibleCount >= courses.length || isLoadingMore) return;
@@ -360,28 +392,96 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* Results Counter if actively searching */}
-        {searchInput.trim() && !loading && (
-          <div className="mt-3 px-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              Found <strong className="text-foreground">{courses.length}</strong>{" "}
-              {courses.length === 1 ? "result" : "results"} for &ldquo;{searchInput}&rdquo;
-            </span>
+        {/* Coursera/Google-style Category Faceted Navigation Pills */}
+        <div className="mt-5 pt-3 border-t border-border/60">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             <button
               type="button"
-              onClick={() => setSearchInput("")}
-              className="text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-medium"
+              onClick={() => setSelectedCategory("all")}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold shrink-0 transition-all border cursor-pointer ${
+                selectedCategory === "all"
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-slate-300 dark:hover:border-slate-700"
+              }`}
             >
-              Reset search
+              All Tracks ({categoryCounts.all || 0})
             </button>
+            {CATEGORIES.map((cat) => {
+              const count = categoryCounts[cat] || 0;
+              const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(isSelected ? "all" : cat)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold shrink-0 transition-all border cursor-pointer ${
+                    isSelected
+                      ? "bg-teal-600 text-white border-teal-600 shadow-xs"
+                      : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  {cat} {count > 0 && <span className="opacity-70 text-[10px]">({count})</span>}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
+
+        {/* Results Counter and Sort Row */}
+        <div className="mt-4 px-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>
+              Showing <strong className="text-foreground">{courses.length}</strong> masterclass
+              {courses.length !== 1 ? "es" : ""}
+              {selectedCategory !== "all" && (
+                <>
+                  {" "}
+                  in{" "}
+                  <strong className="text-teal-600 dark:text-teal-400">{selectedCategory}</strong>
+                </>
+              )}
+              {searchInput.trim() && (
+                <>
+                  {" "}
+                  matching &ldquo;<strong className="text-foreground">{searchInput}</strong>&rdquo;
+                </>
+              )}
+            </span>
+            {(selectedCategory !== "all" || searchInput.trim()) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setSearchInput("");
+                }}
+                className="text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-semibold ml-1 inline-flex items-center gap-1"
+              >
+                <span>Clear filters</span>
+              </button>
+            )}
+          </div>
+
+          {/* Sort Selector */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="font-heading font-semibold text-foreground/80">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "recommended" | "modules" | "newest")}
+              aria-label="Sort masterclasses"
+              className="bg-card border border-border rounded-lg px-2.5 py-1 text-xs text-foreground font-heading font-semibold focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            >
+              <option value="recommended">Curated Feed</option>
+              <option value="modules">Most Modules</option>
+              <option value="newest">Recently Added</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Network Error Banner */}
       {fetchError && (
         <div
-          className="clay-card p-6 text-center my-6 bg-red-50 border-destructive/30 max-w-lg mx-auto rounded-3xl"
+          className="enterprise-card p-6 text-center my-6 bg-red-50 dark:bg-red-950/20 border-destructive/30 max-w-lg mx-auto rounded-2xl"
           role="alert"
         >
           <p className="text-destructive font-body text-sm mb-4">{fetchError}</p>
@@ -403,7 +503,7 @@ export default function ExplorePage() {
           ))}
         </div>
       ) : courses.length === 0 && !fetchError ? (
-        <div className="clay-card p-12 text-center max-w-md mx-auto my-12 bg-card border border-border rounded-3xl">
+        <div className="enterprise-card p-12 text-center max-w-md mx-auto my-12 bg-card border border-border rounded-2xl">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-600 dark:text-teal-400">
             <svg
               width="32"

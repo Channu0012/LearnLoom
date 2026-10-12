@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         </section>
 
         {/* ── YouTube & Creator Respect ─────────────────────────── */}
-        <section className="clay-card p-6 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
+        <section className="enterprise-card p-6 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
           <h2 className="font-heading font-bold text-xl mb-3 flex items-center gap-2">
             <svg
               width="22"
@@ -200,7 +200,7 @@ export default function PrivacyPage() {
         </section>
 
         {/* ── No Abuse Policy ──────────────────────────────────── */}
-        <section className="clay-card p-6 border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/20">
+        <section className="enterprise-card p-6 border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/20">
           <h2 className="font-heading font-bold text-xl mb-3 flex items-center gap-2">
             <svg
               width="22"
@@ -424,7 +424,7 @@ export default function PrivacyPage() {
         </section>
 
         {/* ── Future-proofing ──────────────────────────────────── */}
-        <section className="clay-card p-6 border-primary-300 dark:border-primary-700 bg-primary-50/30 dark:bg-primary-950/20">
+        <section className="enterprise-card p-6 border-primary-300 dark:border-primary-700 bg-primary-50/30 dark:bg-primary-950/20">
           <h2 className="font-heading font-bold text-xl mb-3 flex items-center gap-2">
             <svg
               width="22"
@@ -483,9 +483,52 @@ export default function PrivacyPage() {
           </p>
         </section>
 
+        {/* ── DPDP Act Compliance ──────────────────────────────── */}
+        <section>
+          <h2 className="font-heading font-bold text-xl mb-3">
+            14. Compliance with Digital Personal Data Protection Act, 2023 (DPDP Act, India)
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-3">
+            In compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act) of India,
+            VeySkill operates as a Data Fiduciary adhering to the highest standards of transparency
+            and lawful data processing:
+          </p>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1.5">
+            <li>
+              <strong className="text-foreground">Specified Purpose:</strong> Personal data is
+              processed solely for authenticating your account, tracking course syllabus
+              progression, and issuing verified Certificates of Completion.
+            </li>
+            <li>
+              <strong className="text-foreground">Right of Access &amp; Correction:</strong> You
+              possess the right to inspect, correct, update, or complete any personal data
+              maintained by VeySkill.
+            </li>
+            <li>
+              <strong className="text-foreground">Right to Erasure:</strong> You can request full
+              erasure of your account and learning data at any time via your settings or by writing
+              to our Grievance Officer.
+            </li>
+            <li>
+              <strong className="text-foreground">Grievance Redressal:</strong> In accordance with
+              the DPDP Act, any concerns regarding personal data processing may be lodged directly
+              with our designated Grievance Officer at{" "}
+              <a
+                href="mailto:grievance@veyskill.in"
+                className="text-primary-500 underline hover:no-underline font-semibold"
+              >
+                grievance@veyskill.in
+              </a>
+              . All grievances will be resolved within the statutory period of 30 days.
+            </li>
+          </ul>
+        </section>
+
         {/* ── Contact ──────────────────────────────────────────── */}
         <section>
-          <h2 className="font-heading font-bold text-xl mb-3">14. Contact</h2>
+          <h2 className="font-heading font-bold text-xl mb-3">
+            15. Contact &amp; Grievance Redressal
+          </h2>
           <p className="text-muted-foreground leading-relaxed">
             If you have any questions about this privacy policy, your data, or our practices,
             contact us at:

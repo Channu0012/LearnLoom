@@ -19,7 +19,7 @@ export default function TakedownPage() {
       </p>
 
       {/* ── Creator Respect Banner ─────────────────────────────── */}
-      <div className="clay-card p-6 mb-8 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
+      <div className="enterprise-card p-6 mb-8 border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-950/20">
         <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
           <svg
             width="22"
@@ -116,8 +116,8 @@ export default function TakedownPage() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <span>
-              We are <strong>100% free and non-commercial</strong> — zero ads, zero revenue from
-              your content
+              We are <strong>100% free for learners</strong> — we do not monetize or alter in-stream
+              video playback
             </span>
           </li>
           <li className="flex items-start gap-2.5">
@@ -144,7 +144,7 @@ export default function TakedownPage() {
       </div>
 
       {/* ── Important: Video Hosting ───────────────────────────── */}
-      <div className="clay-card p-6 mb-8 border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/20">
+      <div className="enterprise-card p-6 mb-8 border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/20">
         <h2 className="font-heading font-bold text-base mb-2 flex items-center gap-2">
           <svg
             width="20"
@@ -258,7 +258,7 @@ export default function TakedownPage() {
         </section>
 
         {/* ── Contact ──────────────────────────────────────────── */}
-        <section className="clay-card p-6 bg-card">
+        <section className="enterprise-card p-6 bg-card">
           <h2 className="font-heading font-bold text-xl mb-3">Contact Us</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
             Send all takedown and content removal requests to:
@@ -276,7 +276,7 @@ export default function TakedownPage() {
         </section>
 
         {/* ── Our Commitment ───────────────────────────────────── */}
-        <section className="clay-card p-6 border-primary-300 dark:border-primary-700 bg-primary-50/30 dark:bg-primary-950/20">
+        <section className="enterprise-card p-6 border-primary-300 dark:border-primary-700 bg-primary-50/30 dark:bg-primary-950/20">
           <h2 className="font-heading font-bold text-xl mb-3 flex items-center gap-2">
             <svg
               width="22"

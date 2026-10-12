@@ -80,6 +80,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 2c. Server-Side Anti-Cheat & Assessment Passing Threshold (70% Minimum)
+    if (quizScore != null && quizScore < 70) {
+      return NextResponse.json(
+        {
+          error:
+            "A minimum passing score of 70% is required on module assessments to qualify for a Certificate of Completion.",
+          quizThresholdNotMet: true,
+        },
+        { status: 400 }
+      );
+    }
+
     // 3. Server-Side Payment Verification (Cashfree ₹29 Fee)
     // If Cashfree keys are configured in production/sandbox, verify that payment is completed.
     const isCashfreeConfigured = Boolean(

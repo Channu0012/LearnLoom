@@ -139,7 +139,7 @@ export default function AdminPage() {
       <p className="text-muted-foreground font-body mb-8">Review reports and moderate courses.</p>
 
       {reports.length === 0 ? (
-        <div className="clay-card p-12 text-center">
+        <div className="enterprise-card p-12 text-center">
           <p className="text-muted-foreground font-body">No reports yet — all clear!</p>
         </div>
       ) : (
@@ -147,7 +147,7 @@ export default function AdminPage() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className={`clay-card p-5 ${report.status !== "open" ? "opacity-60" : ""}`}
+              className={`enterprise-card p-5 ${report.status !== "open" ? "opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>

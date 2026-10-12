@@ -179,7 +179,7 @@ export function CoursePageClient({
   );
 }
 
-// ── The Coursera-Grade Player UI ──────────────────────────────────────────
+// ── The Platform Player UI ────────────────────────────────────────────────
 
 function CoursePlayerContent({
   course,
@@ -1215,7 +1215,7 @@ function CoursePlayerContent({
                     </h4>
                     <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
                       {exemptIds.has(activeLesson.id)
-                        ? "This module is exempt from your course requirements so your learning streak and diploma qualification remain intact."
+                        ? "This module is exempt from your course requirements so your learning streak and certificate qualification remain intact."
                         : "The original creator may have privatized or restricted embeds. You won't get stuck! Mark this lesson exempt to advance your course."}
                     </p>
                   </div>
@@ -1267,7 +1267,7 @@ function CoursePlayerContent({
 
           {/* Player Controls & Action Deck (Coursera / Big Company Grade) */}
           {activeLesson && (
-            <div className="clay-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl mb-6 shadow-sm space-y-4">
+            <div className="enterprise-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border/80 rounded-xl mb-6 shadow-xs space-y-4">
               {/* Row 1: Lesson Meta + Big Screen + Autoplay Pill */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="min-w-0 flex-1">
@@ -1514,7 +1514,7 @@ function CoursePlayerContent({
                     type="button"
                     onClick={() => setIsCompanionOpen((o) => !o)}
                     className="btn-ghost text-xs px-3 py-2 min-h-[38px] rounded-xl inline-flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:bg-primary-500/10 cursor-pointer active:scale-95 font-heading font-bold"
-                    title="Open Coursera-grade AI study companion"
+                    title="Open AI study companion"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
@@ -1678,7 +1678,7 @@ function CoursePlayerContent({
           {/* Tab 1: Overview */}
           {activeTab === "overview" && (
             <div className="space-y-6">
-              <div className="clay-card p-6 bg-card border border-border rounded-2xl">
+              <div className="enterprise-card p-6 bg-card border border-border rounded-xl">
                 <h3 className="font-heading font-bold text-lg text-foreground mb-3">
                   About This Course
                 </h3>
@@ -1744,10 +1744,10 @@ function CoursePlayerContent({
               {/* Sponsored Banner */}
               <CourseAdBanner category={course.category} />
 
-              {/* Course Completion & Coursera-Grade Credential Unlock */}
+              {/* Course Completion & Credential Unlock */}
               {isCompleted &&
                 (!certEligibility.eligible ? (
-                  <div className="clay-card p-6 bg-muted/40 border border-teal-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
+                  <div className="enterprise-card p-6 bg-muted/40 border border-teal-500/30 rounded-xl text-center space-y-4 animate-fade-in">
                     <div className="w-14 h-14 mx-auto rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/30 flex items-center justify-center">
                       <svg
                         width="28"
@@ -1770,7 +1770,7 @@ function CoursePlayerContent({
                       </h3>
                       <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
                         {certEligibility.reason ||
-                          "This is a single-module roadmap or informational guide. Verified completion certificates are reserved exclusively for multi-module accredited masterclasses."}
+                          "This is a single-module roadmap or informational guide. Verified completion certificates are reserved exclusively for multi-module verified masterclasses."}
                       </p>
                     </div>
                     <div className="flex items-center justify-center gap-3 pt-1">
@@ -1783,7 +1783,7 @@ function CoursePlayerContent({
                     </div>
                   </div>
                 ) : (
-                  <div className="clay-card p-6 bg-muted/40 border-2 border-primary-500/30 rounded-2xl text-center space-y-4 animate-fade-in">
+                  <div className="enterprise-card p-6 bg-muted/40 border border-primary-500/30 rounded-xl text-center space-y-4 animate-fade-in">
                     <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/30 flex items-center justify-center">
                       <svg
                         width="28"
@@ -1807,7 +1807,7 @@ function CoursePlayerContent({
                       <p className="text-xs text-muted-foreground font-body max-w-md mx-auto mt-1">
                         {totalQuizTotal > 0 &&
                         Math.round((totalQuizScore / totalQuizTotal) * 100) < 70
-                          ? `Google & Coursera certification standard: Minimum 70% passing grade required. Your current average is ${Math.round((totalQuizScore / totalQuizTotal) * 100)}%. Retake assessments to unlock your certificate.`
+                          ? `Certification standard: Minimum 70% passing grade required. Your current average is ${Math.round((totalQuizScore / totalQuizTotal) * 100)}%. Retake assessments to unlock your certificate.`
                           : `You have completed all video modules with verified competence. Claim your official verified credential.`}
                       </p>
                     </div>
@@ -1942,7 +1942,7 @@ function CoursePlayerContent({
           {activeTab === "quiz" && (
             <div className="space-y-5">
               {/* Quick Assessment Launch */}
-              <div className="clay-card p-6 bg-card border border-border rounded-2xl text-center space-y-4">
+              <div className="enterprise-card p-6 bg-card border border-border rounded-xl text-center space-y-4">
                 <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
                   <svg
                     width="26"
@@ -1961,8 +1961,8 @@ function CoursePlayerContent({
                     Module Knowledge Assessment
                   </h3>
                   <p className="text-xs text-muted-foreground font-body mt-1 max-w-md mx-auto">
-                    Evaluate your comprehension of &ldquo;{activeLesson?.title}&rdquo;. Google &amp;
-                    Coursera standard: 70% passing threshold required for certificate qualification.
+                    Evaluate your comprehension of &ldquo;{activeLesson?.title}&rdquo;. Minimum 70%
+                    passing threshold required for certificate qualification.
                   </p>
                 </div>
                 <button
@@ -2026,7 +2026,7 @@ function CoursePlayerContent({
 
               {/* Assessment Stats Summary */}
               {quizScores.size > 0 && (
-                <div className="clay-card p-5 bg-card border border-border rounded-2xl">
+                <div className="enterprise-card p-5 bg-card border border-border rounded-xl">
                   <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
                     <svg
                       width="14"
@@ -2072,7 +2072,7 @@ function CoursePlayerContent({
 
           {/* Tab 4: Report Form */}
           {activeTab === "report" && (
-            <div className="clay-card p-6 bg-card border border-destructive/30 rounded-2xl">
+            <div className="enterprise-card p-6 bg-card border border-destructive/30 rounded-xl">
               <h3 className="font-heading font-bold text-base mb-2 text-foreground">
                 Report this course
               </h3>
@@ -2119,7 +2119,7 @@ function CoursePlayerContent({
           className="w-full lg:w-96 flex-shrink-0 static lg:sticky lg:top-20"
           aria-label="Course syllabus"
         >
-          <div className="clay-card bg-card border-2 border-border rounded-3xl overflow-hidden shadow-lg">
+          <div className="enterprise-card bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
             {/* Syllabus Header with Progress or Get Started button */}
             <div className="p-5 border-b-2 border-border bg-muted/40">
               <div className="flex items-center justify-between mb-2">
@@ -2358,7 +2358,7 @@ function CoursePlayerContent({
 
           {/* Sign in prompt card if not authenticated */}
           {!user && (
-            <div className="clay-card p-5 mt-4 text-center bg-card border border-border rounded-2xl">
+            <div className="enterprise-card p-5 mt-4 text-center bg-card border border-border rounded-xl">
               <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 mx-auto mb-2 flex items-center justify-center">
                 <svg
                   width="20"
@@ -2435,7 +2435,7 @@ function CoursePlayerContent({
       {/* Floating XP & Daily Streak Reward Toast */}
       {xpToast && (
         <div
-          className="fixed bottom-6 left-6 z-50 clay-card p-4 bg-card/95 backdrop-blur-md border-2 border-amber-500/50 shadow-2xl rounded-2xl flex items-center gap-3.5 max-w-sm animate-slide-up"
+          className="fixed bottom-6 left-6 z-50 enterprise-card p-4 bg-card/95 backdrop-blur-md border border-amber-500/50 shadow-xl rounded-xl flex items-center gap-3.5 max-w-sm animate-slide-up"
           role="status"
           aria-live="polite"
         >
@@ -2465,7 +2465,7 @@ function CoursePlayerContent({
       {/* Credibility & Assessment Modal */}
       {isCredibilityModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="clay-card p-6 bg-card border border-border rounded-3xl max-w-md w-full shadow-2xl space-y-4">
+          <div className="enterprise-card p-6 bg-card border border-border rounded-2xl max-w-md w-full shadow-xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2580,7 +2580,7 @@ function CoursePlayerContent({
             aria-hidden="true"
           />
 
-          <div className="relative w-full max-w-lg bg-card border-2 border-border/90 rounded-3xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92dvh] z-10">
+          <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92dvh] z-10">
             {/* Header with celebration banner */}
             <div className="relative p-6 sm:p-7 border-b border-border bg-gradient-to-b from-amber-500/15 via-primary/5 to-background text-center overflow-hidden">
               <button
@@ -2694,9 +2694,9 @@ function CoursePlayerContent({
                     <span>Educational Guide Completed</span>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
-                    You completed this educational guide! Note: Accredited vector diplomas and
-                    cryptographic verification IDs are awarded for full-length masterclasses (45+
-                    mins) or multi-lesson courses.
+                    You completed this educational guide! Note: Verified completion certificates and
+                    public verification records are awarded for full-length masterclasses (45+ mins)
+                    or multi-lesson courses.
                   </p>
                   <div className="pt-2 flex justify-end">
                     <Link
@@ -2723,12 +2723,12 @@ function CoursePlayerContent({
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         <polyline points="9 12 11 14 15 10" />
                       </svg>
-                      <span>Accredited Credential Ready to Unlock</span>
+                      <span>Verified Certificate Ready to Unlock</span>
                     </div>
                     <p className="text-muted-foreground text-[11px] leading-relaxed">
                       You achieved a score of <strong>{overallQuizPercent}%</strong> (exceeding the
-                      strict 70% passing threshold). Your official tamper-proof credential with
-                      public registry ID is ready!
+                      strict 70% passing threshold). Your official certificate with public registry
+                      ID is ready!
                     </p>
                   </div>
 
@@ -2808,7 +2808,7 @@ function CoursePlayerContent({
                   </div>
                   <p className="text-muted-foreground text-[11px] leading-relaxed">
                     {totalQuizTotal > 0
-                      ? `Your current assessment score is ${overallQuizPercent}%. To ensure academic credibility, a minimum passing score of 70% is required to certify your diploma.`
+                      ? `Your current assessment score is ${overallQuizPercent}%. To ensure academic credibility, a minimum passing score of 70% is required to issue your certificate.`
                       : "You completed all video lessons! Complete the module assessment and score at least 70% to qualify for your verified certificate."}
                   </p>
                   <button

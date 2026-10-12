@@ -174,7 +174,7 @@ async function getSignatureDataUrl(): Promise<string | null> {
       return cachedBrowserSignatureDataUrl;
     }
     try {
-      const res = await fetch("/images/signature.png?v=20261011");
+      const res = await fetch("/images/signature.png?v=20261012_pen");
       if (res.ok) {
         const blob = await res.blob();
         return await new Promise<string>((resolve, reject) => {
@@ -278,7 +278,7 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFontSize(9.5);
   doc.setTextColor(71, 85, 105); // Slate-600
   doc.text(
-    "for successfully completing the accredited curriculum and demonstrating professional mastery in",
+    "for successfully completing the curriculum and demonstrating professional mastery in",
     centerX,
     110,
     {
@@ -314,7 +314,7 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFont("helvetica", "bold");
   doc.setFontSize(5.5);
   doc.setTextColor(148, 163, 184); // Slate-400
-  doc.text("ACCREDITED CREDENTIAL SPECIFICATION  -  VERIFIED MASTERY", centerX, lineY + 4, {
+  doc.text("VERIFIED CREDENTIAL SPECIFICATION  -  PROFESSIONAL MASTERY", centerX, lineY + 4, {
     align: "center",
   });
 
@@ -395,8 +395,8 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   const signatureDataUrl = await getSignatureDataUrl();
   if (signatureDataUrl) {
     try {
-      // 46mm wide x 13mm high transparent PNG signature centered at sigCenterX
-      doc.addImage(signatureDataUrl, "PNG", sigCenterX - 23, sigY - 14, 46, 13);
+      // 48mm wide x 15mm high transparent PNG signature centered at sigCenterX
+      doc.addImage(signatureDataUrl, "PNG", sigCenterX - 24, sigY - 15, 48, 15);
     } catch (err) {
       console.warn("Could not draw signature image onto PDF:", err);
     }

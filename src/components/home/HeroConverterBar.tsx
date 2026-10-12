@@ -80,12 +80,13 @@ export function HeroConverterBar() {
             <input
               type="text"
               value={url}
+              disabled={isSubmitting}
               onChange={(e) => {
                 setUrl(e.target.value);
                 if (error) setError(null);
               }}
               placeholder="Paste any YouTube playlist or video URL…"
-              className="w-full bg-transparent text-foreground placeholder:text-muted-foreground text-sm sm:text-base outline-none font-body"
+              className="w-full bg-transparent text-foreground placeholder:text-muted-foreground text-sm sm:text-base outline-none font-body disabled:opacity-60"
               aria-label="YouTube playlist or video URL"
             />
           </div>

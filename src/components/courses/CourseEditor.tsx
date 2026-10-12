@@ -53,7 +53,7 @@ function LessonRow({
   onTitleChange: (_id: string, _title: string) => void;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 clay-card bg-muted/40 group">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 enterprise-card bg-muted/40 group">
       <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
         {/* Order number */}
         <span className="text-xs font-heading font-bold text-muted-foreground w-5 text-center flex-shrink-0">
@@ -794,7 +794,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   if (!user) {
     return (
       <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="clay-card p-8 bg-card border border-border text-center">
+        <div className="enterprise-card p-8 bg-card border border-border text-center">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600">
             <svg
               width="28"
@@ -974,7 +974,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         </div>
 
         {/* Add video */}
-        <div className="clay-card p-5 sm:p-6 bg-card border-2 border-border rounded-2xl">
+        <div className="enterprise-card p-5 sm:p-6 bg-card border border-border rounded-xl">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
               <p className="font-heading font-bold text-sm text-foreground">
@@ -1339,7 +1339,7 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         )}
 
         {lessons.length === 0 && (
-          <div className="clay-card p-8 text-center text-muted-foreground bg-card border-dashed border-2 border-border">
+          <div className="enterprise-card p-8 text-center text-muted-foreground bg-card border-dashed border border-border rounded-xl">
             <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600">
               <svg
                 width="24"

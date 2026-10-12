@@ -19,7 +19,7 @@ export default function CourseDetailLoading() {
 
         {/* Right: Lesson playlist skeleton */}
         <div className="space-y-3">
-          <div className="clay-card p-4 bg-card border border-border">
+          <div className="enterprise-card p-4 bg-card border border-border">
             <div className="skeleton h-6 w-1/2 mb-4 rounded-lg" />
             <div className="skeleton h-2 w-full rounded-full mb-4" />
             <div className="space-y-2.5">

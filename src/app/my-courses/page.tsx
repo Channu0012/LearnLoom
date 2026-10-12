@@ -149,7 +149,7 @@ export default function MyCoursesPage() {
   if (!user) {
     return (
       <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="clay-card p-8 bg-card border border-border text-center rounded-3xl shadow-xl">
+        <div className="enterprise-card p-8 bg-card border border-border text-center rounded-2xl shadow-sm">
           <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-primary-100 dark:bg-primary-950/60 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm">
             <svg
               width="30"
@@ -243,7 +243,7 @@ export default function MyCoursesPage() {
 
       {/* Analytics Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
+        <div className="enterprise-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Total Courses
           </p>
@@ -253,7 +253,7 @@ export default function MyCoursesPage() {
           <p className="font-body text-[11px] text-muted-foreground mt-1">In your studio</p>
         </div>
 
-        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
+        <div className="enterprise-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Published Live
           </p>
@@ -265,7 +265,7 @@ export default function MyCoursesPage() {
           </p>
         </div>
 
-        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
+        <div className="enterprise-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Total Lessons
           </p>
@@ -275,7 +275,7 @@ export default function MyCoursesPage() {
           <p className="font-body text-[11px] text-muted-foreground mt-1">Video modules created</p>
         </div>
 
-        <div className="clay-card p-4 sm:p-5 bg-card border border-border">
+        <div className="enterprise-card p-4 sm:p-5 bg-card border border-border">
           <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">
             Est. Content Hours
           </p>
@@ -355,7 +355,7 @@ export default function MyCoursesPage() {
 
       {/* Courses List */}
       {courses.length === 0 ? (
-        <div className="clay-card p-12 text-center max-w-2xl mx-auto bg-card border-2 border-dashed border-border rounded-3xl">
+        <div className="enterprise-card p-12 text-center max-w-2xl mx-auto bg-card border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center">
             <svg
               width="32"
@@ -395,7 +395,7 @@ export default function MyCoursesPage() {
           </Link>
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="clay-card p-10 text-center bg-card">
+        <div className="enterprise-card p-10 text-center bg-card rounded-2xl">
           <p className="text-muted-foreground font-body text-sm mb-3">
             No courses match your current search or filter criteria.
           </p>
@@ -415,7 +415,7 @@ export default function MyCoursesPage() {
           {filteredCourses.map((course) => (
             <div
               key={course.id}
-              className="clay-card p-5 sm:p-6 bg-card border border-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 hover:border-primary-400/50 transition-all"
+              className="enterprise-card p-5 sm:p-6 bg-card border border-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 hover:border-slate-300 dark:hover:border-slate-700 transition-all"
             >
               {/* Left: Thumbnail & Details */}
               <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">

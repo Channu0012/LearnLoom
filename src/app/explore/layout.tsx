@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Explore Free Video Courses & Curated Playlists | VeySkill",
   description:
-    "Browse hundreds of free, distraction-free courses organized from online video playlists. Learn programming, design, business, sciences, and languages with zero ads.",
+    "Browse hundreds of free, distraction-free courses organized from online video playlists. Learn programming, design, business, sciences, and skills with focused lesson tracking and note-taking.",
   keywords: [
     "explore free courses",
     "video playlists to courses",

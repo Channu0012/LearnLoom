@@ -1332,7 +1332,7 @@ If you are facing a specific compiler error or bug in this lecture, paste your c
 
 // ===========================================================================
 // 8. INTELLIGENT CERTIFICATE ELIGIBILITY DETECTOR
-// Automatically distinguishes accredited Masterclasses from brief educational
+// Automatically distinguishes verified Masterclasses from brief educational
 // roadmaps, career overviews, and single-video summaries.
 // ===========================================================================
 
@@ -1394,13 +1394,13 @@ export function checkCertificateEligibility(
     };
   }
 
-  // Multi-lesson courses (2 or more lessons) are accredited masterclasses
+  // Multi-lesson courses (2 or more lessons) are verified masterclasses
   if (lessonCount >= 2) {
     return {
       eligible: true,
-      label: "Accredited Masterclass",
+      label: "Verified Masterclass",
       reason:
-        "Comprehensive multi-lesson curriculum verified for cryptographic diploma and credential issuance.",
+        "Comprehensive multi-lesson curriculum verified for certificate of completion issuance.",
     };
   }
 
@@ -1416,7 +1416,7 @@ export function checkCertificateEligibility(
       const hours = Math.round((duration / 3600) * 10) / 10;
       return {
         eligible: true,
-        label: "Accredited Single-Video Masterclass",
+        label: "Verified Single-Video Masterclass",
         reason: `Comprehensive ${hours > 0 ? hours + "-hour " : ""}full masterclass verified for credential issuance.`,
         isSingleVideoCourse: true,
         detectedHours: hours >= 1 ? hours : undefined,
@@ -1445,7 +1445,7 @@ export function checkCertificateEligibility(
     return {
       eligible: false,
       label: "Educational Video Guide",
-      reason: `This is a short educational tutorial (${matchedMins} mins). Official accredited certificates are awarded for full-length masterclasses or multi-lesson courses.`,
+      reason: `This is a short educational tutorial (${matchedMins} mins). Verified certificates of completion are awarded for full-length masterclasses or multi-lesson courses.`,
       isSingleVideoCourse: true,
     };
   }
@@ -1460,7 +1460,7 @@ export function checkCertificateEligibility(
     if (matchedHours >= 1.0) {
       return {
         eligible: true,
-        label: "Accredited Single-Video Masterclass",
+        label: "Verified Single-Video Masterclass",
         reason: `Comprehensive ${matchedHours}-hour full masterclass verified for credential issuance.`,
         isSingleVideoCourse: true,
         detectedHours: matchedHours,
@@ -1475,7 +1475,7 @@ export function checkCertificateEligibility(
     if (h >= 1) {
       return {
         eligible: true,
-        label: "Accredited Single-Video Masterclass",
+        label: "Verified Single-Video Masterclass",
         reason: `Comprehensive ${h}-hour full masterclass verified for credential issuance.`,
         isSingleVideoCourse: true,
         detectedHours: h,
@@ -1492,21 +1492,21 @@ export function checkCertificateEligibility(
   if (isComprehensiveFullCourse) {
     return {
       eligible: true,
-      label: "Accredited Single-Video Masterclass",
+      label: "Verified Single-Video Masterclass",
       reason:
-        "Comprehensive full-length course curriculum verified for cryptographic diploma and credential issuance.",
+        "Comprehensive full-length course curriculum verified for certificate of completion issuance.",
       isSingleVideoCourse: true,
     };
   }
 
   // 6. General Educational Course Default
   // Any single-module technical course that is not explicitly a short clip (<45 mins)
-  // qualifies for verified diploma upon completing the course and passing the 70% technical assessment.
+  // qualifies for verified certificate of completion upon completing the course and passing the 70% technical assessment.
   return {
     eligible: true,
-    label: "Accredited Masterclass",
+    label: "Verified Masterclass",
     reason:
-      "Educational curriculum verified for cryptographic diploma and credential issuance upon 70% assessment score.",
+      "Educational curriculum verified for certificate of completion issuance upon 70% assessment score.",
     isSingleVideoCourse: true,
   };
 }

@@ -140,7 +140,7 @@ export function QuizModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-card border-2 border-border rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-border bg-muted/40">
           <div className="flex items-center justify-between">
@@ -270,7 +270,7 @@ export function QuizModal({
                   const showResult = isAnswered;
 
                   let optionClass =
-                    "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 transition-all text-sm font-body cursor-pointer flex items-start gap-3 active:scale-[0.99]";
+                    "w-full text-left p-3.5 sm:p-4 rounded-xl border transition-all text-sm font-body cursor-pointer flex items-start gap-3 active:scale-[0.99]";
 
                   if (showResult && isCorrect) {
                     optionClass +=
@@ -278,10 +278,10 @@ export function QuizModal({
                   } else if (showResult && isSelected && !isCorrect) {
                     optionClass += " border-destructive bg-destructive/10 text-destructive";
                   } else if (isSelected) {
-                    optionClass += " border-primary-500 bg-primary-500/5 text-foreground shadow-sm";
+                    optionClass += " border-teal-500 bg-teal-500/5 text-foreground shadow-xs";
                   } else {
                     optionClass +=
-                      " border-border hover:border-primary-300 hover:bg-muted/50 text-foreground";
+                      " border-border hover:border-slate-300 dark:hover:border-slate-700 hover:bg-muted/50 text-foreground";
                   }
 
                   return (
@@ -421,7 +421,7 @@ export function QuizModal({
           {isFinished && (
             <div className="text-center py-6 space-y-5 animate-fade-in">
               <div
-                className={`w-20 h-20 mx-auto rounded-3xl border-2 flex items-center justify-center ${
+                className={`w-20 h-20 mx-auto rounded-2xl border flex items-center justify-center ${
                   isPassed
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
                     : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
