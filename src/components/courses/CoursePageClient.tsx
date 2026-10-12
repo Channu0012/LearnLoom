@@ -1214,7 +1214,7 @@ function CoursePlayerContent({
                   href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}&t=${cp.sec}s`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 text-[11px] font-mono whitespace-nowrap transition-all shadow-2xs inline-flex items-center gap-1 hover:border-teal-500/50"
+                  className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 text-[11px] font-mono whitespace-nowrap transition-all shadow-sm inline-flex items-center gap-1 hover:border-teal-500/50"
                   title={`Jump to ${cp.label} on YouTube`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-teal-500/80" />

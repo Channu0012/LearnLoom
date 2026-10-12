@@ -411,7 +411,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
                   </span>
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
                 </div>
-                <div className="text-xl font-heading font-extrabold text-foreground font-mono text-sm sm:text-base pt-1 truncate">
+                <div className="font-mono font-bold text-foreground text-sm sm:text-base pt-1 truncate">
                   {cleanId}
                 </div>
                 <p className="text-xs text-muted-foreground font-body leading-relaxed">
@@ -430,7 +430,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
                 {competencies.map((comp) => (
                   <span
                     key={comp}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-card border border-border text-foreground text-xs font-medium font-body shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-card border border-border text-foreground text-xs font-medium font-body shadow-sm"
                   >
                     <svg
                       width="12"
