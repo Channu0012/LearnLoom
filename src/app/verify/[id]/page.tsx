@@ -343,7 +343,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
                 Issuance Authority
               </span>
               <span className="font-bold text-foreground text-sm mt-0.5 block">
-                VeySkill Learning
+                VeySkill Academy
               </span>
             </div>
           </div>

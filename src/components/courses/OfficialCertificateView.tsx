@@ -2,13 +2,12 @@
 
 // ---------------------------------------------------------------------------
 // OfficialCertificateView.tsx — Official VeySkill Verified Credential View
-// Exact visual fidelity to the official VeySkill template (media_1791181434953.pdf).
-// Features: Dynamic recipient name over the teal divider, executive masterclass title,
-// high-contrast scannable QR code linked to cryptographic verification,
-// credential ID directly under QR code, and issuance date.
+// Exact visual fidelity to user's masterwork design.
+// Features: Elegant script recipient name (no underline), centered course title in quotes,
+// centered "Date of Completion : {date}", centered "Issued by : veyskill",
+// and clean uncluttered certificate canvas (without QR code).
 // ---------------------------------------------------------------------------
-import React, { useState, useEffect } from "react";
-import QRCode from "qrcode";
+import React from "react";
 import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 
 interface OfficialCertificateViewProps {
@@ -30,227 +29,90 @@ interface OfficialCertificateViewProps {
 export function OfficialCertificateView({
   recipientName,
   courseTitle,
-  certificateId,
+  certificateId: _certificateId,
   issuedDate,
-  verifyUrl,
+  verifyUrl: _verifyUrl,
   isInteractive = false,
   onNameChange,
 }: OfficialCertificateViewProps) {
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
-
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
-  const cleanDate = issuedDate.trim() || "October 2026";
+  const cleanDate = issuedDate.trim() || "13 oct 2026";
 
-  // Build high-integrity verification URL embedding certificate metadata
-  // so scanning this QR code from any external camera/phone opens this specific credential
-  const effectiveVerifyUrl = (() => {
-    try {
-      const origin =
-        typeof window !== "undefined" && window.location.origin
-          ? window.location.origin
-          : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
-      const base = verifyUrl || `${origin}/verify/${certificateId}`;
-      const url = new URL(base, origin);
-      if (recipientName) {
-        url.searchParams.set("n", recipientName.trim());
-      }
-      if (executiveTitle) {
-        url.searchParams.set("c", executiveTitle);
-      }
-      if (cleanDate) {
-        url.searchParams.set("d", cleanDate);
-      }
-      return url.toString();
-    } catch {
-      return verifyUrl || `https://veyskill.in/verify/${certificateId}`;
-    }
-  })();
-
-  // Generate high-contrast scannable QR code (Dark Teal on Pure White)
-  useEffect(() => {
-    let isMounted = true;
-    QRCode.toDataURL(effectiveVerifyUrl, {
-      margin: 1,
-      width: 280,
-      color: {
-        dark: "#0B4F4A", // Dark Teal
-        light: "#FFFFFF", // Pure White
-      },
-    })
-      .then((url) => {
-        if (isMounted) setQrDataUrl(url);
-      })
-      .catch((err) => {
-        console.error("QR Code generation failed:", err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [effectiveVerifyUrl]);
-
-  // Proportional responsive single-line font sizing for recipient name
-  // Accommodates long candidate names gracefully without truncation
+  // Proportional responsive script font sizing for recipient name
   const nameLength = recipientName.trim().length;
   const getNameSizeClass = () => {
-    if (nameLength > 36) return "text-[11px] sm:text-base md:text-xl lg:text-2xl";
-    if (nameLength > 24) return "text-xs sm:text-lg md:text-2xl lg:text-3xl";
-    if (nameLength > 16) return "text-sm sm:text-xl md:text-3xl lg:text-4xl";
-    return "text-base sm:text-2xl md:text-4xl lg:text-5xl";
+    if (nameLength > 36) return "text-sm sm:text-xl md:text-2xl lg:text-3xl";
+    if (nameLength > 24) return "text-base sm:text-2xl md:text-3xl lg:text-4xl";
+    if (nameLength > 16) return "text-lg sm:text-3xl md:text-4xl lg:text-5xl";
+    return "text-xl sm:text-4xl md:text-5xl lg:text-6xl";
   };
 
   return (
     <div className="relative w-full max-w-4xl mx-auto rounded-3xl p-1 sm:p-2.5 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 shadow-2xl border border-border">
-      {/* Certificate Frame: Standard ISO A4 Landscape Aspect Ratio (297 / 210 = 1.414) */}
-      <div className="relative w-full aspect-[297/210] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white select-none">
-        {/* 1. Master Template High-Resolution Background (Cache-busted to ensure instant update across all devices) */}
+      {/* Certificate Frame: Exact Aspect Ratio of Template (2048 / 1448 = 1.414, ISO A4 Landscape) */}
+      <div className="relative w-full aspect-[2048/1448] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white select-none">
+        {/* 1. Master Template High-Resolution Background */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/certificate-template.jpg?v=20261011_star"
-          alt="VeySkill Official Certificate Template"
+          src="/images/certificate-template.jpg?v=20261013_perfect"
+          alt="VeySkill Official Navy Certificate Template"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
         />
 
-        {/* 2. Recipient Full Legal Name (Sits proportionally right above the pre-printed green line at 48.7%) */}
+        {/* 2. Recipient Full Name — Elegant Calligraphy / Script font, cleanly hovering above the flourish divider with NO artificial underline */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[86%] sm:w-[84%] max-w-[90%] text-center z-10 flex flex-col items-center justify-center pointer-events-none"
-          style={{ top: "45.0%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84%] max-w-[88%] text-center z-10 flex flex-col items-center justify-center pointer-events-none"
+          style={{ top: "37.5%" }}
         >
           {isInteractive && onNameChange ? (
             <input
               type="text"
               value={recipientName}
               onChange={(e) => onNameChange(e.target.value)}
-              className={`w-full font-heading font-black text-[#0A3A37] bg-transparent text-center focus:outline-none whitespace-nowrap leading-tight ${getNameSizeClass()}`}
+              className={`w-full font-['Dancing_Script',_'Brush_Script_MT',_cursive,_serif] font-bold italic text-[#003049] bg-transparent text-center focus:outline-none whitespace-nowrap leading-none ${getNameSizeClass()}`}
               placeholder="Enter your name"
             />
           ) : (
             <h3
-              className={`font-heading font-black text-[#0A3A37] tracking-tight whitespace-nowrap leading-none ${getNameSizeClass()}`}
+              className={`font-['Dancing_Script',_'Brush_Script_MT',_cursive,_serif] font-bold italic text-[#003049] tracking-normal whitespace-nowrap leading-none ${getNameSizeClass()}`}
               title={recipientName}
             >
-              {recipientName.trim() || "Distinguished Scholar"}
+              {recipientName.trim() || "channabasav bhimappa b patil"}
             </h3>
           )}
         </div>
 
-        {/* 3. Curriculum Completion Subheading Statement (Below the Line at y = 51.8% — Single Line Matching PDF) */}
+        {/* 3. Course Title — Centered in Double Quotes */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] text-center z-10 pointer-events-none"
-          style={{ top: "51.8%" }}
-        >
-          <p className="font-heading font-medium text-[6.5px] sm:text-[9.5px] md:text-[11px] lg:text-[12px] text-slate-600 tracking-normal whitespace-nowrap leading-none">
-            for successfully completing the curriculum and demonstrating professional mastery in
-          </p>
-        </div>
-
-        {/* 4. Normalized Executive Course Title (Centered at y = 55.8% matching PDF at 118mm/210mm) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84%] text-center z-10 pointer-events-none"
-          style={{ top: "55.8%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[82%] text-center z-10 pointer-events-none"
+          style={{ top: "52.0%" }}
         >
           <h4
-            className="font-heading font-extrabold text-[#0B5C58] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none text-[11px] sm:text-base md:text-xl lg:text-2xl"
+            className="font-serif font-bold text-[#003049] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none text-[10px] sm:text-base md:text-xl lg:text-2xl"
             title={executiveTitle}
           >
-            {executiveTitle}
+            &ldquo;{executiveTitle}&rdquo;
           </h4>
         </div>
 
-        {/* 4b. Architectural Accent Line & Diamond (Centered at y = 60.8% leaving balanced breathing room above and below) */}
+        {/* 4. Date of Completion — Cleanly centered single line */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[420px] pointer-events-none z-10"
-          style={{ top: "60.8%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 pointer-events-none flex items-center justify-center"
+          style={{ top: "65.5%" }}
         >
-          <div className="flex items-center justify-center gap-2 w-44 sm:w-60 md:w-72">
-            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
-            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#0B766E]/80 rotate-45 shrink-0" />
-            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#0B766E]/40 to-transparent" />
-          </div>
-          <span className="font-heading font-semibold text-[5px] sm:text-[7px] md:text-[8px] text-slate-400 uppercase tracking-[0.2em] mt-0.5">
-            Verified Credential Specification &middot; Professional Mastery
+          <span className="font-serif font-bold text-[#003049] text-[7.5px] sm:text-[11px] md:text-[13px] lg:text-[15px] tracking-tight whitespace-nowrap leading-none">
+            Date of Completion : {cleanDate}
           </span>
         </div>
 
-        {/* 5. Issuance Date (Positioned below template's 'Awarded on' at y = 68.8%) */}
+        {/* 5. Issued by — Cleanly centered single line */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 text-center z-10 pointer-events-none flex flex-col items-center"
-          style={{ top: "68.8%" }}
+          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 pointer-events-none flex items-center justify-center"
+          style={{ top: "69.0%" }}
         >
-          <p className="font-heading font-bold text-slate-800 text-[8px] sm:text-xs md:text-sm leading-tight">
-            {cleanDate}
-          </p>
-          <div className="w-16 sm:w-24 h-[1.5px] bg-[#0B766E]/40 mt-0.5 rounded-full" />
-        </div>
-
-        {/* 6. Scannable QR Code & Cryptographic ID Block (Bottom-Left Quadrant) */}
-        <div
-          className="absolute z-20 flex flex-col items-center text-center"
-          style={{ left: "14.1%", top: "63.8%" }}
-        >
-          {/* Real Scannable QR Code */}
-          <a
-            href={effectiveVerifyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`Scan or click to verify credential ${certificateId}`}
-            className="group block"
-          >
-            <div className="w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24 p-1 bg-white rounded-xl shadow-md border border-slate-200/90 group-hover:scale-105 transition-transform flex items-center justify-center">
-              {qrDataUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={qrDataUrl}
-                  alt={`QR Code to verify certificate ${certificateId}`}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-100 rounded-lg animate-pulse" />
-              )}
-            </div>
-          </a>
-
-          {/* Credential ID directly under QR code */}
-          <div className="mt-1 sm:mt-1.5 flex flex-col items-center">
-            <span
-              className="font-mono font-bold text-slate-800 tracking-tight text-[6px] sm:text-[9px] md:text-[11px] block leading-none"
-              title={`Credential ID: ${certificateId}`}
-            >
-              ID: {certificateId}
-            </span>
-            <span className="font-heading font-bold text-[#0B766E] uppercase tracking-wider text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 block leading-none">
-              SCAN TO VERIFY
-            </span>
-          </div>
-        </div>
-
-        {/* 7. Executive Signature Block (Bottom-Right Quadrant — Parallel with QR code at y = 63.8%) */}
-        <div
-          className="absolute z-20 flex flex-col items-center text-center select-none -translate-x-1/2"
-          style={{ left: "72.4%", top: "63.8%" }}
-        >
-          {/* Authentic executive signature of Channabasav Patil */}
-          <div className="relative z-10 w-28 sm:w-36 md:w-44 h-8 sm:h-10 md:h-12 flex items-center justify-center -mb-2 sm:-mb-3 rotate-[-1deg]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/signature.png?v=20261012_pen"
-              alt="Official Signature of Channabasav Patil"
-              className="w-full h-full object-contain pointer-events-none"
-            />
-          </div>
-
-          {/* Underline divider */}
-          <div className="w-24 sm:w-32 md:w-36 h-[1.5px] bg-[#0B766E]/70 my-0.5 rounded-full" />
-
-          {/* Signatory Details */}
-          <div className="relative z-10 mt-0.5 flex flex-col items-center">
-            <span className="font-heading font-black text-[#0A3A37] tracking-tight text-[8px] sm:text-xs md:text-sm leading-tight">
-              Channabasav Patil
-            </span>
-            <span className="font-mono font-bold text-slate-500 uppercase tracking-widest text-[5px] sm:text-[7px] md:text-[8px] mt-0.5 leading-none">
-              FOUNDER
-            </span>
-          </div>
+          <span className="font-serif font-bold text-[#003049] text-[7.5px] sm:text-[11px] md:text-[13px] lg:text-[15px] tracking-tight whitespace-nowrap leading-none">
+            Issued by : veyskill
+          </span>
         </div>
       </div>
     </div>

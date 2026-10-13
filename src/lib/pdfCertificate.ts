@@ -6,7 +6,6 @@
 // credential ID directly underneath QR code, and issuance date.
 // ---------------------------------------------------------------------------
 import { jsPDF } from "jspdf";
-import QRCode from "qrcode";
 
 export interface CertificatePdfOptions {
   id: string;
@@ -125,7 +124,7 @@ async function getCertificateTemplateDataUrl(): Promise<string | null> {
       return cachedBrowserTemplateDataUrl;
     }
     try {
-      const res = await fetch("/images/certificate-template.jpg?v=20261011_star");
+      const res = await fetch("/images/certificate-template.jpg?v=20261013_perfect");
       if (res.ok) {
         const blob = await res.blob();
         return await new Promise<string>((resolve, reject) => {
@@ -214,7 +213,7 @@ async function getSignatureDataUrl(): Promise<string | null> {
 }
 
 export async function createPdfCertificateDoc(options: CertificatePdfOptions): Promise<jsPDF> {
-  const { id, userName, courseTitle, issuedDate, verifyUrl } = options;
+  const { userName, courseTitle, issuedDate } = options;
 
   // A4 Landscape: 297mm width x 210mm height (ISO 216 standard)
   const doc = new jsPDF({
@@ -241,182 +240,106 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
     }
   } else {
     // Elegant Vector Fallback if template image is missing
-    doc.setDrawColor(11, 118, 110);
+    doc.setDrawColor(0, 48, 73); // Deep Navy (#003049)
     doc.setLineWidth(1.5);
     doc.roundedRect(10, 10, pageWidth - 20, pageHeight - 20, 6, 6, "S");
+    doc.setLineWidth(0.5);
+    doc.roundedRect(13, 13, pageWidth - 26, pageHeight - 26, 4, 4, "S");
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(30);
-    doc.setTextColor(11, 118, 110);
+    doc.setFontSize(28);
+    doc.setTextColor(0, 48, 73);
     doc.text("CERTIFICATE", centerX, 36, { align: "center" });
+
     doc.setFontSize(14);
-    doc.setTextColor(30, 41, 59);
+    doc.setTextColor(85, 117, 133);
     doc.text("OF COMPLETION", centerX, 44, { align: "center" });
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(71, 85, 105);
-    doc.text("This is to certify that", centerX, 68, { align: "center" });
-    // Center divider line
-    doc.setDrawColor(11, 118, 110);
-    doc.setLineWidth(0.8);
-    doc.line(72, 102.2, 225, 102.2);
+    doc.setTextColor(85, 117, 133);
+    doc.text("This is to certify that", centerX, 62, { align: "center" });
+
+    // Center flourish divider line
+    doc.setDrawColor(0, 48, 73);
+    doc.setLineWidth(0.5);
+    doc.line(centerX - 45, 87, centerX + 45, 87);
+
+    doc.setFontSize(9.5);
+    doc.text("has successfully completed the training program in", centerX, 97, {
+      align: "center",
+    });
+
+    doc.setFontSize(8.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      "The participant has demonstrated competence in programming and the ability to apply coding skills in practical scenarios.",
+      centerX,
+      123,
+      { align: "center" }
+    );
+
+    // Labels in fallback
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(0, 48, 73);
+    doc.text("Date of Completion :", 115, 138.8);
+    doc.text("Issued by :", 125, 146.7);
+
+    // Signature image & founder details in fallback
+    const fallbackSigData = await getSignatureDataUrl();
+    if (fallbackSigData) {
+      try {
+        doc.addImage(fallbackSigData, "PNG", 198, 152, 44, 14);
+      } catch {
+        // Fallback signature text
+      }
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(0, 48, 73);
+    doc.text("Channabasav Patil", 220, 168, { align: "center" });
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text("FOUNDER", 220, 173, { align: "center" });
   }
 
-  // 3. Recipient Full Legal Name (Auto-Scaled Single Line sitting cleanly above the teal line)
-  const cleanName = userName.trim() || "Distinguished Scholar";
-  let nameSize = 25;
-  if (cleanName.length > 20) nameSize = 21;
-  if (cleanName.length > 28) nameSize = 17.5;
-  if (cleanName.length > 38) nameSize = 14.5;
+  // 3. Recipient Full Legal Name (Elegant Italic Script, centered gracefully above flourish divider with NO underline)
+  const cleanName = userName.trim() || "channabasav bhimappa b patil";
+  let nameSize = 28;
+  if (cleanName.length > 20) nameSize = 23;
+  if (cleanName.length > 28) nameSize = 18.5;
+  if (cleanName.length > 38) nameSize = 15;
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("times", "bolditalic");
   doc.setFontSize(nameSize);
-  doc.setTextColor(10, 58, 55); // Deep Teal (#0A3A37)
-  doc.text(cleanName, centerX, 88, { align: "center" });
+  doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
+  doc.text(cleanName, centerX, 80.5, { align: "center" });
 
-  // 4. Subheading Statement below the teal dividing line
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor(71, 85, 105); // Slate-600
-  doc.text(
-    "for successfully completing the curriculum and demonstrating professional mastery in",
-    centerX,
-    110,
-    {
-      align: "center",
-    }
-  );
-
-  // 5. Clean, Professional Masterclass Course Title
+  // 4. Course Title (Centered in double quotes)
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
-  let titleSize = 16;
-  if (executiveTitle.length > 36) titleSize = 13.5;
-  if (executiveTitle.length > 50) titleSize = 11.5;
+  let titleSize = 14.5;
+  if (executiveTitle.length > 36) titleSize = 12;
+  if (executiveTitle.length > 50) titleSize = 10;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(titleSize);
-  doc.setTextColor(11, 92, 88); // Prestigious Dark Teal (#0B5C58)
-  doc.text(executiveTitle, centerX, 118, { align: "center" });
+  doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
+  doc.text(`\u201C${executiveTitle}\u201D`, centerX, 109.5, { align: "center" });
 
-  // 5b. Architectural Accent Line & Diamond (Vector-rendered for razor-sharp PDF export & 100% font safety)
-  const lineY = 125.5;
-  const halfLineWidth = 42;
-  doc.setDrawColor(11, 118, 110);
-  doc.setLineWidth(0.25);
-  doc.line(centerX - halfLineWidth, lineY, centerX - 3.5, lineY);
-  doc.line(centerX + 3.5, lineY, centerX + halfLineWidth, lineY);
-
-  // Filled vector diamond at center
-  doc.setFillColor(11, 118, 110);
-  doc.triangle(centerX, lineY - 1.4, centerX - 1.4, lineY, centerX + 1.4, lineY, "F");
-  doc.triangle(centerX, lineY + 1.4, centerX - 1.4, lineY, centerX + 1.4, lineY, "F");
-
-  // Executive credential specification label underneath (Font-safe ASCII)
+  // 5. Date of Completion (Single clean line centered at 50%)
+  const cleanDate = issuedDate.trim() || "13 oct 2026";
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(5.5);
-  doc.setTextColor(148, 163, 184); // Slate-400
-  doc.text("VERIFIED CREDENTIAL SPECIFICATION  -  PROFESSIONAL MASTERY", centerX, lineY + 4, {
-    align: "center",
-  });
+  doc.setFontSize(9.5);
+  doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
+  doc.text(`Date of Completion : ${cleanDate}`, centerX, 137.5, { align: "center" });
 
-  // 6. Awarded Date (Sitting symmetrically underneath template's 'Awarded on' text with underline)
-  const cleanDate = issuedDate.trim() || "October 2026";
+  // 6. Issued by (Single clean line centered at 50%)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(30, 41, 59); // Slate-800
-  doc.text(cleanDate, centerX, 146.5, { align: "center" });
-  doc.setDrawColor(11, 118, 110);
-  doc.setLineWidth(0.35);
-  doc.line(centerX - 16, 148.5, centerX + 16, 148.5);
-
-  // 7. Scannable QR Code (Bottom-Left Quadrant, creating perfect balance with Instructor Signature)
-  const buildPdfVerifyUrl = () => {
-    try {
-      const origin =
-        typeof window !== "undefined" && window.location.origin
-          ? window.location.origin
-          : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
-      const base = verifyUrl || `${origin}/verify/${id}`;
-      const url = new URL(base, origin);
-      if (cleanName) {
-        url.searchParams.set("n", cleanName);
-      }
-      if (executiveTitle) {
-        url.searchParams.set("c", executiveTitle);
-      }
-      if (cleanDate) {
-        url.searchParams.set("d", cleanDate);
-      }
-      return url.toString();
-    } catch {
-      return verifyUrl || `https://veyskill.in/verify/${id}`;
-    }
-  };
-  const effectiveVerifyUrl = buildPdfVerifyUrl();
-  const qrX = 42;
-  const qrY = 134;
-  const qrSize = 26; // 26mm x 26mm high-precision scannable square
-
-  try {
-    const qrDataUrl = await QRCode.toDataURL(effectiveVerifyUrl, {
-      margin: 1,
-      width: 320,
-      color: {
-        dark: "#0B4F4A", // Dark Teal
-        light: "#FFFFFF", // Pure White
-      },
-    });
-
-    // Subtle background card backing for guaranteed contrast
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1.5, 1.5, "F");
-
-    doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
-  } catch (err) {
-    console.error("PDF QR code embedding error:", err);
-  }
-
-  // 8. Credential ID directly beneath QR Code
-  const qrCenterX = qrX + qrSize / 2; // 55mm
-
-  doc.setFont("courier", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(30, 41, 59); // Slate-800
-  doc.text(`ID: ${id}`, qrCenterX, qrY + qrSize + 4.5, { align: "center" });
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(5.5);
-  doc.setTextColor(11, 118, 110); // Teal-600
-  doc.text("SCAN TO VERIFY", qrCenterX, qrY + qrSize + 8, { align: "center" });
-
-  // 9. Executive Signature Block (Bottom-Right: Natural Channabasav Signature)
-  const sigCenterX = 215; // 215mm
-  const sigY = 150;
-
-  const signatureDataUrl = await getSignatureDataUrl();
-  if (signatureDataUrl) {
-    try {
-      // 48mm wide x 15mm high transparent PNG signature centered at sigCenterX
-      doc.addImage(signatureDataUrl, "PNG", sigCenterX - 24, sigY - 15, 48, 15);
-    } catch (err) {
-      console.warn("Could not draw signature image onto PDF:", err);
-    }
-  }
-
-  // Thin architectural underline anchor
-  doc.setDrawColor(11, 118, 110);
-  doc.setLineWidth(0.4);
-  doc.line(sigCenterX - 22, sigY + 1.5, sigCenterX + 22, sigY + 1.5);
-
-  // Signatory Name & Title (Prestigious Executive Typography)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10.5);
-  doc.setTextColor(10, 58, 55); // #0A3A37 Deep Teal
-  doc.text("Channabasav Patil", sigCenterX, sigY + 6.5, { align: "center" });
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  doc.setTextColor(100, 116, 139); // Slate-500
-  doc.text("FOUNDER", sigCenterX, sigY + 10.5, { align: "center" });
+  doc.setFontSize(9.5);
+  doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
+  doc.text("Issued by : veyskill", centerX, 145.0, { align: "center" });
 
   return doc;
 }

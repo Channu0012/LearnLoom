@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["firebase-admin"],
+  serverExternalPackages: [
+    "firebase-admin",
+    "firebase",
+    "@firebase/app",
+    "@firebase/auth",
+    "@firebase/firestore",
+  ],
   compress: true,
   poweredByHeader: false,
   images: {
