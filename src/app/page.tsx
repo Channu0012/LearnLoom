@@ -1,59 +1,58 @@
 import Link from "next/link";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
-import { PlatformShowcasePreview } from "@/components/home/PlatformShowcasePreview";
 
 export default function HomePage() {
   const disciplines = [
     {
       title: "Full-Stack Web Development",
       description: "Modern Next.js, React, Node.js, and TypeScript production architectures.",
-      lessons: "30+ Modules",
+      lessons: "30+ Lessons",
       badge: "Popular",
       query: "nextjs full stack web development",
-      iconColor: "from-teal-500/20 to-teal-500/5 text-teal-600 dark:text-teal-400",
+      iconColor: "text-teal-600 dark:text-teal-400",
     },
     {
       title: "Artificial Intelligence & LLMs",
       description: "Prompt engineering, LangChain, PyTorch, and fine-tuning neural networks.",
-      lessons: "24+ Modules",
+      lessons: "24+ Lessons",
       badge: "Trending",
       query: "python artificial intelligence machine learning",
-      iconColor: "from-primary-500/20 to-primary-500/5 text-primary-600 dark:text-primary-400",
+      iconColor: "text-indigo-600 dark:text-indigo-400",
     },
     {
       title: "Data Structures & Algorithms",
       description: "Interview-ready algorithm mastery in Java, C++, and Python.",
-      lessons: "45+ Modules",
+      lessons: "45+ Lessons",
       badge: "Career Essential",
       query: "data structures and algorithms dsa",
-      iconColor: "from-amber-500/20 to-amber-500/5 text-amber-600 dark:text-amber-400",
+      iconColor: "text-amber-600 dark:text-amber-400",
     },
     {
-      title: "System Design & Cloud Architecture",
+      title: "System Design & Cloud",
       description: "High-scale distributed systems, microservices, AWS, and Docker.",
-      lessons: "18+ Modules",
+      lessons: "18+ Lessons",
       badge: "Senior Track",
       query: "system design distributed systems cloud",
-      iconColor: "from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
     },
   ];
 
   const faqs = [
     {
       q: "How does VeySkill transform YouTube videos?",
-      a: "VeySkill wraps educational video series in a focused, distraction-free study environment. We organize playlists into structured chapters with auto-advancing theater playback, AI study scratchpad, and comprehension quizzes.",
+      a: "VeySkill wraps educational video series in a focused, distraction-free study environment. We organize playlists into structured chapters with auto-advancing theater playback, AI study notes, and comprehension quizzes.",
     },
     {
       q: "Are the completion certificates verifiable?",
-      a: "Yes. Every multi-module certificate carries a unique certificate ID and public verification URL at veyskill.in/verify/[id]. Employers and recruiters can scan the certificate QR code to directly view official completion records.",
+      a: "Yes. Every certificate carries a unique credential ID and public verification URL at veyskill.in/verify/[id]. Employers and recruiters can verify official completion records instantly.",
     },
     {
       q: "Can I convert any public YouTube playlist?",
       a: "Yes. Simply paste any valid public YouTube playlist or lecture video link into our converter. VeySkill immediately indexes the video chapters and generates your course syllabus in seconds.",
     },
     {
-      q: "Is VeySkill free to use for learners?",
-      a: "100% free. You can enroll, take notes, maintain study streaks, and complete entire curricula without paying a single rupee. Official verifiable digital certificates of completion can be unlocked for an administrative fee of just ₹29 upon completion.",
+      q: "Is VeySkill free to use?",
+      a: "100% free. You can enroll, take notes, maintain study streaks, and complete entire courses without paying a single rupee. Official verifiable certificates of completion can be unlocked for just ₹29 upon completion.",
     },
   ];
 
@@ -76,94 +75,124 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      {/* ── 1. Hero: Google-Grade Simplicity & Instant Converter ──────────── */}
+
+      {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-12 sm:pb-16"
+        className="relative overflow-hidden pt-16 sm:pt-20 lg:pt-28 pb-14 sm:pb-20"
         aria-labelledby="hero-title"
       >
-        {/* Subtle radial backdrop glow */}
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[520px] rounded-full opacity-15 blur-3xl pointer-events-none -z-10"
-          style={{
-            background:
-              "radial-gradient(circle, #0F766E 0%, #14B8A6 35%, #4F46E5 70%, transparent 100%)",
-          }}
-          aria-hidden="true"
-        />
-
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          {/* Institutional Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 backdrop-blur-md border border-border/80 text-xs font-heading font-bold mb-6 shadow-sm animate-fade-in">
+          {/* Compact trust badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-xs font-heading font-semibold mb-6 shadow-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <span
-              suppressHydrationWarning
-              className="text-teal-600 dark:text-teal-400 font-extrabold"
-            >
-              Structured Open Academy · Distraction-Free · Verified Credentials
-            </span>
+            <span className="text-muted-foreground">Trusted by self-learners worldwide</span>
           </div>
 
-          {/* Master Headline */}
+          {/* Main Headline */}
           <h1
             id="hero-title"
-            className="font-heading font-black text-3xl sm:text-5xl lg:text-6xl text-foreground tracking-tight leading-[1.1] mb-5 animate-slide-up"
+            className="font-heading font-black text-4xl sm:text-5xl lg:text-7xl text-foreground tracking-tight leading-[1.08] mb-5 animate-slide-up"
           >
-            Turn Any YouTube Playlist Into A{" "}
-            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Structured Masterclass.
+            Learn Anything.{" "}
+            <span className="bg-gradient-to-r from-teal-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+              Get Certified.
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed animate-slide-up">
-            Distraction-free theater playback, structured curriculum tracking, comprehension
-            quizzes, and public verifiable certificates of completion.
+          <p className="font-body text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed animate-slide-up">
+            Turn any YouTube playlist into a structured course with focused playback, AI study
+            notes, quizzes, and verifiable certificates.
           </p>
 
-          {/* HERO CONVERTER INPUT (Google-Grade Instant Utility) & STREAK BANNER */}
+          {/* Hero Converter */}
           <div className="mb-8 animate-slide-up">
             <HeroConverterBar />
           </div>
 
-          {/* Institutional Trust Ribbon */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-2.5 px-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border text-xs text-muted-foreground font-body max-w-2xl mx-auto shadow-xs">
+          {/* Benefit Ribbon */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-5 sm:gap-8 py-2 text-xs text-muted-foreground font-body max-w-2xl mx-auto">
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-              <span className="font-heading font-semibold text-foreground">Distraction-Free</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-teal-600 dark:text-teal-400"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span className="font-heading font-semibold text-foreground">Zero Distractions</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-indigo-600 dark:text-indigo-400"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
               <span className="font-heading font-semibold text-foreground">AI Study Notes</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span className="font-heading font-semibold text-foreground">Quiz Gates</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-amber-600 dark:text-amber-400"
+              >
+                <polyline points="9 11 12 14 22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              <span className="font-heading font-semibold text-foreground">Quizzes</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="text-emerald-600 dark:text-emerald-400"
+              >
+                <rect x="3" y="4" width="18" height="14" rx="2" />
+                <path d="M7 22h10" />
+                <path d="M12 18v4" />
+              </svg>
               <span className="font-heading font-semibold text-foreground">
-                Verified Credentials
+                Verified Certificates
               </span>
             </span>
           </div>
         </div>
       </section>
 
-      {/* ── 2. The 3-Step Execution Pipeline ─────────────────────────────── */}
+      {/* ── 2. How It Works ─────────────────────────────────────────────── */}
       <section
-        className="py-12 sm:py-16 bg-muted/20 border-y border-border/50"
+        className="py-14 sm:py-20 bg-muted/30 border-y border-border/50"
         aria-labelledby="pipeline-title"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 max-w-2xl mx-auto">
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-              The Learning Standard
+          <div className="text-center mb-12 max-w-2xl mx-auto">
+            <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+              How It Works
             </span>
             <h2
               id="pipeline-title"
-              className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-1"
+              className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-2"
             >
-              How big companies train modern engineers.
+              Three steps to structured learning.
             </h2>
           </div>
 
@@ -175,15 +204,15 @@ export default function HomePage() {
                   01
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Import Any Playlist
+                  Paste a Playlist Link
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Paste any YouTube tutorial series, university lecture track, or coding bootcamp
-                  URL. VeySkill instantly indexes chapters into a structured syllabus.
+                  Drop any YouTube tutorial series, university lecture, or coding bootcamp URL.
+                  VeySkill instantly generates a structured course syllabus.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-teal-600 dark:text-teal-400">
-                <span>Instant Curriculum Generation</span>
+                Instant Setup
               </div>
             </div>
 
@@ -194,15 +223,15 @@ export default function HomePage() {
                   02
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Focus in Theater Mode
+                  Study Without Distractions
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Study without algorithmic feeds, comment distractions, or rabbit holes. Harness
-                  structured chapters, time bookmarks, and private study notes.
+                  Focused theater playback with no recommendations, no comments, no rabbit holes.
+                  Take AI-powered notes and track your progress.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-indigo-600 dark:text-indigo-400">
-                <span>Distraction-Free Workspace</span>
+                Focused Learning
               </div>
             </div>
 
@@ -213,41 +242,41 @@ export default function HomePage() {
                   03
                 </div>
                 <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Earn Verified Credential
+                  Earn Your Certificate
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Pass comprehension assessments with a 70% threshold, build daily streaks, and
-                  claim a permanent Certificate of Completion with instant public QR verification.
+                  Complete all lessons, pass the comprehension quiz, and claim a verified
+                  Certificate of Completion with public verification.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-400">
-                <span>Public Web Credential Record</span>
+                Verified Credential
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 3. Featured Disciplines & Masterclasses ───────────────────────── */}
-      <section className="py-12 sm:py-16" aria-labelledby="disciplines-title">
+      {/* ── 3. Trending Courses ────────────────────────────────────────── */}
+      <section className="py-14 sm:py-20" aria-labelledby="disciplines-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="text-xs font-mono font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-                Trending Disciplines
+              <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+                Popular Right Now
               </span>
               <h2
                 id="disciplines-title"
-                className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-1"
+                className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-2"
               >
-                Curated high-impact curricula.
+                Start with a trending topic.
               </h2>
             </div>
             <Link
               href="/explore"
               className="text-xs sm:text-sm font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1.5"
             >
-              <span>Explore All Masterclasses</span>
+              <span>Browse All Courses</span>
               <svg
                 width="14"
                 height="14"
@@ -266,14 +295,14 @@ export default function HomePage() {
               <Link
                 key={idx}
                 href={`/explore?q=${encodeURIComponent(item.query)}`}
-                className="enterprise-card p-5 rounded-xl hover:border-teal-500/60 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group active:scale-[0.98]"
+                className="enterprise-card p-5 rounded-xl hover:border-teal-500/60 hover:shadow-md transition-all flex flex-col justify-between group active:scale-[0.98]"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/60">
+                    <span className="text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/60">
                       {item.badge}
                     </span>
-                    <span className="text-[11px] font-heading font-semibold text-teal-600 dark:text-teal-400">
+                    <span className={`text-[11px] font-heading font-semibold ${item.iconColor}`}>
                       {item.lessons}
                     </span>
                   </div>
@@ -285,7 +314,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs font-heading font-bold text-foreground">
-                  <span>Start Curriculum</span>
+                  <span>Start Learning</span>
                   <span className="text-teal-500 group-hover:translate-x-1 transition-transform">
                     →
                   </span>
@@ -296,93 +325,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 4. Showcase Banner (Theater & App Experience) ────────────────── */}
-      <section className="py-12 sm:py-16 relative overflow-hidden" aria-labelledby="showcase-title">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full opacity-12 blur-3xl pointer-events-none -z-10"
-          style={{
-            background:
-              "radial-gradient(circle, #0F766E 0%, #14B8A6 35%, #4F46E5 70%, transparent 100%)",
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <span className="text-xs font-mono font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-            Platform Interface
-          </span>
-          <h2
-            id="showcase-title"
-            className="font-heading font-black text-2xl sm:text-4xl lg:text-5xl text-foreground tracking-tight max-w-3xl mx-auto leading-tight mt-1 mb-4"
-          >
-            Every lecture. Structured.{" "}
-            <span className="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">
-              Verified.
-            </span>
-          </h2>
-          <p className="font-body text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-            Continuous playlist flow, integrated AI study scratchpad, real-time quizzes, and
-            employer-ready certification.
-          </p>
-
-          {/* Live Platform Workspace Showcase and 3-Step Flow */}
-          <PlatformShowcasePreview />
-
-          {/* 4 Stat pillars */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8 text-left">
+      {/* ── 4. Stats Bar ───────────────────────────────────────────────── */}
+      <section className="py-10 sm:py-14 bg-muted/30 border-y border-border/50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-teal-600 dark:text-teal-400 font-heading font-black text-xl mb-1">
+              <div className="text-teal-600 dark:text-teal-400 font-heading font-black text-2xl mb-1">
                 100%
               </div>
-              <div className="font-heading font-bold text-xs text-foreground mb-0.5">Focused</div>
-              <div className="text-[11px] font-body text-muted-foreground">Zero distractions</div>
+              <div className="font-heading font-bold text-xs text-foreground">Focused</div>
+              <div className="text-[11px] font-body text-muted-foreground">No distractions</div>
             </div>
             <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-amber-600 dark:text-amber-400 font-heading font-black text-xl mb-1">
+              <div className="text-indigo-600 dark:text-indigo-400 font-heading font-black text-2xl mb-1">
+                AI
+              </div>
+              <div className="font-heading font-bold text-xs text-foreground">Study Notes</div>
+              <div className="text-[11px] font-body text-muted-foreground">Auto-generated</div>
+            </div>
+            <div className="enterprise-card p-4 rounded-xl">
+              <div className="text-amber-600 dark:text-amber-400 font-heading font-black text-2xl mb-1">
                 70%
               </div>
-              <div className="font-heading font-bold text-xs text-foreground mb-0.5">Quiz Gate</div>
-              <div className="text-[11px] font-body text-muted-foreground">Prove your mastery</div>
+              <div className="font-heading font-bold text-xs text-foreground">Quiz Gate</div>
+              <div className="text-[11px] font-body text-muted-foreground">Prove mastery</div>
             </div>
             <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-emerald-600 dark:text-emerald-400 font-heading font-black text-xl mb-1">
-                Auto
+              <div className="text-emerald-600 dark:text-emerald-400 font-heading font-black text-2xl mb-1">
+                ∞
               </div>
-              <div className="font-heading font-bold text-xs text-foreground mb-0.5">
-                Video Sync
-              </div>
-              <div className="text-[11px] font-body text-muted-foreground">Accurate tracking</div>
-            </div>
-            <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-indigo-600 dark:text-indigo-400 font-heading font-black text-xl mb-1">
-                Free
-              </div>
-              <div className="font-heading font-bold text-xs text-foreground mb-0.5">Forever</div>
+              <div className="font-heading font-bold text-xs text-foreground">Free Forever</div>
               <div className="text-[11px] font-body text-muted-foreground">No paywalls</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 5. Comparison: YouTube vs. VeySkill ────────────────────────────── */}
-      <section
-        className="py-10 sm:py-14 bg-muted/20 border-y border-border/50"
-        aria-labelledby="comparison-title"
-      >
+      {/* ── 5. Why VeySkill ────────────────────────────────────────────── */}
+      <section className="py-14 sm:py-20" aria-labelledby="comparison-title">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-7">
+          <div className="text-center mb-8">
             <h2
               id="comparison-title"
               className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight"
             >
-              Where free education meets real discipline.
+              YouTube is great. VeySkill makes it better.
             </h2>
+            <p className="font-body text-sm text-muted-foreground mt-2 max-w-lg mx-auto">
+              Same free content, but structured for real learning outcomes.
+            </p>
           </div>
 
-          <div className="overflow-hidden bg-card border border-border rounded-3xl shadow-lg">
+          <div className="overflow-hidden bg-card border border-border rounded-2xl shadow-sm">
             <div className="grid grid-cols-2 bg-muted/60 p-4 border-b border-border text-xs sm:text-sm font-heading font-bold">
               <div className="text-muted-foreground flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500/70" />
+                <span className="w-2 h-2 rounded-full bg-red-400" />
                 <span>Standard YouTube</span>
               </div>
               <div className="text-teal-600 dark:text-teal-400 flex items-center gap-2">
@@ -395,15 +392,15 @@ export default function HomePage() {
               {[
                 [
                   "Algorithmic rabbit holes & endless feeds",
-                  "Structured, distraction-free study theater",
+                  "Structured, distraction-free playback",
                 ],
+                ["No progress tracking", "Auto-saved progress across devices"],
                 [
                   "Sidebar distractions & clickbait comments",
                   "Focused syllabus & module progression",
                 ],
                 ["No comprehension checks", "70% quiz gate per module"],
-                ["Lost progress across devices", "Cloud-synced progress & 7-day streak"],
-                ["No proof of completion", "Permanent Certificate of Completion + Scannable QR"],
+                ["No proof of completion", "Verified Certificate of Completion"],
               ].map(([yt, vs], i) => (
                 <div
                   key={i}
@@ -431,16 +428,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 6. Executive FAQ Section ───────────────────────────────────────── */}
-      <section className="py-12 sm:py-16" aria-labelledby="faq-title">
+      {/* ── 6. FAQ Section ─────────────────────────────────────────────── */}
+      <section
+        className="py-14 sm:py-20 bg-muted/30 border-y border-border/50"
+        aria-labelledby="faq-title"
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-              Knowledge Base
+            <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+              FAQ
             </span>
             <h2
               id="faq-title"
-              className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-1"
+              className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-2"
             >
               Frequently Asked Questions
             </h2>
@@ -450,7 +450,7 @@ export default function HomePage() {
             {faqs.map((faq, idx) => (
               <div
                 key={idx}
-                className="p-5 sm:p-6 rounded-2xl bg-card border border-border/80 shadow-sm"
+                className="p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-sm"
               >
                 <h3 className="font-heading font-bold text-base sm:text-lg text-foreground mb-2">
                   {faq.q}
@@ -464,23 +464,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. Final Call to Action ────────────────────────────────────────── */}
-      <section className="py-12 sm:py-16 bg-muted/30 border-t border-border/60">
+      {/* ── 7. Final CTA ───────────────────────────────────────────────── */}
+      <section className="py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mb-3">
-            Ready to learn without distractions?
+            Ready to start learning?
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
-            Join thousands of self-directed learners mastering computer science, artificial
-            intelligence, and software engineering on VeySkill.
+            Join thousands of learners mastering software engineering, AI, and computer science on
+            VeySkill.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/explore"
-              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2.5 shadow-xl shadow-teal-500/25 active:scale-95 font-heading font-extrabold rounded-2xl transition-all"
+              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2.5 active:scale-95 font-heading font-extrabold rounded-2xl transition-all"
             >
-              <span>Explore Masterclasses</span>
+              <span>Explore Courses</span>
               <svg
                 width="16"
                 height="16"
@@ -498,7 +498,7 @@ export default function HomePage() {
 
             <Link
               href="/create"
-              className="px-7 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-card border-2 border-border hover:border-teal-500/50 hover:bg-muted text-foreground text-sm sm:text-base active:scale-95 font-heading font-bold transition-all shadow-sm"
+              className="btn-secondary text-sm sm:text-base px-7 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl font-heading font-bold transition-all"
             >
               <svg
                 width="16"

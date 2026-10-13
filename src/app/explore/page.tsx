@@ -10,7 +10,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { searchCoursesFullStrength } from "@/lib/keywords";
-import { CATEGORIES } from "@/lib/constants";
 import type { CourseDoc } from "@/lib/types";
 import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard";
 
@@ -82,8 +81,6 @@ function saveSeenCourseIds(ids: Set<string>) {
 
 export default function ExplorePage() {
   const [searchInput, setSearchInput] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState<"recommended" | "modules" | "newest">("recommended");
   const [rawCourses, setRawCourses] = useState<CourseDoc[]>([]);
   const [feedCourses, setFeedCourses] = useState<CourseDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,14 +91,12 @@ export default function ExplorePage() {
   const [fetchError, setFetchError] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial URL query param if present (?q=... or ?search=... or ?category=...)
+  // Sync initial URL query param if present (?q=... or ?search=...)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q") || params.get("search");
-    const cat = params.get("category");
     if (q) setSearchInput(q);
-    if (cat) setSelectedCategory(cat);
   }, []);
 
   // ── YouTube-Style Intelligent Feed Refresh (Unseen/New Prioritization) ───
@@ -208,49 +203,20 @@ export default function ExplorePage() {
     };
   }, [fetchCourses]);
 
-  // Compute category count breakdown for faceted navigation
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: rawCourses.length };
-    for (const c of rawCourses) {
-      if (c.category) {
-        counts[c.category] = (counts[c.category] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [rawCourses]);
-
-  // ── Full-Strength Instant Search & Filtering & Sorting ────────────────
+  // ── Full-Strength Instant Search & Filtering ────────────────
   const courses = useMemo(() => {
-    let list: CourseDoc[];
     const queryClean = searchInput.trim();
     if (queryClean) {
       const ranked = searchCoursesFullStrength(rawCourses, queryClean);
-      list = ranked.map((r) => r.course);
-    } else {
-      list = feedCourses;
+      return ranked.map((r) => r.course);
     }
+    return feedCourses;
+  }, [rawCourses, feedCourses, searchInput]);
 
-    if (selectedCategory !== "all") {
-      list = list.filter((c) => c.category?.toLowerCase() === selectedCategory.toLowerCase());
-    }
-
-    if (sortBy === "modules") {
-      return [...list].sort((a, b) => (b.lessonCount || 0) - (a.lessonCount || 0));
-    } else if (sortBy === "newest") {
-      return [...list].sort((a, b) => {
-        const aTime = a.createdAt?.toMillis?.() || 0;
-        const bTime = b.createdAt?.toMillis?.() || 0;
-        return bTime - aTime;
-      });
-    }
-
-    return list;
-  }, [rawCourses, feedCourses, searchInput, selectedCategory, sortBy]);
-
-  // Reset visibleCount on search, category, or sort change
+  // Reset visibleCount on search change
   useEffect(() => {
     setVisibleCount(COURSES_PER_PAGE);
-  }, [searchInput, selectedCategory, sortBy]);
+  }, [searchInput]);
 
   const loadMore = useCallback(() => {
     if (visibleCount >= courses.length || isLoadingMore) return;
@@ -290,13 +256,13 @@ export default function ExplorePage() {
 
   return (
     <div className="container-page py-10 sm:py-16 w-full max-w-7xl mx-auto px-4 sm:px-6">
-      {/* Bold, Clean YouTube-Style Header */}
+      {/* Clean Header */}
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
         <h1 className="font-heading font-black text-3xl sm:text-5xl text-foreground tracking-tight mb-3">
-          Explore Masterclasses
+          Explore Courses
         </h1>
         <p className="font-body text-sm sm:text-base text-muted-foreground leading-relaxed">
-          Structured, distraction-free video courses. Search any topic, skill, or framework.
+          Structured, distraction-free video courses. Search any topic or skill.
         </p>
       </div>
 
@@ -327,21 +293,21 @@ export default function ExplorePage() {
                 type="search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search..."
-                className="w-full py-3.5 sm:py-4 pr-12 text-base sm:text-lg bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none font-body"
-                aria-label="Search masterclasses"
+                placeholder="Search courses by topic, skill, tech stack..."
+                className="w-full py-3 sm:py-3.5 pr-12 text-sm sm:text-base bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none font-body"
+                aria-label="Search courses"
               />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => setSearchInput("")}
-                  className="absolute right-3.5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+                  className="absolute right-3 p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
                   aria-label="Clear search query"
                   title="Clear search"
                 >
                   <svg
-                    width="18"
-                    height="18"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -358,17 +324,18 @@ export default function ExplorePage() {
             </div>
           </div>
 
-          {/* YouTube-Style Refresh Button */}
+          {/* Small Sleek Refresh Button */}
           <button
             type="button"
             onClick={handleRefreshClick}
             disabled={isRefreshing || loading}
-            className="w-full sm:w-auto shrink-0 min-h-[52px] sm:min-h-[58px] px-5 py-3 rounded-2xl bg-card border-2 border-border/80 hover:border-teal-500 hover:bg-muted/40 text-foreground font-heading font-bold text-sm inline-flex items-center justify-center gap-2 shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer"
-            title="Refresh videos to discover fresh or unseen masterclasses"
+            className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-card border border-border/80 hover:border-teal-500 hover:bg-muted text-foreground inline-flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
+            title="Refresh feed with fresh recommendations"
+            aria-label="Refresh feed"
           >
             <svg
               className={`w-4 h-4 text-teal-600 dark:text-teal-400 transition-transform ${
-                isRefreshing ? "animate-spin" : "group-hover:rotate-45"
+                isRefreshing ? "animate-spin" : ""
               }`}
               viewBox="0 0 24 24"
               fill="none"
@@ -380,7 +347,6 @@ export default function ExplorePage() {
             >
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19" />
             </svg>
-            <span>Refresh Feed</span>
           </button>
         </div>
 
@@ -392,89 +358,33 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* Coursera/Google-style Category Faceted Navigation Pills */}
-        <div className="mt-5 pt-3 border-t border-border/60">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold shrink-0 transition-all border cursor-pointer ${
-                selectedCategory === "all"
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
-                  : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-slate-300 dark:hover:border-slate-700"
-              }`}
-            >
-              All Tracks ({categoryCounts.all || 0})
-            </button>
-            {CATEGORIES.map((cat) => {
-              const count = categoryCounts[cat] || 0;
-              const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(isSelected ? "all" : cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold shrink-0 transition-all border cursor-pointer ${
-                    isSelected
-                      ? "bg-teal-600 text-white border-teal-600 shadow-xs"
-                      : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
-                >
-                  {cat} {count > 0 && <span className="opacity-70 text-[10px]">({count})</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Results Counter and Sort Row */}
-        <div className="mt-4 px-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-muted-foreground">
+        {/* Course Count & Search State (No Category Pills / No Sort) */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-muted-foreground font-body">
           <div className="flex items-center gap-2 flex-wrap">
-            <span>
-              Showing <strong className="text-foreground">{courses.length}</strong> masterclass
-              {courses.length !== 1 ? "es" : ""}
-              {selectedCategory !== "all" && (
-                <>
-                  {" "}
-                  in{" "}
-                  <strong className="text-teal-600 dark:text-teal-400">{selectedCategory}</strong>
-                </>
-              )}
-              {searchInput.trim() && (
-                <>
-                  {" "}
-                  matching &ldquo;<strong className="text-foreground">{searchInput}</strong>&rdquo;
-                </>
-              )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 font-heading font-bold text-xs border border-teal-500/20">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>
+                {rawCourses.length > 0
+                  ? `${rawCourses.length} Courses Available`
+                  : "Courses Available"}
+              </span>
             </span>
-            {(selectedCategory !== "all" || searchInput.trim()) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setSearchInput("");
-                }}
-                className="text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-semibold ml-1 inline-flex items-center gap-1"
-              >
-                <span>Clear filters</span>
-              </button>
+            {searchInput.trim() && (
+              <span>
+                Showing {courses.length} match{courses.length !== 1 ? "es" : ""} for &ldquo;
+                <strong className="text-foreground">{searchInput}</strong>&rdquo;
+              </span>
             )}
           </div>
-
-          {/* Sort Selector */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="font-heading font-semibold text-foreground/80">Sort:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "recommended" | "modules" | "newest")}
-              aria-label="Sort masterclasses"
-              className="bg-card border border-border rounded-lg px-2.5 py-1 text-xs text-foreground font-heading font-semibold focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+          {searchInput.trim() && (
+            <button
+              type="button"
+              onClick={() => setSearchInput("")}
+              className="text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-heading font-semibold text-xs"
             >
-              <option value="recommended">Curated Feed</option>
-              <option value="modules">Most Modules</option>
-              <option value="newest">Recently Added</option>
-            </select>
-          </div>
+              Clear Search
+            </button>
+          )}
         </div>
       </div>
 
@@ -495,7 +405,7 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Video Masterclasses Grid */}
+      {/* Video Courses Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -520,11 +430,11 @@ export default function ExplorePage() {
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
           </div>
-          <h2 className="font-heading font-bold text-xl mb-2 text-foreground">No videos found</h2>
+          <h2 className="font-heading font-bold text-xl mb-2 text-foreground">No courses found</h2>
           <p className="text-muted-foreground font-body text-sm mb-6 leading-relaxed">
             {searchInput.trim()
-              ? `No masterclasses matched "${searchInput}". Try searching for another topic or skill.`
-              : "No published masterclasses available right now."}
+              ? `No courses matched "${searchInput}". Try another topic or skill.`
+              : "No published courses available right now."}
           </p>
           {searchInput && (
             <button
@@ -550,16 +460,16 @@ export default function ExplorePage() {
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-2 text-xs font-heading font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-4 py-2 rounded-full border border-teal-500/20 shadow-sm animate-fade-in">
                   <div className="w-3.5 h-3.5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
-                  <span>Loading more masterclasses…</span>
+                  <span>Loading more courses…</span>
                 </div>
                 <span className="text-[11px] text-muted-foreground font-body">
-                  Showing {displayedCourses.length} of {courses.length} masterclasses
+                  {displayedCourses.length} of {courses.length}
                 </span>
               </div>
             ) : courses.length > COURSES_PER_PAGE ? (
               <div className="text-center py-6 space-y-2 border-t border-border/60 w-full max-w-md mx-auto animate-fade-in">
                 <p className="text-xs font-heading font-semibold text-muted-foreground">
-                  You&apos;ve reached the end of the catalog ({courses.length} masterclasses)
+                  You&apos;ve reached the end ({courses.length} courses)
                 </p>
                 <button
                   type="button"

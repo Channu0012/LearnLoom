@@ -18,8 +18,8 @@ export function MobileBottomNav() {
       href: "/",
       icon: (active: boolean) => (
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
@@ -38,8 +38,8 @@ export function MobileBottomNav() {
       href: "/explore",
       icon: (active: boolean) => (
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
@@ -61,8 +61,8 @@ export function MobileBottomNav() {
       href: "/quick-watch",
       icon: (active: boolean) => (
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
@@ -80,8 +80,8 @@ export function MobileBottomNav() {
       href: "/my-learning",
       icon: (active: boolean) => (
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
@@ -96,12 +96,12 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "My Courses",
+      name: "Courses",
       href: "/my-courses",
       icon: (active: boolean) => (
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill={active ? "currentColor" : "none"}
           stroke="currentColor"
@@ -123,10 +123,10 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-3 left-3 right-3 z-40 max-w-lg mx-auto bg-card/90 backdrop-blur-2xl border border-border/80 rounded-2xl shadow-2xl transition-all"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border shadow-[0_-2px_8px_rgba(0,0,0,0.05)] pb-safe"
       aria-label="Mobile Bottom Navigation"
     >
-      <div className="grid grid-cols-5 h-15 px-1 items-center">
+      <div className="grid grid-cols-5 h-16 px-1 items-center max-w-lg mx-auto">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -137,32 +137,27 @@ export function MobileBottomNav() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center min-h-[46px] min-w-[44px] py-1 px-0.5 rounded-xl transition-all duration-150 select-none group relative ${
+              className={`relative flex flex-col items-center justify-center min-h-[50px] min-w-[48px] py-1 transition-colors duration-150 select-none group cursor-pointer active:scale-95 ${
                 isActive
-                  ? "text-teal-600 dark:text-teal-400 font-bold"
+                  ? "text-teal-600 dark:text-teal-400"
                   : "text-muted-foreground hover:text-foreground active:text-teal-500"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
-              {/* Active Indicator Top Glow Pill */}
+              {/* Active top indicator bar */}
               {isActive && (
-                <span
-                  className="absolute -top-1 w-5 h-1 rounded-full bg-teal-500 shadow-sm"
-                  aria-hidden="true"
-                />
+                <span className="absolute top-0 w-8 h-0.5 rounded-full bg-teal-600 dark:bg-teal-400" />
               )}
 
-              {/* Icon Container with subtle scale feedback on tap */}
-              <div
-                className={`flex items-center justify-center w-7 h-7 rounded-xl transition-transform active:scale-90 ${
-                  isActive ? "bg-teal-500/10" : "group-hover:bg-muted/50"
-                }`}
-              >
-                {item.icon(isActive)}
-              </div>
+              {/* Icon */}
+              <div className="flex items-center justify-center w-7 h-7">{item.icon(isActive)}</div>
 
               {/* Label */}
-              <span className="text-[10px] font-heading font-medium leading-tight tracking-tight mt-0.5 truncate max-w-[60px]">
+              <span
+                className={`text-[10px] leading-tight tracking-tight mt-0.5 truncate max-w-[60px] ${
+                  isActive ? "font-heading font-bold" : "font-heading font-medium"
+                }`}
+              >
                 {item.name}
               </span>
             </Link>

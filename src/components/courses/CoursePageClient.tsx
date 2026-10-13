@@ -203,10 +203,16 @@ function CoursePlayerContent({
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "notes" | "quiz" | "code" | "report">(
-    "overview"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "notes" | "quiz" | "code" | "report" | "syllabus"
+  >("overview");
   const [tabTransitioning, setTabTransitioning] = useState<string | null>(null);
+
+  // Cinema Theater Mode & Keyboard Navigation States
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [seekFeedback, setSeekFeedback] = useState<string | null>(null);
 
   // AI & Certificate Feature States
   const [isQuizOpen, setIsQuizOpen] = useState(false);
@@ -344,31 +350,6 @@ function CoursePlayerContent({
     };
     document.addEventListener("fullscreenchange", handleFsChange);
     return () => document.removeEventListener("fullscreenchange", handleFsChange);
-  }, []);
-
-  // Keyboard navigation shortcuts: F for Big Screen
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
-      ) {
-        return;
-      }
-      if (e.key === "f" || e.key === "F") {
-        e.preventDefault();
-        const el = document.getElementById("theatre-player");
-        if (!el) return;
-        if (!document.fullscreenElement) {
-          el.requestFullscreen().catch(() => {});
-        } else {
-          document.exitFullscreen().catch(() => {});
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Sync recipient name if user signs in or profile updates
@@ -536,7 +517,7 @@ function CoursePlayerContent({
   }, [user, courseId, lessons]);
 
   // Fullscreen / Big Screen toggle handler
-  const handleToggleFullscreen = () => {
+  const handleToggleFullscreen = useCallback(() => {
     const el = document.getElementById("theatre-player");
     if (!el) return;
     if (!document.fullscreenElement) {
@@ -544,7 +525,7 @@ function CoursePlayerContent({
     } else {
       document.exitFullscreen().catch(() => {});
     }
-  };
+  }, []);
 
   // Cancel auto-advance countdown
   const cancelAutoAdvance = useCallback(() => {
@@ -632,6 +613,20 @@ function CoursePlayerContent({
     }, 350);
   }, []);
 
+  // PostMessage API helper for embedded YouTube player
+  const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
+    if (iframeRef.current?.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func, args }),
+          "*"
+        );
+      } catch {
+        // Fallback for cross-origin boundary
+      }
+    }
+  }, []);
+
   // Real YouTube Video Tracking (ended state = 0, duration tracking, and onError handler)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -712,6 +707,106 @@ function CoursePlayerContent({
       handleSelectLesson(lessons[activeIdx - 1]!.id);
     }
   }, [activeIdx, lessons, handleSelectLesson]);
+
+  // In-player scrubbing to video timestamps
+  const handleSeekTo = useCallback(
+    (seconds: number, label?: string) => {
+      sendPlayerCommand("seekTo", [seconds, true]);
+      sendPlayerCommand("playVideo", []);
+      if (label) {
+        setSeekFeedback(`Jumped to ${label}`);
+        setTimeout(() => setSeekFeedback(null), 2200);
+      }
+    },
+    [sendPlayerCommand]
+  );
+
+  // Quick playback speed toggle: 1x -> 1.25x -> 1.5x -> 2x -> 0.75x -> 1x
+  const handleCycleSpeed = useCallback(() => {
+    const speeds = [1, 1.25, 1.5, 2, 0.75];
+    const nextIdx = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
+    const newSpeed = speeds[nextIdx];
+    setPlaybackSpeed(newSpeed);
+    sendPlayerCommand("setPlaybackRate", [newSpeed]);
+    setSeekFeedback(`Speed: ${newSpeed}x`);
+    setTimeout(() => setSeekFeedback(null), 1800);
+  }, [playbackSpeed, sendPlayerCommand]);
+
+  // Comprehensive keyboard navigation (F: Fullscreen, T: Cinema Mode, N: Next, P: Prev, ?: Help, 1-4: Checkpoints)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable ||
+          target.getAttribute("role") === "textbox")
+      ) {
+        return;
+      }
+
+      // 'F' -> Toggle Big Screen
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        handleToggleFullscreen();
+      }
+
+      // 'T' -> Toggle Cinema / Theater Mode
+      if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        setIsTheaterMode((prev) => !prev);
+      }
+
+      // 'N' -> Next Lesson
+      if (e.key === "n" || e.key === "N") {
+        e.preventDefault();
+        if (activeIdx < lessons.length - 1 && !isVideoLoading) {
+          goToNext();
+        }
+      }
+
+      // 'P' -> Previous Lesson
+      if (e.key === "p" || e.key === "P") {
+        e.preventDefault();
+        if (activeIdx > 0 && !isVideoLoading) {
+          goToPrev();
+        }
+      }
+
+      // '?' -> Keyboard Shortcuts Cheatsheet
+      if (e.key === "?") {
+        e.preventDefault();
+        setShowShortcutsModal((prev) => !prev);
+      }
+
+      // '1', '2', '3', '4' -> Checkpoint Jumps
+      if (e.key === "1") {
+        e.preventDefault();
+        handleSeekTo(0, "00:00 Intro");
+      } else if (e.key === "2") {
+        e.preventDefault();
+        handleSeekTo(300, "05:00 Architecture");
+      } else if (e.key === "3") {
+        e.preventDefault();
+        handleSeekTo(900, "15:00 Implementation");
+      } else if (e.key === "4") {
+        e.preventDefault();
+        handleSeekTo(1500, "25:00 Summary & Review");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    activeIdx,
+    lessons.length,
+    isVideoLoading,
+    goToNext,
+    goToPrev,
+    handleToggleFullscreen,
+    handleSeekTo,
+  ]);
 
   // Mark privatized or broken lesson as exempt so learner is never stuck
   const handleMarkLessonExempt = useCallback(async () => {
@@ -803,7 +898,7 @@ function CoursePlayerContent({
     handleMarkLessonExempt,
   ]);
 
-  const handleTabChange = (tab: "overview" | "notes" | "quiz" | "code" | "report") => {
+  const handleTabChange = (tab: "overview" | "notes" | "quiz" | "code" | "report" | "syllabus") => {
     setTabTransitioning(tab);
     setActiveTab(tab);
     setTimeout(() => setTabTransitioning(null), 200);
@@ -888,8 +983,10 @@ function CoursePlayerContent({
     if (typeof window === "undefined" || !courseId) return;
     try {
       const params = new URLSearchParams(window.location.search);
-      const isReviewMode = params.get("start") === "true";
-      const alreadyDismissed = sessionStorage.getItem(`celebration_dismissed_${courseId}`);
+      const isReviewMode = params.get("review") === "true";
+      const alreadyDismissed =
+        sessionStorage.getItem(`celebration_dismissed_${courseId}`) ||
+        localStorage.getItem(`celebration_dismissed_${courseId}`);
       if (isReviewMode || alreadyDismissed || hasPaidCertificate) {
         celebrationDismissedRef.current = true;
       }
@@ -903,6 +1000,7 @@ function CoursePlayerContent({
     try {
       if (courseId) {
         sessionStorage.setItem(`celebration_dismissed_${courseId}`, "true");
+        localStorage.setItem(`celebration_dismissed_${courseId}`, "true");
       }
     } catch {}
   }, [courseId]);
@@ -912,6 +1010,14 @@ function CoursePlayerContent({
     if (celebrationDismissedRef.current) return;
     if (hasPaidCertificate) return;
 
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("review") === "true") {
+        celebrationDismissedRef.current = true;
+        return;
+      }
+    }
+
     if (isCompleted && completedIds.size > 0) {
       celebrationDismissedRef.current = true;
       setShowCourseComplete(true);
@@ -919,7 +1025,11 @@ function CoursePlayerContent({
   }, [isCompleted, completedIds.size, hasPaidCertificate]);
 
   return (
-    <div className="container-page pt-6 sm:pt-8 pb-28 sm:pb-16 max-w-7xl">
+    <div
+      className={`container-page pt-4 sm:pt-6 pb-28 sm:pb-16 transition-all duration-300 ${
+        isTheaterMode ? "max-w-[96rem]" : "max-w-7xl"
+      }`}
+    >
       {/* Draft notice */}
       {isDraft && isOwner && (
         <div
@@ -1052,15 +1162,21 @@ function CoursePlayerContent({
         </div>
       </div>
 
-      {/* Main Two-Column Coursera Layout */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Left Column: Theatre Video Player + Interactive Tabs */}
-        <div className="flex-1 w-full min-w-0">
-          {/* Theatre YouTube Player */}
+      {/* Responsive Cinema Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* Player Section: Spans all 12 columns in Cinema Mode, 8 columns in Standard Mode */}
+        <div
+          className={`w-full min-w-0 ${
+            isTheaterMode
+              ? "lg:col-span-12 lg:col-start-1 lg:row-start-1"
+              : "lg:col-span-8 lg:col-start-1 lg:row-start-1"
+          }`}
+        >
+          {/* Theatre YouTube Player (Edge-to-edge on mobile phones, rounded-2xl on tablets/desktop) */}
           {activeLesson ? (
             <div
               id="theatre-player"
-              className="relative aspect-video rounded-2xl sm:rounded-3xl overflow-hidden bg-black mb-4 shadow-2xl border border-border/80"
+              className="relative aspect-video -mx-4 sm:mx-0 rounded-none sm:rounded-2xl lg:rounded-3xl overflow-hidden bg-black mb-3 sm:mb-4 shadow-2xl border-y sm:border border-border/80 group"
             >
               {/* Top Streaming Buffer Bar */}
               {isVideoLoading && (
@@ -1196,7 +1312,7 @@ function CoursePlayerContent({
 
           {/* Interactive Lesson Checkpoint Scrub Bar */}
           {activeLesson && (
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2.5 px-1 mb-2 text-xs">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-1 mb-2.5 text-xs">
               <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase flex-shrink-0 mr-1 flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
@@ -1209,18 +1325,33 @@ function CoursePlayerContent({
                 { label: "15:00 Implementation", sec: 900 },
                 { label: "25:00 Summary & Review", sec: 1500 },
               ].map((cp) => (
-                <a
+                <button
                   key={cp.label}
-                  href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}&t=${cp.sec}s`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 text-[11px] font-mono whitespace-nowrap transition-all shadow-sm inline-flex items-center gap-1 hover:border-teal-500/50"
-                  title={`Jump to ${cp.label} on YouTube`}
+                  type="button"
+                  onClick={() => handleSeekTo(cp.sec, cp.label)}
+                  className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 text-[11px] font-mono whitespace-nowrap transition-all shadow-xs inline-flex items-center gap-1.5 hover:border-primary-500/60 cursor-pointer active:scale-95"
+                  title={`Scrub in-player to ${cp.label}`}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500/80" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
                   <span>{cp.label}</span>
-                </a>
+                </button>
               ))}
+
+              {seekFeedback && (
+                <span className="ml-2 px-2.5 py-1 rounded-md bg-primary-500/15 text-primary-600 dark:text-primary-400 font-mono text-[11px] font-bold animate-fade-in inline-flex items-center gap-1 flex-shrink-0">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {seekFeedback}
+                </span>
+              )}
             </div>
           )}
 
@@ -1300,7 +1431,7 @@ function CoursePlayerContent({
 
           {/* Player Controls & Action Deck (Coursera / Big Company Grade) */}
           {activeLesson && (
-            <div className="enterprise-card p-4 sm:p-5 bg-card/95 backdrop-blur-md border border-border/80 rounded-xl mb-6 shadow-xs space-y-4">
+            <div className="enterprise-card p-4 sm:p-5 bg-card border border-border/80 rounded-xl mb-6 shadow-xs space-y-4">
               {/* Row 1: Lesson Meta + Creator Attribution + Right Controls */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="min-w-0 flex-1">
@@ -1363,42 +1494,54 @@ function CoursePlayerContent({
                   </div>
                 </div>
 
-                {/* Right controls: Playback Help + Big Screen + Autoplay Toggle */}
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                  {/* Playback Help / Direct YouTube Fallback Button */}
+                {/* Right controls: Speed + Cinema + Big Screen + Shortcuts + Autoplay + Playlist */}
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                  {/* Quick Playback Speed Switcher */}
                   <button
                     type="button"
-                    onClick={() => {
-                      if (activeLesson) {
-                        setVideoError({
-                          lessonId: activeLesson.id,
-                          errorCode: 150,
-                          message: "Video playback restricted or interrupted.",
-                        });
-                      }
-                    }}
-                    className="text-xs px-2.5 py-2 min-h-[40px] rounded-xl font-heading font-semibold text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition-all cursor-pointer inline-flex items-center gap-1.5"
-                    title="If this video fails to play or is embed-blocked, click for zero-penalty exemption"
+                    onClick={handleCycleSpeed}
+                    className="text-xs px-2.5 py-2 min-h-[40px] rounded-xl font-mono font-bold bg-muted/80 hover:bg-muted text-foreground border border-border/80 transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1"
+                    title="Click to cycle speed (0.75x, 1x, 1.25x, 1.5x, 2x)"
+                    aria-label="Playback speed"
+                  >
+                    <span className="text-[10px] text-muted-foreground">⚡</span>
+                    <span>{playbackSpeed}x</span>
+                  </button>
+
+                  {/* Cinema / Theater Mode Button (Desktop) */}
+                  <button
+                    type="button"
+                    onClick={() => setIsTheaterMode((prev) => !prev)}
+                    className={`hidden lg:inline-flex text-xs px-3 py-2 min-h-[40px] rounded-xl font-heading font-bold items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
+                      isTheaterMode
+                        ? "bg-primary-600 text-white shadow-primary-600/20"
+                        : "bg-muted/80 hover:bg-muted text-foreground border border-border/80"
+                    }`}
+                    title={isTheaterMode ? "Exit Cinema Mode (T)" : "Watch in Cinema Mode (T)"}
+                    aria-label={isTheaterMode ? "Exit Cinema Mode" : "Cinema Mode"}
                   >
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.2"
                     >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M7 15h10" />
                     </svg>
-                    <span className="hidden sm:inline">Playback Help</span>
+                    <span>{isTheaterMode ? "Standard" : "Cinema"}</span>
+                    <span className="text-[10px] opacity-60 font-mono px-1 py-0.5 rounded bg-black/10 dark:bg-white/10">
+                      T
+                    </span>
                   </button>
-                  {/* Big Screen / Theater Fullscreen Button */}
+
+                  {/* Big Screen / Fullscreen Button */}
                   <button
                     type="button"
                     onClick={handleToggleFullscreen}
-                    className={`text-xs px-3.5 py-2 min-h-[40px] rounded-xl font-heading font-bold inline-flex items-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm ${
+                    className={`text-xs px-3 py-2 min-h-[40px] rounded-xl font-heading font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
                       isFullscreen
                         ? "bg-teal-500 text-white shadow-teal-500/20"
                         : "bg-muted/80 hover:bg-muted text-foreground border border-border/80"
@@ -1429,9 +1572,22 @@ function CoursePlayerContent({
                         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                       </svg>
                     )}
-                    <span>{isFullscreen ? "Exit Big Screen" : "Big Screen"}</span>
+                    <span className="hidden sm:inline">{isFullscreen ? "Exit" : "Big Screen"}</span>
                     <span className="hidden md:inline text-[10px] opacity-60 font-mono px-1 py-0.5 rounded bg-black/10 dark:bg-white/10">
                       F
+                    </span>
+                  </button>
+
+                  {/* Keyboard Shortcuts Cheatsheet Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowShortcutsModal(true)}
+                    className="hidden sm:inline-flex text-xs px-2.5 py-2 min-h-[40px] rounded-xl font-heading font-semibold text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 transition-all cursor-pointer active:scale-95 items-center gap-1"
+                    title="Keyboard Shortcuts (?)"
+                    aria-label="Keyboard Shortcuts"
+                  >
+                    <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-mono font-bold">
+                      ?
                     </span>
                   </button>
 
@@ -1439,7 +1595,7 @@ function CoursePlayerContent({
                   <button
                     type="button"
                     onClick={() => setIsAutoplay((prev) => !prev)}
-                    className={`text-xs px-3 py-2 min-h-[40px] rounded-xl font-heading font-semibold inline-flex items-center gap-1.5 transition-all border cursor-pointer active:scale-95 ${
+                    className={`text-xs px-2.5 sm:px-3 py-2 min-h-[40px] rounded-xl font-heading font-semibold inline-flex items-center gap-1.5 transition-all border cursor-pointer active:scale-95 ${
                       isAutoplay
                         ? "bg-primary-500/10 text-primary-600 dark:text-primary-400 border-primary-500/30"
                         : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
@@ -1452,18 +1608,19 @@ function CoursePlayerContent({
                         isAutoplay ? "bg-primary-500 animate-pulse" : "bg-muted-foreground/40"
                       }`}
                     />
-                    <span>Autoplay: {isAutoplay ? "ON" : "OFF"}</span>
+                    <span className="hidden sm:inline">Autoplay:</span>
+                    <span>{isAutoplay ? "ON" : "OFF"}</span>
                   </button>
 
-                  {/* Mobile Syllabus Drawer Trigger */}
+                  {/* Mobile Syllabus Tab Trigger */}
                   <button
                     type="button"
                     onClick={() => {
-                      document
-                        .getElementById("course-curriculum-panel")
-                        ?.scrollIntoView({ behavior: "smooth" });
+                      handleTabChange("syllabus");
+                      const navEl = document.getElementById("course-tabs-nav");
+                      navEl?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="btn-ghost text-xs px-2.5 py-2 min-h-[40px] lg:hidden inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    className="btn-ghost text-xs px-2.5 py-2 min-h-[40px] lg:hidden inline-flex items-center gap-1.5 cursor-pointer active:scale-95 text-primary-600 dark:text-primary-400 font-bold bg-primary-500/10 border border-primary-500/20"
                     title="View Course Syllabus"
                     aria-label="View Course Syllabus"
                   >
@@ -1482,7 +1639,7 @@ function CoursePlayerContent({
                       <line x1="3" y1="12" x2="3.01" y2="12" />
                       <line x1="3" y1="18" x2="3.01" y2="18" />
                     </svg>
-                    <span>Syllabus</span>
+                    <span>Playlist</span>
                   </button>
                 </div>
               </div>
@@ -1683,7 +1840,17 @@ function CoursePlayerContent({
               </div>
             </div>
           )}
+        </div>
 
+        {/* Tabs Section: Spans 8 columns in row 2 */}
+        <div
+          id="course-tabs-nav"
+          className={`w-full min-w-0 ${
+            isTheaterMode
+              ? "lg:col-span-8 lg:col-start-1 lg:row-start-2"
+              : "lg:col-span-8 lg:col-start-1 lg:row-start-2"
+          }`}
+        >
           {/* Coursera-style Tab Bar */}
           <div className="flex items-center gap-1 border-b border-border mb-6 overflow-x-auto no-scrollbar">
             <button
@@ -1699,6 +1866,39 @@ function CoursePlayerContent({
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-ping" />
               )}
               <span>Course Overview</span>
+            </button>
+            {/* Mobile-Only Dedicated Playlist Tab */}
+            <button
+              type="button"
+              onClick={() => handleTabChange("syllabus")}
+              className={`lg:hidden px-4 py-3 min-h-[44px] text-xs sm:text-sm font-heading font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                activeTab === "syllabus"
+                  ? "border-primary-500 text-primary-600 dark:text-primary-400"
+                  : "border-transparent text-muted-foreground hover:text-foreground active:bg-muted/50"
+              } ${tabTransitioning === "syllabus" ? "animate-pulse" : ""}`}
+            >
+              {tabTransitioning === "syllabus" ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-ping" />
+              ) : (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+              )}
+              <span>
+                Playlist ({completedIds.size}/{lessons.length})
+              </span>
             </button>
             <button
               type="button"
@@ -2238,12 +2438,175 @@ function CoursePlayerContent({
               )}
             </div>
           )}
+
+          {/* Tab 4: Mobile Dedicated Playlist View */}
+          {activeTab === "syllabus" && (
+            <div className="lg:hidden space-y-4 animate-fade-in">
+              <div className="enterprise-card bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+                {/* Header */}
+                <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-heading font-extrabold text-sm text-foreground">
+                      Course Curriculum Playlist
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {completedIds.size} of {lessons.length} completed ({progressPercent}%)
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-primary-600 dark:text-primary-400">
+                    Lesson {activeIdx + 1} of {lessons.length}
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="h-1.5 bg-muted">
+                  <div
+                    className="h-full bg-primary-500 transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+
+                {/* Playlist items */}
+                <ol className="divide-y divide-border">
+                  {lessons.map((lesson, idx) => {
+                    const isActive = lesson.id === activeLessonId;
+                    const isDone = completedIds.has(lesson.id);
+                    const isLoadingThis = loadingLessonId === lesson.id;
+                    const thumbUrl =
+                      lesson.thumbnailUrl ||
+                      `https://img.youtube.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
+
+                    return (
+                      <li key={`mobile-${lesson.id}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleSelectLesson(lesson.id);
+                            document
+                              .getElementById("theatre-player")
+                              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }}
+                          className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors cursor-pointer active:bg-muted ${
+                            isActive
+                              ? "bg-primary-500/10 border-l-4 border-primary-500 shadow-xs"
+                              : "hover:bg-muted/50"
+                          }`}
+                        >
+                          {/* Thumbnail */}
+                          <div className="relative flex-shrink-0 w-24 aspect-video rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={thumbUrl}
+                              alt={lesson.title}
+                              className={`w-full h-full object-cover transition-opacity ${
+                                isActive ? "brightness-75" : ""
+                              }`}
+                              loading="lazy"
+                            />
+                            {/* Live soundwave equalizer badge on active item */}
+                            {isActive && !isLoadingThis && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                                <div className="px-2 py-1 rounded-full bg-black/80 backdrop-blur-xs flex items-center gap-1 shadow-md">
+                                  <div className="flex items-end gap-0.5 h-3 w-3">
+                                    <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-1" />
+                                    <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-2" />
+                                    <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-3" />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {isLoadingThis && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <svg
+                                  className="animate-spin w-4 h-4 text-white"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <circle
+                                    className="opacity-30"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  />
+                                  <path
+                                    className="opacity-90"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8H4z"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                            {isDone && !isLoadingThis && (
+                              <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                                <svg
+                                  width="8"
+                                  height="8"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              </div>
+                            )}
+                            {!isDone && !isLoadingThis && (
+                              <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-mono px-1 rounded">
+                                #{idx + 1}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="min-w-0 flex-1 py-0.5">
+                            <p
+                              className={`text-xs font-body leading-snug line-clamp-2 ${
+                                isActive
+                                  ? "font-heading font-bold text-foreground"
+                                  : "text-foreground/90"
+                              }`}
+                            >
+                              {lesson.title}
+                            </p>
+                            <div className="text-[11px] text-muted-foreground font-body mt-1 flex items-center gap-1.5 flex-wrap">
+                              {isActive ? (
+                                <div className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 font-bold text-[10px]">
+                                  <div className="flex items-end gap-0.5 h-2.5 w-2.5">
+                                    <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-1" />
+                                    <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-2" />
+                                    <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-3" />
+                                  </div>
+                                  <span>Now Playing</span>
+                                </div>
+                              ) : (
+                                <span>Lesson {idx + 1}</span>
+                              )}
+                              {isDone && (
+                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
+                                  · Completed ✓
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right Column: Sticky Coursera Curriculum Syllabus on desktop, natural scroll on mobile */}
+        {/* Right Column: Sticky Coursera Curriculum Syllabus on desktop */}
         <aside
           id="course-curriculum-panel"
-          className="w-full lg:w-96 flex-shrink-0 static lg:sticky lg:top-20"
+          className={`w-full ${
+            isTheaterMode
+              ? "lg:col-span-4 lg:col-start-9 lg:row-start-2"
+              : "lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:row-span-2"
+          } static lg:sticky lg:top-20 hidden lg:block`}
           aria-label="Course syllabus"
         >
           <div className="enterprise-card bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -2366,19 +2729,15 @@ function CoursePlayerContent({
                           className={`w-full h-full object-cover transition-all duration-300 ${isActive ? "brightness-75" : "group-hover:brightness-90"}`}
                           loading="lazy"
                         />
-                        {/* Play overlay on active */}
-                        {isActive && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-md">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="#0F766E"
-                                aria-hidden="true"
-                              >
-                                <polygon points="5 3 19 12 5 21 5 3" />
-                              </svg>
+                        {/* Live soundwave equalizer badge on active item */}
+                        {isActive && !isLoadingThis && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                            <div className="px-2 py-1 rounded-full bg-black/80 backdrop-blur-xs flex items-center gap-1 shadow-md">
+                              <div className="flex items-end gap-0.5 h-3 w-3">
+                                <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-1" />
+                                <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-2" />
+                                <span className="w-0.5 bg-teal-400 rounded-full animate-soundwave-3" />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -2445,12 +2804,29 @@ function CoursePlayerContent({
                         >
                           {lesson.title}
                         </p>
-                        <div className="text-[11px] text-muted-foreground font-body mt-1 flex items-center gap-1.5">
+                        <div className="text-[11px] text-muted-foreground font-body mt-1 flex items-center gap-1.5 flex-wrap">
                           {isLoadingThis ? (
                             <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 font-bold">
                               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
                               Buffering video…
                             </span>
+                          ) : isActive ? (
+                            <div className="inline-flex items-center gap-1.5 text-primary-600 dark:text-primary-400 font-bold text-[10px]">
+                              <div className="flex items-end gap-0.5 h-2.5 w-2.5">
+                                <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-1" />
+                                <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-2" />
+                                <span className="w-0.5 bg-primary-500 rounded-full animate-soundwave-3" />
+                              </div>
+                              <span>Playing Now</span>
+                              {isDone && (
+                                <>
+                                  <span className="text-muted-foreground">·</span>
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                                    Completed
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           ) : (
                             <>
                               <svg
@@ -2562,7 +2938,7 @@ function CoursePlayerContent({
       {/* Floating XP & Daily Streak Reward Toast */}
       {xpToast && (
         <div
-          className="fixed bottom-6 left-6 z-50 enterprise-card p-4 bg-card/95 backdrop-blur-md border border-amber-500/50 shadow-xl rounded-xl flex items-center gap-3.5 max-w-sm animate-slide-up"
+          className="fixed bottom-6 left-6 z-50 enterprise-card p-4 bg-card border border-amber-500/50 shadow-xl rounded-xl flex items-center gap-3.5 max-w-sm animate-slide-up"
           role="status"
           aria-live="polite"
         >
@@ -2713,12 +3089,13 @@ function CoursePlayerContent({
               <button
                 type="button"
                 onClick={handleCloseCourseComplete}
-                className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                aria-label="Close"
+                className="absolute top-4 right-4 z-20 w-9 h-9 rounded-xl bg-card/90 hover:bg-muted border border-border/80 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer shadow-xs transition-colors"
+                aria-label="Close and continue to course"
+                title="Close"
               >
                 <svg
-                  width="14"
-                  height="14"
+                  width="15"
+                  height="15"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -2971,7 +3348,7 @@ function CoursePlayerContent({
             <div className="p-4 border-t border-border bg-muted/30 flex items-center justify-between text-xs font-heading font-semibold text-muted-foreground">
               <button
                 type="button"
-                onClick={() => setShowCourseComplete(false)}
+                onClick={handleCloseCourseComplete}
                 className="hover:text-foreground transition-colors cursor-pointer"
               >
                 Dismiss
@@ -2979,7 +3356,7 @@ function CoursePlayerContent({
               <button
                 type="button"
                 onClick={() => {
-                  setShowCourseComplete(false);
+                  handleCloseCourseComplete();
                   handleShare();
                 }}
                 className="inline-flex items-center gap-1.5 text-primary hover:underline cursor-pointer"
@@ -3055,6 +3432,97 @@ function CoursePlayerContent({
         isOpen={isCompanionOpen}
         onToggle={() => setIsCompanionOpen((o) => !o)}
       />
+
+      {/* Keyboard Shortcuts Cheatsheet Modal */}
+      {showShortcutsModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="shortcuts-dialog-title"
+          onClick={() => setShowShortcutsModal(false)}
+        >
+          <div
+            className="bg-card text-card-foreground border border-border w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary-500/10 text-primary-600 flex items-center justify-center">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+                  </svg>
+                </div>
+                <div>
+                  <h3
+                    id="shortcuts-dialog-title"
+                    className="font-heading font-extrabold text-base text-foreground"
+                  >
+                    Keyboard Shortcuts
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Quick shortcuts for uninterrupted study
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowShortcutsModal(false)}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                aria-label="Close shortcuts modal"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs font-body divide-y divide-border/60">
+              {[
+                { key: "T", desc: "Toggle Cinema / Theater mode" },
+                { key: "F", desc: "Toggle Big Screen fullscreen" },
+                { key: "N", desc: "Advance to next lesson" },
+                { key: "P", desc: "Return to previous lesson" },
+                { key: "1 - 4", desc: "Quick-seek key video checkpoints" },
+                { key: "?", desc: "Open / close shortcuts cheatsheet" },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between pt-2">
+                  <span className="text-muted-foreground">{item.desc}</span>
+                  <kbd className="px-2.5 py-1 rounded bg-muted text-foreground font-mono font-bold text-[11px] border border-border shadow-xs">
+                    {item.key}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowShortcutsModal(false)}
+                className="btn-primary w-full py-2.5 text-xs font-heading font-bold cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

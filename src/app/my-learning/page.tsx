@@ -29,6 +29,7 @@ export default function MyLearningPage() {
   const [isRemoving, setIsRemoving] = useState(false);
   const [paidCourseIds, setPaidCourseIds] = useState<Set<string>>(new Set());
   const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Payment & Certificate Modal States
   const [selectedCertCourse, setSelectedCertCourse] = useState<CourseWithProgress | null>(null);
@@ -154,7 +155,7 @@ export default function MyLearningPage() {
       (item.course.lessonCount || 0) > 0
   );
 
-  // Certificates tab ONLY shows courses that are completed, paid/issued, AND eligible for verified credentials
+  // Certificates tab shows courses that are completed, paid/issued, AND eligible for verified credentials
   const certificateItems = completedItems.filter(
     (item) =>
       checkCertificateEligibility(
@@ -168,6 +169,20 @@ export default function MyLearningPage() {
         Boolean(item.progress.certificateId))
   );
 
+  // Completed courses that meet curriculum requirements but certificate hasn't been claimed yet
+  const eligibleUnclaimedItems = completedItems.filter(
+    (item) =>
+      checkCertificateEligibility(
+        item.course.title,
+        item.course.lessonCount,
+        item.course.description
+      ).eligible &&
+      !paidCourseIds.has(item.course.id) &&
+      !Boolean(item.progress.certificateIssued) &&
+      !Boolean(item.progress.hasPaidCertificate) &&
+      !Boolean(item.progress.certificateId)
+  );
+
   const displayedItems =
     filter === "in_progress"
       ? inProgressItems
@@ -176,6 +191,16 @@ export default function MyLearningPage() {
         : filter === "certificates"
           ? certificateItems
           : items;
+
+  const handleCopyCourseLink = async (courseId: string) => {
+    try {
+      const url = `${window.location.origin}/course/${courseId}`;
+      await navigator.clipboard.writeText(url);
+      setToastMessage("Course link copied to clipboard!");
+      setTimeout(() => setToastMessage(null), 2500);
+    } catch {}
+    setOpenMenuId(null);
+  };
 
   // Handle course removal from dashboard
   const handleConfirmRemove = async () => {
@@ -584,29 +609,121 @@ export default function MyLearningPage() {
           </Link>
         </div>
       ) : displayedItems.length === 0 ? (
-        <div className="enterprise-card p-12 text-center max-w-md mx-auto bg-card border border-border rounded-2xl">
-          <p className="font-heading font-bold text-base text-foreground mb-2">
-            {filter === "completed"
-              ? "No completed courses yet"
-              : filter === "certificates"
-                ? "No unlocked certificates yet"
-                : "No courses currently in progress"}
-          </p>
-          <p className="text-xs text-muted-foreground font-body mb-4">
-            {filter === "completed"
-              ? "Finish watching all lessons in any course to unlock your official verified certificate."
-              : filter === "certificates"
-                ? "Complete a course and verify curriculum requirements to claim and display your Certificate of Completion here."
-                : "All your active courses have been finished!"}
-          </p>
-          <button
-            type="button"
-            onClick={() => setFilter("all")}
-            className="btn-ghost text-xs px-4 py-2"
-          >
-            View All Courses
-          </button>
-        </div>
+        filter === "certificates" && eligibleUnclaimedItems.length > 0 ? (
+          <div className="space-y-6">
+            <div className="p-5 sm:p-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                  >
+                    <circle cx="12" cy="8" r="7" />
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-heading font-black text-base text-foreground">
+                    You Have {eligibleUnclaimedItems.length} Certificate
+                    {eligibleUnclaimedItems.length !== 1 ? "s" : ""} Ready to Claim!
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-body mt-0.5">
+                    You completed 100% of the course. Unlock your official verified credential and
+                    share it on LinkedIn.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {eligibleUnclaimedItems.map((item) => (
+                <div
+                  key={item.course.id}
+                  className="enterprise-card p-5 bg-card border border-amber-500/40 rounded-2xl flex flex-col justify-between shadow-xs"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-heading font-black text-amber-700 dark:text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                        100% Completed
+                      </span>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {item.course.lessonCount} lessons
+                      </span>
+                    </div>
+                    <h4 className="font-heading font-bold text-sm sm:text-base text-foreground mb-1">
+                      {item.course.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground font-body">
+                      Verifiable certificate issued by VeySkill with credential registry ID.
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setPayingCourse(item)}
+                      className="btn-primary text-xs px-3.5 py-2 font-heading font-bold rounded-xl shadow-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="8" r="7" />
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                      </svg>
+                      <span>Claim Certificate · ₹29</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCertCourse(item)}
+                      className="btn-secondary text-xs px-3 py-2 font-heading font-semibold rounded-xl border border-border text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      Preview
+                    </button>
+                    <Link
+                      href={`/course/${item.course.id}?review=true&start=true`}
+                      className="text-xs font-heading font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto"
+                    >
+                      <span>Review</span>
+                      <span>&rarr;</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="enterprise-card p-12 text-center max-w-md mx-auto bg-card border border-border rounded-2xl">
+            <p className="font-heading font-bold text-base text-foreground mb-2">
+              {filter === "completed"
+                ? "No completed courses yet"
+                : filter === "certificates"
+                  ? "No unlocked certificates yet"
+                  : "No courses currently in progress"}
+            </p>
+            <p className="text-xs text-muted-foreground font-body mb-4">
+              {filter === "completed"
+                ? "Finish watching all lessons in any course to unlock your official verified certificate."
+                : filter === "certificates"
+                  ? "Complete a course and verify curriculum requirements to claim and display your Certificate of Completion here."
+                  : "All your active courses have been finished!"}
+            </p>
+            <button
+              type="button"
+              onClick={() => setFilter("all")}
+              className="btn-ghost text-xs px-4 py-2"
+            >
+              View All Courses
+            </button>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {displayedItems.map((item) => {
@@ -697,10 +814,10 @@ export default function MyLearningPage() {
 
                           {/* 3-Dot Options Dropdown */}
                           {openMenuId === course.id && (
-                            <div className="absolute right-0 top-full mt-1.5 w-48 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-xl p-1 z-30 animate-fade-in divide-y divide-border/50">
+                            <div className="absolute right-0 top-full mt-1.5 w-52 bg-card border border-border rounded-2xl shadow-xl p-1 z-50 animate-fade-in divide-y divide-border/50">
                               <div className="space-y-0.5 pb-1">
                                 <Link
-                                  href={`/course/${course.id}?start=true`}
+                                  href={`/course/${course.id}?review=${isFinished ? "true" : "false"}&start=true`}
                                   onClick={() => setOpenMenuId(null)}
                                   className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors"
                                 >
@@ -715,16 +832,84 @@ export default function MyLearningPage() {
                                   >
                                     <polygon points="5 3 19 12 5 21 5 3" />
                                   </svg>
-                                  <span>{isFinished ? "Review Course" : "Continue Learning"}</span>
+                                  <span>{isFinished ? "Review Lessons" : "Continue Learning"}</span>
                                 </Link>
+
+                                {isCertUnlocked && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        setSelectedCertCourse(item);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-muted/80 transition-colors text-left cursor-pointer"
+                                    >
+                                      <svg
+                                        width="13"
+                                        height="13"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <circle cx="12" cy="8" r="7" />
+                                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                                      </svg>
+                                      <span>View Certificate</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        handleDownloadCertificate(item);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors text-left cursor-pointer"
+                                    >
+                                      <svg
+                                        width="13"
+                                        height="13"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                      </svg>
+                                      <span>Download PDF</span>
+                                    </button>
+                                  </>
+                                )}
+
+                                {isFinished && !isCertUnlocked && certEligibility.eligible && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setPayingCourse(item);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-amber-600 dark:text-amber-400 hover:bg-muted/80 transition-colors text-left cursor-pointer"
+                                  >
+                                    <svg
+                                      width="13"
+                                      height="13"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
+                                      <circle cx="12" cy="8" r="7" />
+                                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                                    </svg>
+                                    <span>Claim Certificate (₹29)</span>
+                                  </button>
+                                )}
 
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const url = `${window.location.origin}/course/${course.id}`;
-                                    navigator.clipboard.writeText(url);
-                                    setOpenMenuId(null);
-                                  }}
+                                  onClick={() => handleCopyCourseLink(course.id)}
                                   className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-heading font-semibold text-foreground hover:bg-muted/80 transition-colors text-left cursor-pointer"
                                 >
                                   <svg
@@ -734,15 +919,12 @@ export default function MyLearningPage() {
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="2"
-                                    className="text-amber-500"
+                                    className="text-indigo-500"
                                   >
-                                    <circle cx="18" cy="5" r="3" />
-                                    <circle cx="6" cy="12" r="3" />
-                                    <circle cx="18" cy="19" r="3" />
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                   </svg>
-                                  <span>Share Course</span>
+                                  <span>Copy Course Link</span>
                                 </button>
                               </div>
 
@@ -925,9 +1107,9 @@ export default function MyLearningPage() {
                     </div>
                   ) : isFinished ? (
                     /* Case 2: In Completed Tab — Review Lessons or Claim/View Certificate */
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <div className="flex flex-col gap-2.5 pt-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[10px] font-heading font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                           <svg
                             width="11"
                             height="11"
@@ -938,48 +1120,94 @@ export default function MyLearningPage() {
                           >
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
-                          <span>Completed</span>
+                          <span>Course Completed</span>
                         </span>
+
+                        {isCertUnlocked && (
+                          <span className="text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400">
+                            Verified Credential
+                          </span>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {!certEligibility.eligible ? (
-                          <span className="text-[11px] font-heading font-medium text-muted-foreground bg-muted/60 border border-border px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
-                            <span>Educational Guide · Completed</span>
-                          </span>
-                        ) : isCertUnlocked ? (
-                          <button
-                            type="button"
-                            onClick={() => setFilter("certificates")}
-                            className="btn-ghost text-xs px-3 py-1.5 font-heading font-bold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1 border border-emerald-500/30 hover:bg-emerald-500/10"
-                          >
-                            <span>Certificate Unlocked →</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setPayingCourse(item)}
-                            className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold shadow-sm inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer text-white"
-                          >
-                            <svg
-                              width="13"
-                              height="13"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {isCertUnlocked ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCertCourse(item)}
+                              className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
                             >
-                              <circle cx="12" cy="8" r="7" />
-                              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                            </svg>
-                            <span>Claim Certificate · ₹29</span>
-                          </button>
-                        )}
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.2"
+                              >
+                                <circle cx="12" cy="8" r="7" />
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                              </svg>
+                              <span>View Certificate</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadCertificate(item)}
+                              disabled={downloadingCertId === course.id}
+                              className="btn-secondary text-xs px-3 py-1.5 font-heading font-semibold rounded-xl border border-border inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.2"
+                              >
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                              </svg>
+                              <span>PDF</span>
+                            </button>
+                          </>
+                        ) : certEligibility.eligible ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setPayingCourse(item)}
+                              className="btn-primary text-xs px-3.5 py-1.5 font-heading font-bold rounded-xl shadow-xs inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 cursor-pointer text-white"
+                            >
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <circle cx="12" cy="8" r="7" />
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                              </svg>
+                              <span>Claim Certificate · ₹29</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCertCourse(item)}
+                              className="btn-secondary text-xs px-2.5 py-1.5 font-heading font-semibold rounded-xl border border-border text-muted-foreground hover:text-foreground cursor-pointer"
+                            >
+                              Preview
+                            </button>
+                          </>
+                        ) : null}
+
                         <Link
-                          href={`/course/${course.id}?start=true`}
-                          className="btn-ghost text-xs px-2.5 py-1.5 font-heading text-muted-foreground hover:text-foreground"
+                          href={`/course/${course.id}?review=true&start=true`}
+                          className="btn-ghost text-xs px-3 py-1.5 font-heading font-semibold text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1"
                         >
-                          Review
+                          <span>Review</span>
+                          <span>&rarr;</span>
                         </Link>
                       </div>
                     </div>
@@ -1342,6 +1570,23 @@ export default function MyLearningPage() {
               </Link>
             </div>
           </div>
+        </div>
+      )}
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-heading font-bold px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-scale-in">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            className="text-emerald-400 dark:text-emerald-600"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

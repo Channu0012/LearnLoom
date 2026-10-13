@@ -200,7 +200,7 @@ export function StudyCompanion({
 
   return (
     <div
-      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[440px] h-[88vh] sm:h-[580px] bg-card/95 backdrop-blur-2xl border-t-2 sm:border-2 border-border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
+      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[440px] h-[88vh] sm:h-[580px] bg-card border-t-2 sm:border-2 border-border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
       role="complementary"
       aria-label="AI Academic Coach"
     >
