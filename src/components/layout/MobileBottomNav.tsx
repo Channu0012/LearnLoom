@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 interface NavItem {
   name: string;
   href: string;
+  badge?: string;
   icon: (_active: boolean) => React.ReactNode;
 }
 
@@ -59,6 +60,7 @@ export function MobileBottomNav() {
     {
       name: "Doubts",
       href: "/doubts",
+      badge: "NEW",
       icon: (active: boolean) => (
         <svg
           width="22"
@@ -164,7 +166,14 @@ export function MobileBottomNav() {
               )}
 
               {/* Icon */}
-              <div className="flex items-center justify-center w-7 h-7">{item.icon(isActive)}</div>
+              <div className="relative flex items-center justify-center w-7 h-7">
+                {item.icon(isActive)}
+                {item.badge && (
+                  <span className="absolute -top-1 -right-2 text-[8px] font-heading font-black px-1 py-0.2 rounded-full bg-teal-500 text-white leading-tight shadow-xs">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
 
               {/* Label */}
               <span

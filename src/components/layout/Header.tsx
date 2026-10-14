@@ -100,21 +100,10 @@ export function Header() {
             height={34}
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
-          <div className="flex flex-col leading-none" suppressHydrationWarning>
-            <span
-              className="font-heading font-extrabold text-lg sm:text-xl tracking-tight"
-              suppressHydrationWarning
-            >
-              <span className="text-foreground">Vey</span>
-              <span className="text-[#14b8a6]">skill</span>
-            </span>
-            <span
-              suppressHydrationWarning
-              className="text-[10px] font-body font-medium text-muted-foreground hidden xl:inline-flex items-center tracking-wide mt-0.5 select-none"
-            >
-              {"Structured Masterclasses • Verified Credentials"}
-            </span>
-          </div>
+          <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight select-none">
+            <span className="text-foreground">Vey</span>
+            <span className="text-[#14b8a6]">skill</span>
+          </span>
         </Link>
 
         {/* Desktop & Tablet Navigation */}
@@ -245,7 +234,7 @@ export function Header() {
           {/* Mobile Doubts Button — Always accessible on phones & compact screens */}
           <Link
             href="/doubts"
-            className="md:hidden font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 transition-all inline-flex items-center gap-1.5 active:scale-95"
+            className="md:hidden font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/40 transition-all inline-flex items-center gap-1.5 active:scale-95 shadow-xs"
             aria-label="Doubts Hub"
           >
             <svg
@@ -264,6 +253,7 @@ export function Header() {
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <span>Doubts</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
           </Link>
           {/* Auth Controls */}
           {!loading && (
