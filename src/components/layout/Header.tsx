@@ -143,7 +143,7 @@ export function Header() {
           {/* Doubts Hub */}
           <Link
             href="/doubts"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5 group"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5 group flex-shrink-0"
           >
             <svg
               width="15"
@@ -241,7 +241,7 @@ export function Header() {
           {/* Mobile Doubts Button — Always accessible on phones & compact screens */}
           <Link
             href="/doubts"
-            className="md:hidden font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/40 transition-all inline-flex items-center gap-1.5 active:scale-95 shadow-xs"
+            className="inline-flex md:hidden items-center gap-1.5 font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/30 transition-all active:scale-95 flex-shrink-0 shadow-xs"
             aria-label="Doubts Hub"
           >
             <svg
