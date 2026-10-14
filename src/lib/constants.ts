@@ -51,6 +51,18 @@ export const COLLECTIONS = {
   QUIZ_RESULTS: "quizResults",
   CERTIFICATES: "certificates",
   PAYMENTS: "payments",
+  DOUBTS: "doubts",
+  ANSWERS: "answers",
+} as const;
+
+/** Doubt Solve limits */
+export const DOUBT_LIMITS = {
+  FREE_DOUBTS_PER_MONTH: 3,
+  MAX_DOUBT_TEXT: 1000,
+  MAX_ANSWER_TEXT: 2000,
+  HELPER_SCORE_ANSWER: 5,
+  HELPER_SCORE_SOLUTION: 15,
+  HELPER_SCORE_UPVOTE: 2,
 } as const;
 
 /** Report statuses */

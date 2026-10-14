@@ -26,7 +26,7 @@ import {
   type FieldValue,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { COLLECTIONS, PAGE_SIZE } from "./constants";
+import { COLLECTIONS, PAGE_SIZE, DOUBT_LIMITS } from "./constants";
 import type {
   UserDoc,
   CourseDoc,
@@ -34,6 +34,8 @@ import type {
   ProgressDoc,
   ReportDoc,
   SerializedCourseDoc,
+  DoubtDoc,
+  AnswerDoc,
 } from "./types";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -419,6 +421,25 @@ export async function deleteUserProgress(uid: string, courseId: string): Promise
   }
 }
 
+/** Get enrolled course summaries for a user */
+export async function getUserEnrolledCourses(
+  uid: string
+): Promise<Array<{ id: string; title: string }>> {
+  try {
+    const progressList = await getUserProgress(uid);
+    const courses: Array<{ id: string; title: string }> = [];
+    for (const prog of progressList) {
+      const course = await getCourse(prog.courseId);
+      if (course && course.status === "published") {
+        courses.push({ id: course.id, title: course.title });
+      }
+    }
+    return courses;
+  } catch {
+    return [];
+  }
+}
+
 // ── Report helpers ─────────────────────────────────────────────────────────
 
 export async function createReport(
@@ -517,3 +538,259 @@ export async function getCertificateRecord(certId: string): Promise<any | null> 
 }
 
 export { startAfter, orderBy, where, limit };
+
+// ── Doubt Solve helpers ────────────────────────────────────────────────────
+
+function snapToDoubt(snap: DocumentSnapshot | QueryDocumentSnapshot): DoubtDoc {
+  return { ...(snap.data() as DoubtDoc), id: snap.id };
+}
+
+function snapToAnswer(snap: QueryDocumentSnapshot): AnswerDoc {
+  return { ...(snap.data() as AnswerDoc), id: snap.id };
+}
+
+/** Count doubts posted by user this month (for free-tier enforcement) */
+export async function getUserMonthlyDoubtCount(uid: string): Promise<number> {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const { Timestamp: FBTimestamp } = await import("firebase/firestore");
+    const q = query(
+      collection(db, COLLECTIONS.DOUBTS),
+      where("authorId", "==", uid),
+      where("createdAt", ">=", FBTimestamp.fromDate(startOfMonth))
+    );
+    const snap = await getDocs(q);
+    return snap.size;
+  } catch {
+    return 0;
+  }
+}
+
+/** Create a new doubt */
+export async function createDoubt(
+  data: Omit<DoubtDoc, "id" | "createdAt" | "updatedAt" | "answerCount" | "status">
+): Promise<string> {
+  const ref = await addDoc(collection(db, COLLECTIONS.DOUBTS), {
+    ...data,
+    status: "open",
+    answerCount: 0,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  // Increment user's doubtsPosted count
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, data.authorId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const prev = (userSnap.data() as UserDoc).doubtsPosted || 0;
+      await updateDoc(userRef, { doubtsPosted: prev + 1 });
+    }
+  } catch {}
+  return ref.id;
+}
+
+/** Get doubts feed — paginated, newest first */
+export async function getDoubtsFeed(pageSize = 20, courseFilter?: string): Promise<DoubtDoc[]> {
+  try {
+    const constraints: QueryConstraint[] = [];
+    if (courseFilter) {
+      constraints.push(where("courseId", "==", courseFilter));
+    }
+    const q = query(
+      collection(db, COLLECTIONS.DOUBTS),
+      ...constraints,
+      orderBy("createdAt", "desc"),
+      limit(pageSize)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(snapToDoubt);
+  } catch {
+    return [];
+  }
+}
+
+/** Get doubts by user (My Doubts) */
+export async function getDoubtsByUser(uid: string): Promise<DoubtDoc[]> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.DOUBTS),
+      where("authorId", "==", uid),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(snapToDoubt);
+  } catch {
+    return [];
+  }
+}
+
+/** Get doubts for courses the user has completed (I Can Help) */
+export async function getDoubtsForCompletedCourses(
+  courseIds: string[],
+  uid: string
+): Promise<DoubtDoc[]> {
+  if (courseIds.length === 0) return [];
+  try {
+    // Firestore 'in' queries support max 30 values
+    const batches: DoubtDoc[] = [];
+    const chunks = [];
+    for (let i = 0; i < courseIds.length; i += 30) {
+      chunks.push(courseIds.slice(i, i + 30));
+    }
+    for (const chunk of chunks) {
+      const q = query(
+        collection(db, COLLECTIONS.DOUBTS),
+        where("courseId", "in", chunk),
+        where("status", "==", "open"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+      const snap = await getDocs(q);
+      batches.push(...snap.docs.map(snapToDoubt));
+    }
+    // Exclude user's own doubts and sort by newest
+    return batches
+      .filter((d) => d.authorId !== uid)
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
+      .slice(0, 20);
+  } catch {
+    return [];
+  }
+}
+
+/** Get a single doubt by ID */
+export async function getDoubt(doubtId: string): Promise<DoubtDoc | null> {
+  try {
+    const snap = await getDoc(doc(db, COLLECTIONS.DOUBTS, doubtId));
+    if (!snap.exists()) return null;
+    return snapToDoubt(snap);
+  } catch {
+    return null;
+  }
+}
+
+/** Get answers for a doubt */
+export async function getAnswers(doubtId: string): Promise<AnswerDoc[]> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.DOUBTS, doubtId, COLLECTIONS.ANSWERS),
+      orderBy("createdAt", "asc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(snapToAnswer);
+  } catch {
+    return [];
+  }
+}
+
+/** Create an answer to a doubt */
+export async function createAnswer(
+  doubtId: string,
+  data: Omit<AnswerDoc, "id" | "createdAt" | "upvotes" | "upvotedBy" | "isSolution">
+): Promise<string> {
+  const ref = await addDoc(collection(db, COLLECTIONS.DOUBTS, doubtId, COLLECTIONS.ANSWERS), {
+    ...data,
+    upvotes: 0,
+    upvotedBy: [],
+    isSolution: false,
+    createdAt: serverTimestamp(),
+  });
+  // Increment answerCount on doubt
+  try {
+    const doubtRef = doc(db, COLLECTIONS.DOUBTS, doubtId);
+    const doubtSnap = await getDoc(doubtRef);
+    if (doubtSnap.exists()) {
+      const prev = (doubtSnap.data() as DoubtDoc).answerCount || 0;
+      await updateDoc(doubtRef, { answerCount: prev + 1, updatedAt: serverTimestamp() });
+    }
+  } catch {}
+  // Add helper score +5 for answering
+  await addHelperScore(data.authorId, DOUBT_LIMITS.HELPER_SCORE_ANSWER);
+  return ref.id;
+}
+
+/** Upvote an answer (toggle) */
+export async function toggleUpvoteAnswer(
+  doubtId: string,
+  answerId: string,
+  uid: string
+): Promise<{ upvotes: number; didUpvote: boolean }> {
+  const ansRef = doc(db, COLLECTIONS.DOUBTS, doubtId, COLLECTIONS.ANSWERS, answerId);
+  const snap = await getDoc(ansRef);
+  if (!snap.exists()) return { upvotes: 0, didUpvote: false };
+  const answer = snap.data() as AnswerDoc;
+  const alreadyUpvoted = (answer.upvotedBy || []).includes(uid);
+  if (alreadyUpvoted) {
+    // Remove upvote
+    const newList = (answer.upvotedBy || []).filter((id) => id !== uid);
+    await updateDoc(ansRef, {
+      upvotedBy: newList,
+      upvotes: Math.max(0, (answer.upvotes || 1) - 1),
+    });
+    // Deduct helper score
+    await addHelperScore(answer.authorId, -DOUBT_LIMITS.HELPER_SCORE_UPVOTE);
+    return { upvotes: Math.max(0, (answer.upvotes || 1) - 1), didUpvote: false };
+  } else {
+    // Add upvote
+    await updateDoc(ansRef, { upvotedBy: arrayUnion(uid), upvotes: (answer.upvotes || 0) + 1 });
+    // Add helper score
+    await addHelperScore(answer.authorId, DOUBT_LIMITS.HELPER_SCORE_UPVOTE);
+    return { upvotes: (answer.upvotes || 0) + 1, didUpvote: true };
+  }
+}
+
+/** Mark an answer as the solution (only doubt author can do this) */
+export async function markAnswerAsSolution(
+  doubtId: string,
+  answerId: string,
+  doubtAuthorId: string,
+  answerAuthorId: string
+): Promise<void> {
+  // Update the answer
+  const ansRef = doc(db, COLLECTIONS.DOUBTS, doubtId, COLLECTIONS.ANSWERS, answerId);
+  await updateDoc(ansRef, { isSolution: true });
+  // Mark doubt as solved
+  const doubtRef = doc(db, COLLECTIONS.DOUBTS, doubtId);
+  await updateDoc(doubtRef, {
+    status: "solved",
+    solvedAnswerId: answerId,
+    updatedAt: serverTimestamp(),
+  });
+  // Give +15 helper score to the answer author
+  await addHelperScore(answerAuthorId, DOUBT_LIMITS.HELPER_SCORE_SOLUTION);
+  // Increment studentsHelped on the answer author
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, answerAuthorId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const prev = (userSnap.data() as UserDoc).studentsHelped || 0;
+      await updateDoc(userRef, { studentsHelped: prev + 1 });
+    }
+  } catch {}
+}
+
+/** Add/subtract helper score for a user */
+export async function addHelperScore(uid: string, delta: number): Promise<void> {
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const prev = (userSnap.data() as UserDoc).helperScore || 0;
+      await updateDoc(userRef, { helperScore: Math.max(0, prev + delta) });
+    }
+  } catch {}
+}
+
+/** Get helper score for a user */
+export async function getHelperScore(uid: string): Promise<number> {
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, uid);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      return (snap.data() as UserDoc).helperScore || 0;
+    }
+  } catch {}
+  return 0;
+}

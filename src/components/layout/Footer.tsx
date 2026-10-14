@@ -65,6 +65,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/doubts" className="hover:text-primary-500 transition-colors">
+                  Doubt Solve (Community Q&amp;A)
+                </Link>
+              </li>
+              <li>
                 <Link href="/quick-watch" className="hover:text-primary-500 transition-colors">
                   Quick Watch (Focus Theatre)
                 </Link>

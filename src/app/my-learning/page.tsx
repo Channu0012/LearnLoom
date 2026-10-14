@@ -428,8 +428,27 @@ export default function MyLearningPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <StreakWidget />
+            <Link
+              href="/quick-watch"
+              className="btn-ghost text-xs font-heading font-bold px-3.5 py-2 inline-flex items-center gap-1.5 border border-border hover:border-primary-500/50 transition-colors"
+              title="Quick Watch Focus Theatre"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>Quick Watch</span>
+            </Link>
             <Link
               href="/verify"
               className="btn-ghost text-xs font-heading font-bold px-3.5 py-2 inline-flex items-center gap-1.5 border border-border"

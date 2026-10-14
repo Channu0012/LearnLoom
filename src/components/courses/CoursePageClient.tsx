@@ -33,6 +33,7 @@ import { PaymentGate } from "@/components/courses/PaymentGate";
 import { StreakDashboard } from "@/components/courses/StreakDashboard";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { InPlayerCodeScratchpad } from "@/components/courses/InPlayerCodeScratchpad";
+import { DoubtFAB } from "@/components/doubts/DoubtFAB";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -3523,6 +3524,14 @@ function CoursePlayerContent({
           </div>
         </div>
       )}
+
+      {/* Doubt Solve Floating Action Button */}
+      <DoubtFAB
+        courseId={courseId}
+        courseTitle={course.title}
+        lessonId={activeLesson?.id}
+        lessonTitle={activeLesson?.title}
+      />
     </div>
   );
 }

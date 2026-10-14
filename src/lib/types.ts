@@ -12,6 +12,13 @@ export interface UserDoc {
   photoURL: string | null;
   createdAt: Timestamp | null;
   isAdmin: boolean; // only settable manually in the console
+  // Doubt Solve — Helper Score & Plus Membership
+  helperScore?: number;
+  doubtsPosted?: number;
+  doubtsAnswered?: number;
+  studentsHelped?: number;
+  isPlusMember?: boolean;
+  plusExpiresAt?: Timestamp | null;
 }
 
 // ── Course document: courses/{courseId} ────────────────────────────────────
@@ -70,6 +77,38 @@ export interface ProgressDoc {
   paidOrderId?: string;
   started?: boolean;
   updatedAt: Timestamp;
+}
+
+// ── Doubt document: doubts/{doubtId} ──────────────────────────────────────
+export interface DoubtDoc {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  lessonId?: string;
+  lessonTitle?: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string | null;
+  text: string;
+  status: "open" | "solved";
+  answerCount: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  solvedAnswerId?: string;
+}
+
+// ── Answer document: doubts/{doubtId}/answers/{answerId} ──────────────────
+export interface AnswerDoc {
+  id: string;
+  doubtId: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string | null;
+  text: string;
+  upvotes: number;
+  upvotedBy: string[];
+  isSolution: boolean;
+  createdAt: Timestamp;
 }
 
 // ── Report document: reports/{reportId} ────────────────────────────────────

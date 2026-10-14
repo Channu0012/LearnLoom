@@ -216,5 +216,47 @@ service cloud.firestore {
       // Writes are strictly server-only via Firebase Admin SDK
       allow write: if false;
     }
+
+    // ── doubts/{doubtId} (Doubt Solve Community Q&A) ─────────────────────────
+    match /doubts/{doubtId} {
+      // All doubts are public — community learning
+      allow read: if true;
+
+      // Only logged-in users can post doubts
+      allow create: if isAuth()
+        && inData().authorId == request.auth.uid
+        && validStr("text", 1000)
+        && validStr("courseId", 100)
+        && validStr("courseTitle", 200)
+        && inData().status == "open"
+        && inData().answerCount == 0;
+
+      // Author can mark solved; admin can moderate
+      allow update: if isAuth()
+        && (exData().authorId == request.auth.uid || isAdmin());
+
+      // Author or admin can delete
+      allow delete: if isAuth()
+        && (exData().authorId == request.auth.uid || isAdmin());
+
+      // ── answers sub-collection: doubts/{doubtId}/answers/{answerId} ────────
+      match /answers/{answerId} {
+        // Anyone can read answers
+        allow read: if true;
+
+        // Only logged-in users can create answers
+        allow create: if isAuth()
+          && inData().authorId == request.auth.uid
+          && validStr("text", 2000)
+          && inData().upvotes == 0;
+
+        // Any logged-in user can update (for upvoting)
+        allow update: if isAuth();
+
+        // Author or admin can delete
+        allow delete: if isAuth()
+          && (exData().authorId == request.auth.uid || isAdmin());
+      }
+    }
   }
 }

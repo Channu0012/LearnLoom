@@ -222,23 +222,43 @@ export default function MyCoursesPage() {
           </p>
         </div>
 
-        <Link
-          href="/create"
-          className="btn-accent px-5 py-3 text-sm inline-flex items-center gap-2 self-start sm:self-auto shadow-md hover:shadow-lg transition-all min-h-[44px]"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          <Link
+            href="/quick-watch"
+            className="btn-ghost px-4 py-3 text-sm inline-flex items-center gap-2 border border-border hover:border-primary-500/50 transition-all min-h-[44px] rounded-xl"
+            title="Watch in Focus Theatre"
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span>Create New Course</span>
-        </Link>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <span>Quick Watch</span>
+          </Link>
+
+          <Link
+            href="/create"
+            className="btn-accent px-5 py-3 text-sm inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all min-h-[44px]"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Create New Course</span>
+          </Link>
+        </div>
       </div>
 
       {/* Analytics Stats Grid */}
