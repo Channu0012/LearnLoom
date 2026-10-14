@@ -391,23 +391,37 @@ export default function MyCoursesPage() {
             Organize YouTube tutorials, lectures, and guides into structured, distraction-free
             courses. Free forever for your students.
           </p>
-          <Link
-            href="/create"
-            className="btn-accent px-6 py-3 text-sm inline-flex items-center gap-2 min-h-[48px]"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/create"
+              className="btn-accent px-6 py-3 text-sm inline-flex items-center gap-2 min-h-[48px]"
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>Create Course Now</span>
-          </Link>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Create Course Now</span>
+            </Link>
+
+            <Link
+              href="/quick-watch"
+              className="btn-ghost px-5 py-3 text-sm inline-flex items-center gap-2 border border-border min-h-[48px] rounded-xl hover:border-primary-500/50"
+            >
+              <span className="w-5 h-5 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </span>
+              <span>Launch Quick Watch</span>
+            </Link>
+          </div>
         </div>
       ) : filteredCourses.length === 0 ? (
         <div className="enterprise-card p-10 text-center bg-card rounded-2xl">

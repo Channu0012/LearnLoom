@@ -119,13 +119,23 @@ export function PaymentGate({
       setValidationError(
         "Please enter your full legal name as it should appear on your verified certificate."
       );
+      const nameInput = document.getElementById("recipient-legal-name");
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
 
     if (!isPhoneValid) {
       setValidationError(
-        "Please enter a valid 10-digit mobile number (starts with 6-9) for payment receipt & SMS verification."
+        "Please enter a valid 10-digit mobile number (starts with 6-9) for UPI instant payment confirmation."
       );
+      const phoneInput = document.getElementById("payment-phone");
+      if (phoneInput) {
+        phoneInput.focus();
+        phoneInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
 
@@ -180,7 +190,7 @@ export function PaymentGate({
 
       // 2. Dynamically load Cashfree JS Web SDK (client-only)
       const { load } = await import("@cashfreepayments/cashfree-js");
-      const mode = (orderData.mode || process.env.NEXT_PUBLIC_CASHFREE_MODE || "sandbox") as
+      const mode = (orderData.mode || process.env.NEXT_PUBLIC_CASHFREE_MODE || "production") as
         "sandbox" | "production";
 
       const cashfree = await load({ mode });
@@ -189,13 +199,22 @@ export function PaymentGate({
         throw new Error("Unable to initialize Cashfree payment interface.");
       }
 
-      // 3. Launch Checkout Modal
+      // 3. Launch Checkout
+      // On mobile / touch screens, redirectTarget: "_self" is essential so native UPI apps
+      // (Google Pay, PhonePe, Paytm, CRED) can open directly without being blocked by an iframe sandbox.
+      const isMobileDevice =
+        typeof window !== "undefined" &&
+        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+          window.innerWidth < 768);
+
+      const redirectTarget = isMobileDevice ? "_self" : "_modal";
+
       const checkoutResult = await cashfree.checkout({
         paymentSessionId,
-        redirectTarget: "_modal",
+        redirectTarget,
       });
 
-      // 4. If modal completes or redirects
+      // 4. If modal completes or returns control
       if (checkoutResult?.error) {
         console.warn("Cashfree checkout notice:", checkoutResult.error.message);
       }
@@ -489,13 +508,14 @@ export function PaymentGate({
             <input
               id="recipient-legal-name"
               type="text"
+              autoComplete="name"
               value={legalName}
               onChange={(e) => {
                 setLegalName(e.target.value);
                 if (validationError) setValidationError(null);
               }}
-              placeholder="Enter your name"
-              className={`w-full px-3.5 py-2.5 text-xs font-heading font-medium rounded-xl bg-card border ${
+              placeholder="e.g. Rahul Sharma"
+              className={`w-full px-4 py-3 min-h-[44px] text-base sm:text-sm font-heading font-medium rounded-xl bg-card border ${
                 legalName.trim().length > 0 && !isNameValid
                   ? "border-destructive focus:border-destructive"
                   : "border-border focus:border-primary"
@@ -529,12 +549,14 @@ export function PaymentGate({
               <span className="text-[10px] text-muted-foreground font-mono">SMS / UPI Receipt</span>
             </div>
             <div className="relative flex items-center">
-              <span className="absolute left-3 text-xs font-mono font-semibold text-muted-foreground select-none">
+              <span className="absolute left-3.5 text-xs font-mono font-bold text-muted-foreground select-none">
                 +91
               </span>
               <input
                 id="payment-phone"
                 type="tel"
+                inputMode="numeric"
+                autoComplete="tel-national"
                 value={phoneNumber}
                 onChange={(e) => {
                   const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -543,7 +565,7 @@ export function PaymentGate({
                 }}
                 placeholder="9876543210"
                 maxLength={10}
-                className={`w-full pl-11 pr-3.5 py-2.5 text-xs font-mono font-medium rounded-xl bg-card border ${
+                className={`w-full pl-12 pr-3.5 py-3 min-h-[44px] text-base sm:text-sm font-mono font-medium rounded-xl bg-card border ${
                   cleanPhone.length > 0 && !isPhoneValid
                     ? "border-destructive focus:border-destructive"
                     : "border-border focus:border-primary"
@@ -553,35 +575,56 @@ export function PaymentGate({
             </div>
             <div className="flex items-center justify-between text-[10px]">
               <span className="text-muted-foreground font-body">
-                Required for Cashfree instant payment confirmation.
+                Instant UPI intent & SMS certificate confirmation.
               </span>
               {isPhoneValid ? (
                 <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
                   ✓ Valid 10-Digit
                 </span>
               ) : (
-                <span className="text-amber-500 font-mono font-medium">10 Digits (6-9 start)</span>
+                <span className="text-amber-500 font-mono font-medium">10 Digits (starts with 6-9)</span>
               )}
             </div>
           </div>
 
           {/* Validation Warning Notice */}
           {validationError && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-1 font-body">
-              <p className="font-semibold">{validationError}</p>
+            <div
+              role="alert"
+              className="p-3.5 rounded-xl bg-destructive/10 border-2 border-destructive/30 text-destructive text-xs space-y-1 font-body animate-shake"
+            >
+              <div className="flex items-center gap-2">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  className="flex-shrink-0"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <p className="font-heading font-bold">{validationError}</p>
+              </div>
             </div>
           )}
 
           {/* Server Error Message */}
           {error && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-2">
+            <div
+              role="alert"
+              className="p-3.5 rounded-xl bg-destructive/10 border-2 border-destructive/30 text-destructive text-xs space-y-2"
+            >
               <p className="font-semibold">{error}</p>
               {activeOrderId && (
                 <button
                   type="button"
                   onClick={() => verifyOrderPayment(activeOrderId)}
                   disabled={verifying}
-                  className="text-[11px] underline font-bold cursor-pointer hover:opacity-80"
+                  className="text-[11px] underline font-bold cursor-pointer hover:opacity-80 block"
                 >
                   {verifying ? "Checking status…" : "Already paid? Click here to re-check status"}
                 </button>
@@ -593,29 +636,30 @@ export function PaymentGate({
           <div className="space-y-2.5 pt-2">
             <button
               type="button"
+              id="pay-certificate-button"
               onClick={handleInitiatePayment}
-              disabled={!isFormReady || loading || verifying}
-              className={`w-full py-3.5 px-4 rounded-2xl font-heading font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2.5 ${
-                isFormReady && !loading && !verifying
-                  ? "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white shadow-amber-500/25 cursor-pointer active:scale-[0.99]"
-                  : "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-70"
+              disabled={loading || verifying}
+              className={`w-full py-3.5 sm:py-4 px-4 rounded-2xl font-heading font-extrabold text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-2.5 min-h-[48px] ${
+                loading || verifying
+                  ? "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-80"
+                  : "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-white shadow-amber-500/25 cursor-pointer active:scale-[0.98] ring-2 ring-amber-500/20"
               }`}
             >
               {loading ? (
                 <>
                   <div className="simple-loader !w-4 !h-4 !border-2 !border-white !border-t-transparent" />
-                  <span>Connecting…</span>
+                  <span>Preparing UPI Checkout…</span>
                 </>
               ) : verifying ? (
                 <>
                   <div className="simple-loader !w-4 !h-4 !border-2 !border-white !border-t-transparent" />
-                  <span>Verifying…</span>
+                  <span>Verifying Payment…</span>
                 </>
               ) : (
                 <>
                   <svg
-                    width="16"
-                    height="16"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -626,7 +670,7 @@ export function PaymentGate({
                     <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
                     <line x1="1" y1="10" x2="23" y2="10" />
                   </svg>
-                  <span>Pay ₹29 · Unlock Certificate</span>
+                  <span>Pay ₹29 · Unlock Verified Certificate</span>
                 </>
               )}
             </button>
