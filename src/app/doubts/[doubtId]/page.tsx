@@ -174,7 +174,7 @@ export default function DoubtDetailPage({ params }: PageProps) {
               )}
               <div>
                 <p className="text-xs sm:text-sm font-semibold">{doubt.authorName}</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p suppressHydrationWarning className="text-[11px] text-muted-foreground">
                   Asked {timeAgo(doubt.createdAt)}
                 </p>
               </div>

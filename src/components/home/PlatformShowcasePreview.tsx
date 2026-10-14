@@ -276,7 +276,7 @@ export function PlatformShowcasePreview() {
           </div>
         </div>
 
-        {/* Quick Converter CTA */}
+        {/* Quick Converter & Doubt Solve CTAs */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/quick-watch"
@@ -294,6 +294,15 @@ export function PlatformShowcasePreview() {
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
             </svg>
+          </Link>
+          <Link
+            href="/doubts"
+            className="btn-secondary text-xs sm:text-sm px-5 py-2.5 rounded-xl font-heading font-bold inline-flex items-center gap-2 border border-border"
+          >
+            <span>Ask &amp; Solve Doubts</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold">
+              +XP
+            </span>
           </Link>
           <span className="text-xs text-muted-foreground font-body">
             No registration needed to preview any course

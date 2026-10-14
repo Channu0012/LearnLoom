@@ -302,6 +302,26 @@ export function Header() {
                         <span>My Learning &amp; Streaks</span>
                       </Link>
                       <Link
+                        href="/doubts"
+                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
+                        role="menuitem"
+                        onClick={() => setUserDropdownOpen(false)}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <span>Doubt Solve &amp; Community XP</span>
+                      </Link>
+                      <Link
                         href="/my-courses"
                         className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"

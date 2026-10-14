@@ -553,15 +553,14 @@ function snapToAnswer(snap: QueryDocumentSnapshot): AnswerDoc {
 export async function getUserMonthlyDoubtCount(uid: string): Promise<number> {
   try {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const { Timestamp: FBTimestamp } = await import("firebase/firestore");
-    const q = query(
-      collection(db, COLLECTIONS.DOUBTS),
-      where("authorId", "==", uid),
-      where("createdAt", ">=", FBTimestamp.fromDate(startOfMonth))
-    );
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const q = query(collection(db, COLLECTIONS.DOUBTS), where("authorId", "==", uid));
     const snap = await getDocs(q);
-    return snap.size;
+    return snap.docs.filter((d) => {
+      const data = d.data();
+      const millis = data?.createdAt?.toMillis?.() ?? 0;
+      return millis >= startOfMonth;
+    }).length;
   } catch {
     return 0;
   }
@@ -597,14 +596,11 @@ export async function getDoubtsFeed(pageSize = 20, courseFilter?: string): Promi
     if (courseFilter) {
       constraints.push(where("courseId", "==", courseFilter));
     }
-    const q = query(
-      collection(db, COLLECTIONS.DOUBTS),
-      ...constraints,
-      orderBy("createdAt", "desc"),
-      limit(pageSize)
-    );
+    const q = query(collection(db, COLLECTIONS.DOUBTS), ...constraints, limit(pageSize));
     const snap = await getDocs(q);
-    return snap.docs.map(snapToDoubt);
+    return snap.docs
+      .map(snapToDoubt)
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
   } catch {
     return [];
   }
@@ -613,14 +609,11 @@ export async function getDoubtsFeed(pageSize = 20, courseFilter?: string): Promi
 /** Get doubts by user (My Doubts) */
 export async function getDoubtsByUser(uid: string): Promise<DoubtDoc[]> {
   try {
-    const q = query(
-      collection(db, COLLECTIONS.DOUBTS),
-      where("authorId", "==", uid),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
+    const q = query(collection(db, COLLECTIONS.DOUBTS), where("authorId", "==", uid), limit(50));
     const snap = await getDocs(q);
-    return snap.docs.map(snapToDoubt);
+    return snap.docs
+      .map(snapToDoubt)
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
   } catch {
     return [];
   }
@@ -643,16 +636,14 @@ export async function getDoubtsForCompletedCourses(
       const q = query(
         collection(db, COLLECTIONS.DOUBTS),
         where("courseId", "in", chunk),
-        where("status", "==", "open"),
-        orderBy("createdAt", "desc"),
-        limit(20)
+        limit(50)
       );
       const snap = await getDocs(q);
       batches.push(...snap.docs.map(snapToDoubt));
     }
-    // Exclude user's own doubts and sort by newest
+    // Filter open doubts excluding user's own, sorted newest first
     return batches
-      .filter((d) => d.authorId !== uid)
+      .filter((d) => d.authorId !== uid && d.status === "open")
       .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
       .slice(0, 20);
   } catch {

@@ -64,7 +64,10 @@ export function DoubtCard({ doubt, compact = false }: DoubtCardProps) {
               Solved
             </span>
           )}
-          <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+          <span
+            suppressHydrationWarning
+            className="text-[10px] text-muted-foreground font-mono whitespace-nowrap"
+          >
             {timeAgo(doubt.createdAt)}
           </span>
         </div>

@@ -162,7 +162,7 @@ export function AnswerList({ doubt, answers, onRefresh }: AnswerListProps) {
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span suppressHydrationWarning className="text-[11px] text-muted-foreground">
                       {timeAgo(answer.createdAt)}
                     </span>
                   </div>
