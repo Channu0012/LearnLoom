@@ -2495,6 +2495,7 @@ function CoursePlayerContent({
                         >
                           {/* Thumbnail */}
                           <div className="relative flex-shrink-0 w-24 aspect-video rounded-lg overflow-hidden bg-muted">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={thumbUrl}
                               alt={lesson.title}

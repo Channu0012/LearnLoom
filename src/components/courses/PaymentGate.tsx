@@ -46,11 +46,13 @@ export function PaymentGate({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Strict Phone & Name Validation Check
+  // Flexible & Secure Phone & Name Validation Check
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, "");
-  const isPhoneValid = cleanPhone.length === 10 && /^[6-9]/.test(cleanPhone);
-  const isNameValid = legalName.trim().length >= 2;
-  const isFormReady = isNameValid && isPhoneValid;
+  const isPhoneEntered = cleanPhone.length > 0;
+  const isPhoneValid = !isPhoneEntered || (cleanPhone.length === 10 && /^[6-9]/.test(cleanPhone));
+  const isNameValid =
+    legalName.trim().length >= 2 ||
+    Boolean(user?.displayName && user.displayName.trim().length >= 2);
 
   // -------------------------------------------------------------------------
   // Verify Payment Status with Server
@@ -127,9 +129,9 @@ export function PaymentGate({
       return;
     }
 
-    if (!isPhoneValid) {
+    if (isPhoneEntered && !isPhoneValid) {
       setValidationError(
-        "Please enter a valid 10-digit mobile number (starts with 6-9) for UPI instant payment confirmation."
+        "Please enter a valid 10-digit mobile number (starts with 6-9) or clear the field to proceed directly."
       );
       const phoneInput = document.getElementById("payment-phone");
       if (phoneInput) {
@@ -145,7 +147,8 @@ export function PaymentGate({
 
     try {
       // 1. Create order on server with confirmed legal details
-      const confirmedName = legalName.trim();
+      const confirmedName = legalName.trim() || user.displayName?.trim() || "VeySkill Scholar";
+      const customerPhone = cleanPhone.length === 10 ? cleanPhone : "9876543210";
       try {
         localStorage.setItem(`veyskill_paid_name_${courseId}`, confirmedName);
       } catch {}
@@ -161,7 +164,7 @@ export function PaymentGate({
           duration,
           customerName: confirmedName,
           customerEmail: user.email || `${user.uid.slice(0, 8)}@veyskill.in`,
-          customerPhone: cleanPhone,
+          customerPhone,
         }),
       });
 
@@ -204,15 +207,29 @@ export function PaymentGate({
       // (Google Pay, PhonePe, Paytm, CRED) can open directly without being blocked by an iframe sandbox.
       const isMobileDevice =
         typeof window !== "undefined" &&
-        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) ||
           window.innerWidth < 768);
 
       const redirectTarget = isMobileDevice ? "_self" : "_modal";
 
-      const checkoutResult = await cashfree.checkout({
-        paymentSessionId,
-        redirectTarget,
-      });
+      let checkoutResult;
+      try {
+        checkoutResult = await cashfree.checkout({
+          paymentSessionId,
+          redirectTarget,
+        });
+      } catch (checkoutErr) {
+        console.warn(
+          "Cashfree modal launch error, falling back to direct redirect checkout:",
+          checkoutErr
+        );
+        checkoutResult = await cashfree.checkout({
+          paymentSessionId,
+          redirectTarget: "_self",
+        });
+      }
 
       // 4. If modal completes or returns control
       if (checkoutResult?.error) {
@@ -239,6 +256,7 @@ export function PaymentGate({
     cleanPhone,
     legalName,
     isNameValid,
+    isPhoneEntered,
     isPhoneValid,
     verifyOrderPayment,
   ]);
@@ -570,19 +588,22 @@ export function PaymentGate({
                     ? "border-destructive focus:border-destructive"
                     : "border-border focus:border-primary"
                 } focus:outline-none text-foreground tracking-wider shadow-sm`}
-                required
               />
             </div>
             <div className="flex items-center justify-between text-[10px]">
               <span className="text-muted-foreground font-body">
-                Instant UPI intent & SMS certificate confirmation.
+                Instant UPI intent &amp; SMS certificate confirmation.
               </span>
-              {isPhoneValid ? (
+              {cleanPhone.length === 10 && isPhoneValid ? (
                 <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
                   ✓ Valid 10-Digit
                 </span>
+              ) : cleanPhone.length > 0 ? (
+                <span className="text-amber-500 font-mono font-medium">
+                  10 Digits (starts with 6-9)
+                </span>
               ) : (
-                <span className="text-amber-500 font-mono font-medium">10 Digits (starts with 6-9)</span>
+                <span className="text-muted-foreground font-mono">Optional for UPI</span>
               )}
             </div>
           </div>

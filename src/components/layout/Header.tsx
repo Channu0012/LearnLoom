@@ -101,7 +101,10 @@ export function Header() {
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
           <div className="flex flex-col leading-none" suppressHydrationWarning>
-            <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight" suppressHydrationWarning>
+            <span
+              className="font-heading font-extrabold text-lg sm:text-xl tracking-tight"
+              suppressHydrationWarning
+            >
               <span className="text-foreground">Vey</span>
               <span className="text-[#14b8a6]">skill</span>
             </span>
