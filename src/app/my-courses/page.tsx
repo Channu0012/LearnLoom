@@ -102,30 +102,72 @@ export default function MyCoursesPage() {
   if (loading || fetching) {
     return (
       <div
-        className="container-page py-12 max-w-6xl mx-auto px-4"
+        className="container-page py-10 max-w-5xl"
         role="status"
         aria-label="Loading published courses"
       >
-        <div className="flex flex-col items-center justify-center text-center mb-8">
-          <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-3">
-            <svg
-              className="animate-spin w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
-              <path d="M12 2a10 10 0 0 1 10 10" />
-            </svg>
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-heading font-bold mb-2 border border-primary-200 dark:border-primary-800">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <span>Creator Studio</span>
+            </div>
+            <h1 className="font-heading font-extrabold text-3xl sm:text-4xl text-foreground">
+              My Courses
+            </h1>
+            <p className="font-body text-sm sm:text-base text-muted-foreground mt-1">
+              Build, publish, and manage your YouTube-powered courses for thousands of learners.
+            </p>
           </div>
-          <h2 className="font-heading font-bold text-base text-foreground">
-            Loading Creator Studio
-          </h2>
-          <p className="text-xs font-body text-muted-foreground mt-0.5">
-            Fetching your published and draft masterclasses…
-          </p>
+
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+            <Link
+              href="/quick-watch"
+              className="btn-ghost px-4 py-3 text-sm inline-flex items-center gap-2 border border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 hover:border-teal-500/50 transition-all min-h-[44px] rounded-xl shadow-xs group"
+              title="Watch YouTube playlists in distraction-free Focus Theatre"
+            >
+              <span className="w-5 h-5 rounded-lg bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </span>
+              <span className="font-heading font-semibold text-foreground">Quick Watch</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold">
+                Theatre
+              </span>
+            </Link>
+
+            <Link
+              href="/create"
+              className="btn-accent px-5 py-3 text-sm inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all min-h-[44px]"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Create Course</span>
+            </Link>
+          </div>
         </div>
+
+        {/* Skeleton Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map((i) => (
             <div
@@ -190,6 +232,22 @@ export default function MyCoursesPage() {
             >
               Create Account
             </button>
+          </div>
+          <div className="pt-4 mt-5 border-t border-border/60">
+            <Link
+              href="/quick-watch"
+              className="btn-ghost w-full py-2.5 px-4 text-xs font-heading font-semibold inline-flex items-center justify-center gap-2 border border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 rounded-xl transition-all"
+            >
+              <span className="w-4 h-4 rounded bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </span>
+              <span>Launch Quick Watch (Focus Theatre)</span>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold">
+                No Login Required
+              </span>
+            </Link>
           </div>
         </div>
       </div>
