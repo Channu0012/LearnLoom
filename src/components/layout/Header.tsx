@@ -34,7 +34,10 @@ export function Header() {
   }, [userDropdownOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-slate-900">
+    <header
+      suppressHydrationWarning
+      className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md"
+    >
       {authError && (
         <aside
           role="alert"
@@ -104,13 +107,9 @@ export function Header() {
             </span>
             <span
               suppressHydrationWarning
-              className="text-[10px] font-body font-medium text-muted-foreground hidden xl:inline-flex items-center gap-1 tracking-wide mt-0.5 select-none"
+              className="text-[10px] font-body font-medium text-muted-foreground hidden xl:inline-flex items-center tracking-wide mt-0.5 select-none"
             >
-              <span>Structured Masterclasses</span>
-              <span className="opacity-40" aria-hidden="true">
-                &bull;
-              </span>
-              <span>Verified Credentials</span>
+              Structured Masterclasses &bull; Verified Credentials
             </span>
           </div>
         </Link>
