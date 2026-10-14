@@ -276,36 +276,54 @@ export function PlatformShowcasePreview() {
           </div>
         </div>
 
-        {/* Quick Converter & Doubt Solve CTAs */}
+        {/* Doubt Hub Community & Explore CTAs */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/quick-watch"
+            href="/doubts"
             className="btn-primary text-xs sm:text-sm px-6 py-2.5 rounded-xl font-heading font-bold inline-flex items-center gap-2 shadow-md shadow-teal-500/20"
           >
-            <span>Launch Quick Watch Converter</span>
             <svg
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-          </Link>
-          <Link
-            href="/doubts"
-            className="btn-secondary text-xs sm:text-sm px-5 py-2.5 rounded-xl font-heading font-bold inline-flex items-center gap-2 border border-border"
-          >
             <span>Ask &amp; Solve Doubts</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold">
-              +XP
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-300/20 text-white font-bold border border-teal-300/30">
+              NEW &bull; +XP
             </span>
           </Link>
+          <Link
+            href="/explore"
+            className="btn-secondary text-xs sm:text-sm px-5 py-2.5 rounded-xl font-heading font-bold inline-flex items-center gap-2 border border-border"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            <span>Explore Masterclasses</span>
+          </Link>
           <span className="text-xs text-muted-foreground font-body">
-            No registration needed to preview any course
+            Peer verified answers &bull; Instant AI tutoring
           </span>
         </div>
       </div>

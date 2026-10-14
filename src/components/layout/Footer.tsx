@@ -70,8 +70,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/quick-watch" className="hover:text-primary-500 transition-colors">
-                  Quick Watch (Focus Theatre)
+                <Link href="/my-courses" className="hover:text-primary-500 transition-colors">
+                  My Published Courses
                 </Link>
               </li>
               <li>

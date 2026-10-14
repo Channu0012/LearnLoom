@@ -225,15 +225,18 @@ export default function MyCoursesPage() {
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
           <Link
             href="/quick-watch"
-            className="btn-ghost px-4 py-3 text-sm inline-flex items-center gap-2 border border-border bg-card/60 hover:bg-card hover:border-primary-500/50 transition-all min-h-[44px] rounded-xl shadow-xs group"
+            className="btn-ghost px-4 py-3 text-sm inline-flex items-center gap-2 border border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 hover:border-teal-500/50 transition-all min-h-[44px] rounded-xl shadow-xs group"
             title="Watch YouTube playlists in distraction-free Focus Theatre"
           >
-            <span className="w-5 h-5 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="w-5 h-5 rounded-lg bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </span>
-            <span>Quick Watch</span>
+            <span className="font-heading font-semibold text-foreground">Quick Watch</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold">
+              Theatre
+            </span>
           </Link>
 
           <Link
