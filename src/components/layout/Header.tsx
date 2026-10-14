@@ -144,7 +144,7 @@ export function Header() {
           {/* Doubts Hub */}
           <Link
             href="/doubts"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5 group"
           >
             <svg
               width="15"
@@ -156,12 +156,16 @@ export function Header() {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
+              className="text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <span>Doubts</span>
+            <span className="text-[9px] font-heading font-black px-1.5 py-0.2 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30 tracking-tight">
+              NEW
+            </span>
           </Link>
 
           {/* My Learning */}
@@ -233,8 +237,31 @@ export function Header() {
           )}
         </nav>
 
-        {/* Right Section: Auth Controls */}
+        {/* Right Section: Mobile Doubts & Auth Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Mobile Doubts Button — Always accessible on phones & compact screens */}
+          <Link
+            href="/doubts"
+            className="md:hidden font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 transition-all inline-flex items-center gap-1.5 active:scale-95"
+            aria-label="Doubts Hub"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>Doubts</span>
+          </Link>
           {/* Auth Controls */}
           {!loading && (
             <>
