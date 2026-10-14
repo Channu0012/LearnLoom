@@ -17,7 +17,7 @@ import { HelperScoreBadge } from "@/components/doubts/HelperScoreBadge";
 type TabType = "all" | "can-help" | "my-doubts";
 
 export default function DoubtsPage() {
-  const { user, openAuthModal } = useAuth();
+  const { user, userDoc, openAuthModal } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [doubts, setDoubts] = useState<DoubtDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,13 +34,24 @@ export default function DoubtsPage() {
       return;
     }
 
-    getHelperScore(user.uid).then(setUserScore);
-    getUserEnrolledCourses(user.uid)
-      .then((courses) => {
-        setEnrolledCourses(courses.map((c) => ({ id: c.id, title: c.title })));
-      })
-      .catch(() => {});
-  }, [user]);
+    if (typeof userDoc?.helperScore === "number") {
+      setUserScore(userDoc.helperScore);
+    } else if (typeof getHelperScore === "function") {
+      getHelperScore(user.uid)
+        .then(setUserScore)
+        .catch(() => {});
+    }
+
+    if (typeof getUserEnrolledCourses === "function") {
+      getUserEnrolledCourses(user.uid)
+        .then((courses) => {
+          if (Array.isArray(courses)) {
+            setEnrolledCourses(courses.map((c) => ({ id: c.id, title: c.title })));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user, userDoc?.helperScore]);
 
   // Load doubts based on current tab & filter
   const fetchDoubts = useCallback(async () => {
