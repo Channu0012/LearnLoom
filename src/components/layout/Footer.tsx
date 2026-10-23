@@ -65,8 +65,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/doubts" className="hover:text-primary-500 transition-colors">
-                  Doubt Solve (Community Q&amp;A)
+                <Link href="/arena" className="hover:text-primary-500 transition-colors">
+                  Arena (Doubts &amp; Battles)
                 </Link>
               </li>
               <li>

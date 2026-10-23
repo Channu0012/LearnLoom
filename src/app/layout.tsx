@@ -190,7 +190,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <NavigationProgress />
           </Suspense>
-          <div className="flex flex-col min-h-dvh overflow-x-hidden w-full">
+          <div
+            suppressHydrationWarning
+            className="flex flex-col min-h-dvh overflow-x-hidden w-full"
+          >
             <Header />
             <main id="main-content" className="flex-1 overflow-x-hidden w-full pb-20 md:pb-0">
               {children}

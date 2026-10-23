@@ -62,7 +62,22 @@ export function AnswerComposer({ doubtId, onAnswerSubmitted }: AnswerComposerPro
     <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-heading font-bold text-base sm:text-lg flex items-center gap-2">
-          <span>💡</span> Your Answer
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="text-amber-500"
+          >
+            <path d="M12 2a6 6 0 0 1 6 6c0 2.22-1.2 4.15-3 5.19V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-3.81C7.2 12.15 6 10.22 6 8a6 6 0 0 1 6-6z" />
+            <path d="M9 21h6" />
+          </svg>
+          Your Answer
         </h3>
         <span className="text-xs text-muted-foreground font-mono">
           {text.length}/{DOUBT_LIMITS.MAX_ANSWER_TEXT}
@@ -98,12 +113,35 @@ export function AnswerComposer({ doubtId, onAnswerSubmitted }: AnswerComposerPro
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                ⭐ +5 XP for answering
+              <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                +5 XP for answering
               </span>
               <span>·</span>
-              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                🎯 +15 XP if selected as solution
+              <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                +15 XP if selected as solution
               </span>
             </div>
 

@@ -65,18 +65,31 @@ export default function DoubtDetailPage({ params }: PageProps) {
   if (!doubt) {
     return (
       <div className="min-h-screen bg-background py-20 text-center px-4">
-        <div className="w-16 h-16 rounded-3xl bg-red-500/10 text-red-500 flex items-center justify-center text-3xl mx-auto mb-4">
-          🔍
+        <div className="w-16 h-16 rounded-3xl bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto mb-4 border border-border">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
         </div>
         <h2 className="text-xl font-heading font-bold mb-2">Doubt Not Found</h2>
         <p className="text-sm text-muted-foreground mb-6">
           This doubt may have been removed or does not exist.
         </p>
         <Link
-          href="/doubts"
+          href="/arena"
           className="px-5 py-2.5 rounded-xl font-heading font-semibold text-sm text-white bg-primary-600 hover:bg-primary-500 transition-all shadow-sm inline-flex items-center gap-2"
         >
-          ← Back to Doubts Hub
+          ← Back to Arena
         </Link>
       </div>
     );
@@ -90,10 +103,10 @@ export default function DoubtDetailPage({ params }: PageProps) {
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
           <Link
-            href="/doubts"
+            href="/arena"
             className="hover:text-foreground transition-colors flex items-center gap-1"
           >
-            <span>←</span> Doubt Hub
+            <span>←</span> Arena
           </Link>
           <span>/</span>
           <Link

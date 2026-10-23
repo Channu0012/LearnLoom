@@ -58,10 +58,10 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Doubts",
-      href: "/doubts",
+      name: "Arena",
+      href: "/arena",
       badge: "NEW",
-      icon: (active: boolean) => (
+      icon: (_active: boolean) => (
         <svg
           width="22"
           height="22"
@@ -73,21 +73,14 @@ export function MobileBottomNav() {
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path
-            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-            fill={active ? "currentColor" : "none"}
-          />
-          <path
-            d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-            stroke={active ? "var(--card)" : "currentColor"}
-          />
-          <line
-            x1="12"
-            y1="17"
-            x2="12.01"
-            y2="17"
-            stroke={active ? "var(--card)" : "currentColor"}
-          />
+          <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+          <line x1="13" y1="19" x2="19" y2="13" />
+          <line x1="16" y1="16" x2="20" y2="20" />
+          <line x1="19" y1="21" x2="21" y2="19" />
+          <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+          <line x1="5" y1="14" x2="9" y2="18" />
+          <line x1="7" y1="17" x2="4" y2="20" />
+          <line x1="3" y1="19" x2="5" y2="21" />
         </svg>
       ),
     },
@@ -144,10 +137,19 @@ export function MobileBottomNav() {
     >
       <div className="grid grid-cols-5 h-16 px-1 items-center max-w-lg mx-auto">
         {navItems.map((item) => {
+          const isArenaMatch =
+            item.href === "/arena" &&
+            (pathname === "/arena" ||
+              pathname?.startsWith("/arena/") ||
+              pathname === "/doubts" ||
+              pathname?.startsWith("/doubts/"));
+
           const isActive =
             item.href === "/"
               ? pathname === "/"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              : isArenaMatch ||
+                pathname === item.href ||
+                Boolean(pathname?.startsWith(`${item.href}/`));
 
           return (
             <Link

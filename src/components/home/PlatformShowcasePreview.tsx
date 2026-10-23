@@ -55,8 +55,17 @@ export function PlatformShowcasePreview() {
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
                 CINEMA WORKSPACE
               </span>
-              <span className="hidden md:inline-flex px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-semibold text-amber-300">
-                🔥 7-DAY STREAK
+              <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-semibold text-amber-300">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                </svg>
+                7-DAY STREAK
               </span>
             </div>
           </div>
@@ -279,7 +288,7 @@ export function PlatformShowcasePreview() {
         {/* Doubt Hub Community & Explore CTAs */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/doubts"
+            href="/arena"
             className="btn-primary text-xs sm:text-sm px-6 py-2.5 rounded-xl font-heading font-bold inline-flex items-center gap-2 shadow-md shadow-teal-500/20"
           >
             <svg
@@ -293,11 +302,16 @@ export function PlatformShowcasePreview() {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
+              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+              <line x1="13" y1="19" x2="19" y2="13" />
+              <line x1="16" y1="16" x2="20" y2="20" />
+              <line x1="19" y1="21" x2="21" y2="19" />
+              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+              <line x1="5" y1="14" x2="9" y2="18" />
+              <line x1="7" y1="17" x2="4" y2="20" />
+              <line x1="3" y1="19" x2="5" y2="21" />
             </svg>
-            <span>Ask &amp; Solve Doubts</span>
+            <span>Enter Learning Arena</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-300/20 text-white font-bold border border-teal-300/30">
               NEW &bull; +XP
             </span>

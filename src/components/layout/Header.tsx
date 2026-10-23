@@ -34,7 +34,10 @@ export function Header() {
   }, [userDropdownOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
+    <header
+      suppressHydrationWarning
+      className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md"
+    >
       {authError && (
         <aside
           role="alert"
@@ -82,10 +85,14 @@ export function Header() {
         </aside>
       )}
 
-      <div className="container-page flex items-center justify-between h-16 gap-2 sm:gap-4">
+      <div
+        suppressHydrationWarning
+        className="container-page flex items-center justify-between h-16 gap-2 sm:gap-4"
+      >
         {/* Logo */}
         <Link
           href="/"
+          suppressHydrationWarning
           className="flex items-center gap-2.5 hover:opacity-95 transition-opacity select-none group flex-shrink-0"
           aria-label="VeySkill home"
         >
@@ -95,9 +102,13 @@ export function Header() {
             alt="VeySkill Logo"
             width={34}
             height={34}
+            suppressHydrationWarning
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
-          <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight select-none">
+          <span
+            suppressHydrationWarning
+            className="font-heading font-extrabold text-lg sm:text-xl tracking-tight select-none"
+          >
             <span className="text-foreground">Vey</span>
             <span className="text-[#14b8a6]">skill</span>
           </span>
@@ -130,9 +141,9 @@ export function Header() {
             <span>Explore</span>
           </Link>
 
-          {/* Doubts Hub */}
+          {/* Arena Hub */}
           <Link
-            href="/doubts"
+            href="/arena"
             className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5 group flex-shrink-0"
           >
             <svg
@@ -147,11 +158,16 @@ export function Header() {
               aria-hidden="true"
               className="text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"
             >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
+              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+              <line x1="13" y1="19" x2="19" y2="13" />
+              <line x1="16" y1="16" x2="20" y2="20" />
+              <line x1="19" y1="21" x2="21" y2="19" />
+              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+              <line x1="5" y1="14" x2="9" y2="18" />
+              <line x1="7" y1="17" x2="4" y2="20" />
+              <line x1="3" y1="19" x2="5" y2="21" />
             </svg>
-            <span>Doubts</span>
+            <span>Arena</span>
             <span className="text-[9px] font-heading font-black px-1.5 py-0.2 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30 tracking-tight">
               NEW
             </span>
@@ -228,11 +244,11 @@ export function Header() {
 
         {/* Right Section: Mobile Doubts & Auth Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3">
-          {/* Mobile Doubts Button — Always accessible on phones & compact screens */}
+          {/* Mobile Arena Button — Always accessible on phones & compact screens */}
           <Link
-            href="/doubts"
+            href="/arena"
             className="inline-flex md:hidden items-center gap-1.5 font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/30 transition-all active:scale-95 flex-shrink-0 shadow-xs"
-            aria-label="Doubts Hub"
+            aria-label="Arena Hub"
           >
             <svg
               width="14"
@@ -245,11 +261,16 @@ export function Header() {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
+              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+              <line x1="13" y1="19" x2="19" y2="13" />
+              <line x1="16" y1="16" x2="20" y2="20" />
+              <line x1="19" y1="21" x2="21" y2="19" />
+              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+              <line x1="5" y1="14" x2="9" y2="18" />
+              <line x1="7" y1="17" x2="4" y2="20" />
+              <line x1="3" y1="19" x2="5" y2="21" />
             </svg>
-            <span>Doubts</span>
+            <span>Arena</span>
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
           </Link>
           {/* Auth Controls */}
@@ -319,7 +340,7 @@ export function Header() {
                         <span>My Learning &amp; Streaks</span>
                       </Link>
                       <Link
-                        href="/doubts"
+                        href="/arena"
                         className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
                         role="menuitem"
                         onClick={() => setUserDropdownOpen(false)}
@@ -332,11 +353,16 @@ export function Header() {
                           stroke="currentColor"
                           strokeWidth="2"
                         >
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                          <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+                          <line x1="13" y1="19" x2="19" y2="13" />
+                          <line x1="16" y1="16" x2="20" y2="20" />
+                          <line x1="19" y1="21" x2="21" y2="19" />
+                          <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+                          <line x1="5" y1="14" x2="9" y2="18" />
+                          <line x1="7" y1="17" x2="4" y2="20" />
+                          <line x1="3" y1="19" x2="5" y2="21" />
                         </svg>
-                        <span>Doubt Solve &amp; Community XP</span>
+                        <span>Arena (Doubts &amp; Battles)</span>
                       </Link>
                       <Link
                         href="/my-courses"

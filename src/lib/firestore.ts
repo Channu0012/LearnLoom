@@ -16,7 +16,6 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   arrayUnion,
   serverTimestamp,
   writeBatch,
@@ -536,8 +535,6 @@ export async function getCertificateRecord(certId: string): Promise<any | null> 
   }
   return null;
 }
-
-export { startAfter, orderBy, where, limit };
 
 // ── Doubt Solve helpers ────────────────────────────────────────────────────
 
