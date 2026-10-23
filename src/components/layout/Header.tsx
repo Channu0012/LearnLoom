@@ -34,10 +34,7 @@ export function Header() {
   }, [userDropdownOpen]);
 
   return (
-    <header
-      suppressHydrationWarning
-      className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md"
-    >
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md">
       {authError && (
         <aside
           role="alert"
@@ -85,14 +82,10 @@ export function Header() {
         </aside>
       )}
 
-      <div
-        suppressHydrationWarning
-        className="container-page flex items-center justify-between h-16 gap-2 sm:gap-4"
-      >
+      <div className="container-page flex items-center justify-between h-16 gap-2 sm:gap-4">
         {/* Logo */}
         <Link
           href="/"
-          suppressHydrationWarning
           className="flex items-center gap-2.5 hover:opacity-95 transition-opacity select-none group flex-shrink-0"
           aria-label="VeySkill home"
         >
@@ -104,10 +97,7 @@ export function Header() {
             height={34}
             className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
           />
-          <span
-            suppressHydrationWarning
-            className="font-heading font-extrabold text-lg sm:text-xl tracking-tight select-none"
-          >
+          <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight select-none">
             <span className="text-foreground">Vey</span>
             <span className="text-[#14b8a6]">skill</span>
           </span>
