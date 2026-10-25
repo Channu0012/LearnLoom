@@ -571,13 +571,29 @@ export async function getUserMonthlyDoubtCount(uid: string): Promise<number> {
 export async function createDoubt(
   data: Omit<DoubtDoc, "id" | "createdAt" | "updatedAt" | "answerCount" | "status">
 ): Promise<string> {
-  const ref = await addDoc(collection(db, COLLECTIONS.DOUBTS), {
-    ...data,
+  const payload: Record<string, any> = {
+    courseId: String(data.courseId || "general-engineering").substring(0, 100),
+    courseTitle: String(data.courseTitle || "General Technical Doubt").substring(0, 200),
+    authorId: data.authorId,
+    authorName: String(data.authorName || "Learner").substring(0, 100),
+    authorPhotoURL: data.authorPhotoURL || null,
+    text: String(data.text || "")
+      .trim()
+      .substring(0, 1000),
     status: "open",
     answerCount: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+
+  if (data.lessonId && typeof data.lessonId === "string") {
+    payload.lessonId = data.lessonId.substring(0, 100);
+  }
+  if (data.lessonTitle && typeof data.lessonTitle === "string") {
+    payload.lessonTitle = data.lessonTitle.substring(0, 200);
+  }
+
+  const ref = await addDoc(collection(db, COLLECTIONS.DOUBTS), payload);
   // Increment user's doubtsPosted count
   try {
     const userRef = doc(db, COLLECTIONS.USERS, data.authorId);

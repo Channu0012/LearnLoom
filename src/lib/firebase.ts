@@ -41,6 +41,7 @@ function getFirestoreInstance() {
     try {
       return initializeFirestore(app, {
         localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+        ignoreUndefinedProperties: true,
       });
     } catch {
       return getFirestore(app);

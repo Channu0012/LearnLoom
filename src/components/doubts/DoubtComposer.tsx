@@ -101,14 +101,16 @@ export function DoubtComposer({
     setError("");
 
     try {
-      // Check free tier limit
-      const monthlyCount = await getUserMonthlyDoubtCount(user.uid);
-      if (monthlyCount >= DOUBT_LIMITS.FREE_DOUBTS_PER_MONTH) {
-        setError(
-          `You've used all ${DOUBT_LIMITS.FREE_DOUBTS_PER_MONTH} free doubts this month. Upgrade to VeySkill Plus for unlimited doubts!`
-        );
-        setSubmitting(false);
-        return;
+      // Check free tier limit only for free learners (skip for Plus members or Admins)
+      if (!userDoc?.isPlusMember && !userDoc?.isAdmin) {
+        const monthlyCount = await getUserMonthlyDoubtCount(user.uid);
+        if (monthlyCount >= DOUBT_LIMITS.FREE_DOUBTS_PER_MONTH) {
+          setError(
+            `You've used all ${DOUBT_LIMITS.FREE_DOUBTS_PER_MONTH} free doubts this month. Upgrade to VeySkill Plus for unlimited doubts!`
+          );
+          setSubmitting(false);
+          return;
+        }
       }
 
       // Determine topic title and courseId gracefully (never block user)
@@ -118,16 +120,19 @@ export function DoubtComposer({
       );
       const courseId = prefillCourseId || matchedEnrolled?.id || slugifyTopic(topicTitle);
 
-      const doubtId = await createDoubt({
+      const doubtPayload: any = {
         courseId,
         courseTitle: topicTitle,
-        lessonId: prefillLessonId,
-        lessonTitle: prefillLessonTitle,
         authorId: user.uid,
         authorName: user.displayName || "Learner",
         authorPhotoURL: user.photoURL || null,
         text: text.trim(),
-      });
+      };
+
+      if (prefillLessonId) doubtPayload.lessonId = prefillLessonId;
+      if (prefillLessonTitle) doubtPayload.lessonTitle = prefillLessonTitle;
+
+      const doubtId = await createDoubt(doubtPayload);
 
       setSuccess(true);
       setText("");
@@ -137,9 +142,9 @@ export function DoubtComposer({
         onClose();
         onCreated?.(doubtId);
       }, 1200);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create doubt:", err);
-      setError("Something went wrong. Please try again.");
+      setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
