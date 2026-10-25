@@ -244,6 +244,12 @@ export function Header() {
 
         {/* Right Section: Streak & Auth Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Auth loading skeleton — prevents empty right section flash on SSR */}
+          {loading && (
+            <div className="flex items-center gap-2 animate-pulse" aria-hidden="true">
+              <div className="w-[88px] h-[40px] rounded-xl bg-muted/60 border border-border/40" />
+            </div>
+          )}
           {/* Auth Controls */}
           {!loading && (
             <>

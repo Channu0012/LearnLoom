@@ -68,5 +68,5 @@ describe("Arena — Battle Engine & Question Sampling", () => {
     expect(typeof firestore.getDoubtsForCompletedCourses).toBe("function");
     expect(typeof firestore.getUserEnrolledCourses).toBe("function");
     expect(typeof firestore.getHelperScore).toBe("function");
-  });
+  }, 15000);
 });

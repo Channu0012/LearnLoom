@@ -1263,10 +1263,17 @@ function CoursePlayerContent({
                     <img
                       src={
                         autoAdvanceNextLesson.thumbnailUrl ||
-                        `https://img.youtube.com/vi/${autoAdvanceNextLesson.youtubeId}/mqdefault.jpg`
+                        `https://i.ytimg.com/vi/${autoAdvanceNextLesson.youtubeId}/mqdefault.jpg`
                       }
                       alt={autoAdvanceNextLesson.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.triedHq) {
+                          target.dataset.triedHq = "true";
+                          target.src = `https://img.youtube.com/vi/${autoAdvanceNextLesson.youtubeId}/hqdefault.jpg`;
+                        }
+                      }}
                     />
                   </div>
 
@@ -1505,7 +1512,19 @@ function CoursePlayerContent({
                     title="Click to cycle speed (0.75x, 1x, 1.25x, 1.5x, 2x)"
                     aria-label="Playback speed"
                   >
-                    <span className="text-[10px] text-muted-foreground">⚡</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-amber-500"
+                    >
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
                     <span>{playbackSpeed}x</span>
                   </button>
 
@@ -2475,7 +2494,7 @@ function CoursePlayerContent({
                     const isLoadingThis = loadingLessonId === lesson.id;
                     const thumbUrl =
                       lesson.thumbnailUrl ||
-                      `https://img.youtube.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
+                      `https://i.ytimg.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
 
                     return (
                       <li key={`mobile-${lesson.id}`}>
@@ -2503,6 +2522,16 @@ function CoursePlayerContent({
                                 isActive ? "brightness-75" : ""
                               }`}
                               loading="lazy"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                if (!target.dataset.triedHq) {
+                                  target.dataset.triedHq = "true";
+                                  target.src = `https://img.youtube.com/vi/${lesson.youtubeId}/hqdefault.jpg`;
+                                } else if (!target.dataset.triedDef) {
+                                  target.dataset.triedDef = "true";
+                                  target.src = `https://img.youtube.com/vi/${lesson.youtubeId}/default.jpg`;
+                                }
+                              }}
                             />
                             {/* Live soundwave equalizer badge on active item */}
                             {isActive && !isLoadingThis && (
@@ -2701,8 +2730,7 @@ function CoursePlayerContent({
                 const isDone = completedIds.has(lesson.id);
                 const isLoadingThis = loadingLessonId === lesson.id;
                 const thumbUrl =
-                  lesson.thumbnailUrl ||
-                  `https://img.youtube.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
+                  lesson.thumbnailUrl || `https://i.ytimg.com/vi/${lesson.youtubeId}/mqdefault.jpg`;
 
                 return (
                   <li key={lesson.id} ref={isActive ? activeLessonItemRef : undefined}>
@@ -2730,6 +2758,16 @@ function CoursePlayerContent({
                           }
                           className={`w-full h-full object-cover transition-all duration-300 ${isActive ? "brightness-75" : "group-hover:brightness-90"}`}
                           loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.triedHq) {
+                              target.dataset.triedHq = "true";
+                              target.src = `https://img.youtube.com/vi/${lesson.youtubeId}/hqdefault.jpg`;
+                            } else if (!target.dataset.triedDef) {
+                              target.dataset.triedDef = "true";
+                              target.src = `https://img.youtube.com/vi/${lesson.youtubeId}/default.jpg`;
+                            }
+                          }}
                         />
                         {/* Live soundwave equalizer badge on active item */}
                         {isActive && !isLoadingThis && (

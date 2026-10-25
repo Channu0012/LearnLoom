@@ -195,6 +195,8 @@ export interface LeaderboardStudent {
   streak: number;
   verified: boolean;
   topicDomain: string;
+  uid?: string;
+  photoURL?: string | null;
 }
 
 export const LEADERBOARD_DATA: LeaderboardStudent[] = [

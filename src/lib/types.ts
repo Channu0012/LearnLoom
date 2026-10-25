@@ -19,6 +19,12 @@ export interface UserDoc {
   studentsHelped?: number;
   isPlusMember?: boolean;
   plusExpiresAt?: Timestamp | null;
+  // Arena 1v1 Battle stats & rankings
+  xp?: number;
+  battlesPlayed?: number;
+  battlesWon?: number;
+  battleStreak?: number;
+  campus?: string;
 }
 
 // ── Course document: courses/{courseId} ────────────────────────────────────
@@ -32,6 +38,7 @@ export interface CourseDoc {
   status: CourseStatus;
   lessonCount: number;
   coverVideoId: string | null; // first lesson's YouTube ID
+  coverThumbnailUrl?: string | null;
   keywords: string[]; // auto-generated on publish/update
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -49,6 +56,7 @@ export interface SerializedCourseDoc {
   status: CourseStatus;
   lessonCount: number;
   coverVideoId: string | null;
+  coverThumbnailUrl?: string | null;
   keywords: string[];
   createdAt?: number | null;
   updatedAt?: number | null;

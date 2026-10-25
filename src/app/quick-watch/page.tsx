@@ -991,10 +991,23 @@ function QuickWatchContent() {
                               <div className="w-12 h-8 rounded-md overflow-hidden bg-black flex-shrink-0 border border-border/60">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                  src={item.thumbnailUrl || youtubeThumbnail(item.videoId)}
+                                  src={
+                                    item.thumbnailUrl ||
+                                    `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`
+                                  }
                                   alt=""
                                   className="w-full h-full object-cover"
                                   loading="lazy"
+                                  onError={(e) => {
+                                    const target = e.currentTarget;
+                                    if (!target.dataset.triedHq) {
+                                      target.dataset.triedHq = "true";
+                                      target.src = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`;
+                                    } else if (!target.dataset.triedDef) {
+                                      target.dataset.triedDef = "true";
+                                      target.src = `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+                                    }
+                                  }}
                                 />
                               </div>
 
@@ -1252,10 +1265,22 @@ function QuickWatchContent() {
                       <div className="w-16 h-11 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-border">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.thumbnailUrl || youtubeThumbnail(item.id)}
+                          src={
+                            item.thumbnailUrl || `https://i.ytimg.com/vi/${item.id}/mqdefault.jpg`
+                          }
                           alt=""
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.triedHq) {
+                              target.dataset.triedHq = "true";
+                              target.src = `https://img.youtube.com/vi/${item.id}/hqdefault.jpg`;
+                            } else if (!target.dataset.triedDef) {
+                              target.dataset.triedDef = "true";
+                              target.src = `https://img.youtube.com/vi/${item.id}/default.jpg`;
+                            }
+                          }}
                         />
                       </div>
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { subscribeLeaderboard } from "@/lib/firestore";
 
 // ── Clean SVG Icons (Zero Emojis) ────────────────────────────────────────────
 
@@ -142,10 +144,22 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
   const [timeframe, setTimeframe] = useState<"all" | "weekly" | "campus">("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [students, setStudents] = useState<LeaderboardStudent[]>(LEADERBOARD_DATA);
+  const [isLiveSynced, setIsLiveSynced] = useState(false);
+
+  useEffect(() => {
+    const unsub = subscribeLeaderboard((liveStudents) => {
+      if (liveStudents && liveStudents.length > 0) {
+        setStudents(liveStudents);
+        setIsLiveSynced(true);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Filtered and dynamically sorted leaderboard data
   const filteredList = useMemo(() => {
-    let list = LEADERBOARD_DATA.filter((student) => {
+    let list = students.filter((student) => {
       if (topicFilter !== "all" && student.topicDomain !== topicFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -180,7 +194,13 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
       ...student,
       rank: idx + 1,
     }));
-  }, [topicFilter, searchQuery, timeframe]);
+  }, [students, topicFilter, searchQuery, timeframe]);
+
+  // Current user's official standing if present
+  const currentUserStanding = useMemo(() => {
+    if (!user) return null;
+    return filteredList.find((s) => s.uid === user.uid) ?? null;
+  }, [filteredList, user]);
 
   const topThree = useMemo(() => {
     return filteredList.slice(0, 3);
@@ -191,7 +211,13 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
       {/* ── Filters & Search Header ───────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-heading font-bold text-foreground">Verified Standings</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-heading font-bold text-foreground">Verified Standings</h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] font-heading font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+              {isLiveSynced ? "Live Sync Active" : "Real-Time Sync"}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             {timeframe === "weekly"
               ? "Active 7-day sprint rankings — calibrated from recent duels, streak acceleration, and weekly bonus points."
@@ -315,11 +341,21 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
                 {/* Profile Identity */}
                 <div className="space-y-1.5 mb-4">
                   <div className="flex items-center gap-2">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center font-heading font-bold text-xs border ${rankTier.bgColor} ${rankTier.textColor} ${rankTier.borderColor}`}
-                    >
-                      {student.name[0]}
-                    </div>
+                    {student.photoURL ? (
+                      <Image
+                        src={student.photoURL}
+                        alt={student.name}
+                        width={36}
+                        height={36}
+                        className="w-9 h-9 rounded-full object-cover border border-border flex-shrink-0"
+                      />
+                    ) : (
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-heading font-bold text-xs border flex-shrink-0 ${rankTier.bgColor} ${rankTier.textColor} ${rankTier.borderColor}`}
+                      >
+                        {student.name[0]}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-1">
                         <h3 className="font-heading font-bold text-sm text-foreground truncate">
@@ -381,9 +417,17 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
             <tbody className="divide-y divide-border/60">
               {filteredList.map((student) => {
                 const rankTier = getRankTier(student.xp);
+                const isCurrentUser = Boolean(user?.uid && student.uid === user.uid);
 
                 return (
-                  <tr key={student.rank} className="hover:bg-muted/20 transition-colors">
+                  <tr
+                    key={student.rank}
+                    className={`transition-colors ${
+                      isCurrentUser
+                        ? "bg-teal-500/[0.08] hover:bg-teal-500/[0.12] border-l-2 border-l-teal-500"
+                        : "hover:bg-muted/20"
+                    }`}
+                  >
                     {/* Rank */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <span
@@ -404,16 +448,31 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
                     {/* Scholar info */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center font-heading font-bold text-xs flex-shrink-0 border ${rankTier.bgColor} ${rankTier.textColor} ${rankTier.borderColor}`}
-                        >
-                          {student.name[0]}
-                        </div>
+                        {student.photoURL ? (
+                          <Image
+                            src={student.photoURL}
+                            alt={student.name}
+                            width={28}
+                            height={28}
+                            className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-border"
+                          />
+                        ) : (
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center font-heading font-bold text-xs flex-shrink-0 border ${rankTier.bgColor} ${rankTier.textColor} ${rankTier.borderColor}`}
+                          >
+                            {student.name[0]}
+                          </div>
+                        )}
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <span className="font-heading font-semibold text-foreground text-xs sm:text-sm truncate">
                               {student.name}
                             </span>
+                            {isCurrentUser && (
+                              <span className="text-[10px] font-heading font-bold px-1.5 py-0.5 rounded-full bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                                You
+                              </span>
+                            )}
                             {student.verified && (
                               <span
                                 title="Verified Scholar"
@@ -467,19 +526,48 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
       </div>
 
       {/* ── Your Live Position Card ────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-teal-500/30 bg-teal-500/[0.03] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-teal-500/30 bg-teal-500/[0.04] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-heading font-bold text-sm border border-teal-500/30 flex-shrink-0">
-            {(user?.displayName ?? "You")[0]?.toUpperCase()}
-          </div>
+          {user?.photoURL ? (
+            <Image
+              src={user.photoURL}
+              alt={user.displayName || "You"}
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover border border-teal-500/30 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-heading font-bold text-sm border border-teal-500/30 flex-shrink-0">
+              {(user?.displayName ?? "You")[0]?.toUpperCase()}
+            </div>
+          )}
           <div>
-            <h4 className="font-heading font-bold text-sm text-foreground">
-              {user ? (user.displayName ?? "Your Battle Profile") : "Join the Verified Leaderboard"}
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-heading font-bold text-sm text-foreground">
+                {user
+                  ? (user.displayName ?? "Your Battle Profile")
+                  : "Join the Verified Leaderboard"}
+              </h4>
+              {currentUserStanding && (
+                <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-700 dark:text-teal-300 text-[11px] font-mono font-bold">
+                  Rank #{currentUserStanding.rank}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {user
-                ? "Challenge fellow scholars to duels to raise your rank tier and earn recruiter-verified standing."
-                : "Sign in and compete in 1v1 duels to establish your official skill standing."}
+              {currentUserStanding ? (
+                <span>
+                  <strong className="text-foreground font-mono font-semibold">
+                    {currentUserStanding.xp.toLocaleString()} XP
+                  </strong>{" "}
+                  earned · {currentUserStanding.battles} duels · {currentUserStanding.winRate}% win
+                  rate · {currentUserStanding.streak} streak
+                </span>
+              ) : user ? (
+                "Challenge fellow scholars to 1v1 duels to establish your official rank and earn recruiter-verified standing."
+              ) : (
+                "Sign in and compete in 1v1 duels to establish your official skill standing."
+              )}
             </p>
           </div>
         </div>

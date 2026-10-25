@@ -24,7 +24,12 @@ export async function POST(request: NextRequest) {
 
     const targetUid = body.uid.trim();
     const delta = typeof body.delta === "number" ? Math.max(-50, Math.min(50, body.delta)) : 0;
+    const xpDelta =
+      typeof body.xpDelta === "number" ? Math.max(0, Math.min(1000, body.xpDelta)) : 0;
     const incrementHelped = Boolean(body.incrementStudentsHelped);
+    const incrementBattlesPlayed = Boolean(body.incrementBattlesPlayed);
+    const incrementBattlesWon = Boolean(body.incrementBattlesWon);
+    const streak = typeof body.streak === "number" ? Math.max(0, body.streak) : undefined;
 
     if (!isFirebaseAdminConfigured) {
       // In local dev without admin keys, acknowledge request gracefully
@@ -37,8 +42,20 @@ export async function POST(request: NextRequest) {
     if (delta !== 0) {
       updates.helperScore = FieldValue.increment(delta);
     }
+    if (xpDelta > 0) {
+      updates.xp = FieldValue.increment(xpDelta);
+    }
     if (incrementHelped) {
       updates.studentsHelped = FieldValue.increment(1);
+    }
+    if (incrementBattlesPlayed) {
+      updates.battlesPlayed = FieldValue.increment(1);
+    }
+    if (incrementBattlesWon) {
+      updates.battlesWon = FieldValue.increment(1);
+    }
+    if (typeof streak === "number") {
+      updates.battleStreak = streak;
     }
 
     if (Object.keys(updates).length > 0) {

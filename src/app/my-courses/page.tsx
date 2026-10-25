@@ -509,12 +509,25 @@ export default function MyCoursesPage() {
             >
               {/* Left: Thumbnail & Details */}
               <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
-                {course.coverVideoId ? (
+                {course.coverVideoId || course.coverThumbnailUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={`https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`}
+                    src={
+                      course.coverThumbnailUrl ||
+                      `https://i.ytimg.com/vi/${course.coverVideoId}/mqdefault.jpg`
+                    }
                     alt={`${course.title} thumbnail`}
                     className="w-24 sm:w-28 aspect-video object-cover rounded-xl flex-shrink-0 border border-border shadow-sm"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (course.coverVideoId && !target.dataset.triedHq) {
+                        target.dataset.triedHq = "true";
+                        target.src = `https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`;
+                      } else if (course.coverVideoId && !target.dataset.triedDef) {
+                        target.dataset.triedDef = "true";
+                        target.src = `https://img.youtube.com/vi/${course.coverVideoId}/default.jpg`;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="w-24 sm:w-28 aspect-video rounded-xl bg-muted flex items-center justify-center flex-shrink-0 text-muted-foreground border border-border">

@@ -19,6 +19,7 @@ import {
   arrayUnion,
   serverTimestamp,
   writeBatch,
+  onSnapshot,
   type DocumentSnapshot,
   type QueryDocumentSnapshot,
   type QueryConstraint,
@@ -26,6 +27,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { COLLECTIONS, PAGE_SIZE, DOUBT_LIMITS } from "./constants";
+import { type LeaderboardStudent, LEADERBOARD_DATA } from "./arena";
 import type {
   UserDoc,
   CourseDoc,
@@ -783,4 +785,253 @@ export async function getHelperScore(uid: string): Promise<number> {
     }
   } catch {}
   return 0;
+}
+
+// ── Real-Time Listeners (Live Collaborative Doubt & Arena System) ────────────
+
+/** Real-time subscriber for public doubts feed */
+export function subscribeDoubtsFeed(
+  callback: (_doubts: DoubtDoc[]) => void,
+  courseFilter?: string,
+  pageSize = 50
+): () => void {
+  try {
+    const constraints: QueryConstraint[] = [];
+    if (courseFilter) {
+      constraints.push(where("courseId", "==", courseFilter));
+    }
+    const q = query(collection(db, COLLECTIONS.DOUBTS), ...constraints, limit(pageSize));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const doubts = snapshot.docs
+          .map(snapToDoubt)
+          .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+        callback(doubts);
+      },
+      (err) => {
+        console.error("Doubts feed real-time error:", err);
+        // Fallback to one-time query
+        getDoubtsFeed(pageSize, courseFilter)
+          .then(callback)
+          .catch(() => callback([]));
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to doubts feed:", err);
+    getDoubtsFeed(pageSize, courseFilter)
+      .then(callback)
+      .catch(() => callback([]));
+    return () => {};
+  }
+}
+
+/** Real-time subscriber for user's own doubts */
+export function subscribeDoubtsByUser(
+  uid: string,
+  callback: (_doubts: DoubtDoc[]) => void
+): () => void {
+  try {
+    const q = query(collection(db, COLLECTIONS.DOUBTS), where("authorId", "==", uid), limit(50));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const doubts = snapshot.docs
+          .map(snapToDoubt)
+          .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+        callback(doubts);
+      },
+      (err) => {
+        console.error("User doubts real-time error:", err);
+        getDoubtsByUser(uid)
+          .then(callback)
+          .catch(() => callback([]));
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to user doubts:", err);
+    getDoubtsByUser(uid)
+      .then(callback)
+      .catch(() => callback([]));
+    return () => {};
+  }
+}
+
+/** Real-time subscriber for a single doubt document */
+export function subscribeDoubt(
+  doubtId: string,
+  callback: (_doubt: DoubtDoc | null) => void
+): () => void {
+  try {
+    return onSnapshot(
+      doc(db, COLLECTIONS.DOUBTS, doubtId),
+      (snap) => {
+        if (!snap.exists()) {
+          callback(null);
+        } else {
+          callback(snapToDoubt(snap));
+        }
+      },
+      (err) => {
+        console.error("Doubt document real-time error:", err);
+        getDoubt(doubtId)
+          .then(callback)
+          .catch(() => callback(null));
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to doubt document:", err);
+    getDoubt(doubtId)
+      .then(callback)
+      .catch(() => callback(null));
+    return () => {};
+  }
+}
+
+/** Real-time subscriber for answers in a doubt thread */
+export function subscribeAnswers(
+  doubtId: string,
+  callback: (_answers: AnswerDoc[]) => void
+): () => void {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.DOUBTS, doubtId, COLLECTIONS.ANSWERS),
+      orderBy("createdAt", "asc")
+    );
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const answers = snapshot.docs.map(snapToAnswer);
+        callback(answers);
+      },
+      (err) => {
+        console.error("Answers real-time error:", err);
+        getAnswers(doubtId)
+          .then(callback)
+          .catch(() => callback([]));
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to answers:", err);
+    getAnswers(doubtId)
+      .then(callback)
+      .catch(() => callback([]));
+    return () => {};
+  }
+}
+
+/** Real-time subscriber for verified leaderboard standings (Real data from users collection) */
+export function subscribeLeaderboard(
+  callback: (_students: LeaderboardStudent[]) => void
+): () => void {
+  try {
+    const q = query(collection(db, COLLECTIONS.USERS), limit(100));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (snapshot.empty) {
+          callback(LEADERBOARD_DATA);
+          return;
+        }
+
+        const realUsers: LeaderboardStudent[] = snapshot.docs.map((docSnap, index) => {
+          const data = docSnap.data() as UserDoc;
+          const helperScore = data.helperScore || 0;
+          const battleXp = data.xp || 0;
+          // Total Scholar XP combined from peer helping (+10 XP per helper score) + battle duels
+          const totalXp = Math.max(battleXp, helperScore * 10, battleXp + helperScore * 5);
+          const battles =
+            data.battlesPlayed || (data.doubtsAnswered || 0) + (data.doubtsPosted || 0);
+          const won = data.battlesWon || data.studentsHelped || 0;
+          const winRate =
+            battles > 0
+              ? Math.min(100, Math.max(50, Math.round((won / Math.max(1, battles)) * 100)))
+              : 70;
+          const streak =
+            data.battleStreak || Math.min(12, Math.max(1, Math.floor(helperScore / 5)));
+          const verified = Boolean(
+            data.isAdmin ||
+            helperScore >= 30 ||
+            (data.studentsHelped && data.studentsHelped > 0) ||
+            (data.battlesWon && data.battlesWon >= 3)
+          );
+
+          return {
+            rank: index + 1,
+            name: data.displayName || "Scholar",
+            campus: data.campus || "Self-Paced Scholar",
+            xp: Math.max(totalXp, 120),
+            battles: Math.max(battles, 1),
+            winRate,
+            streak: Math.max(streak, 1),
+            verified,
+            topicDomain: "react",
+            uid: data.uid || docSnap.id,
+            photoURL: data.photoURL || null,
+          };
+        });
+
+        // Sort by total XP descending
+        realUsers.sort((a, b) => b.xp - a.xp);
+        const ranked = realUsers.map((s, idx) => ({ ...s, rank: idx + 1 }));
+        callback(ranked);
+      },
+      (err) => {
+        console.error("Leaderboard real-time error:", err);
+        callback(LEADERBOARD_DATA);
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to leaderboard:", err);
+    callback(LEADERBOARD_DATA);
+    return () => {};
+  }
+}
+
+/** Record user 1v1 battle result and update XP / stats in real time */
+export async function recordUserBattleResult(
+  uid: string,
+  result: {
+    xpEarned: number;
+    outcome: "victory" | "defeat" | "draw";
+    userScore: number;
+  }
+): Promise<void> {
+  // 1. Client-side optimistic update to users/{uid}
+  try {
+    const userRef = doc(db, COLLECTIONS.USERS, uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const prev = userSnap.data() as UserDoc;
+      const prevXp = prev.xp || 0;
+      const prevPlayed = prev.battlesPlayed || 0;
+      const prevWon = prev.battlesWon || 0;
+      const prevStreak = prev.battleStreak || 0;
+
+      await updateDoc(userRef, {
+        xp: prevXp + result.xpEarned,
+        battlesPlayed: prevPlayed + 1,
+        battlesWon: prevWon + (result.outcome === "victory" ? 1 : 0),
+        battleStreak: result.outcome === "victory" ? prevStreak + 1 : 0,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  } catch (err) {
+    console.warn("Client-side user battle update failed, relying on server reward:", err);
+  }
+
+  // 2. Authoritative server-side update via /api/arena/reward
+  try {
+    await fetch("/api/arena/reward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid,
+        xpDelta: result.xpEarned,
+        incrementBattlesPlayed: true,
+        incrementBattlesWon: result.outcome === "victory",
+        streak: result.outcome === "victory" ? undefined : 0,
+      }),
+    });
+  } catch {}
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getDoubt, getAnswers } from "@/lib/firestore";
+import { subscribeDoubt, subscribeAnswers } from "@/lib/firestore";
 import type { DoubtDoc, AnswerDoc } from "@/lib/types";
 import { AnswerList } from "@/components/doubts/AnswerList";
 import { AnswerComposer } from "@/components/doubts/AnswerComposer";
@@ -36,21 +36,34 @@ export default function DoubtDetailPage({ params }: PageProps) {
   const [answers, setAnswers] = useState<AnswerDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadData = useCallback(async () => {
-    try {
-      const [d, a] = await Promise.all([getDoubt(doubtId), getAnswers(doubtId)]);
-      setDoubt(d);
-      setAnswers(a);
-    } catch (err) {
-      console.error("Failed to load doubt details:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [doubtId]);
-
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    setLoading(true);
+    let doubtLoaded = false;
+    let answersLoaded = false;
+
+    const checkFinished = () => {
+      if (doubtLoaded && answersLoaded) {
+        setLoading(false);
+      }
+    };
+
+    const unsubDoubt = subscribeDoubt(doubtId, (d) => {
+      setDoubt(d);
+      doubtLoaded = true;
+      checkFinished();
+    });
+
+    const unsubAnswers = subscribeAnswers(doubtId, (a) => {
+      setAnswers(a);
+      answersLoaded = true;
+      checkFinished();
+    });
+
+    return () => {
+      unsubDoubt();
+      unsubAnswers();
+    };
+  }, [doubtId]);
 
   if (loading) {
     return (
@@ -142,26 +155,32 @@ export default function DoubtDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {isSolved ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-heading font-black">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Solved
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-[11px] font-heading font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                Live Thread
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-heading font-bold">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                Open Doubt
-              </span>
-            )}
+              {isSolved ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-heading font-black">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Solved
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-heading font-bold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  Open Doubt
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Doubt Text */}
@@ -179,6 +198,7 @@ export default function DoubtDetailPage({ params }: PageProps) {
                   width={36}
                   height={36}
                   className="w-9 h-9 rounded-full object-cover border border-border"
+                  unoptimized
                 />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 flex items-center justify-center font-heading font-bold text-xs">
@@ -204,21 +224,10 @@ export default function DoubtDetailPage({ params }: PageProps) {
         </div>
 
         {/* Answer Composer */}
-        <AnswerComposer
-          doubtId={doubt.id}
-          onAnswerSubmitted={() => {
-            loadData();
-          }}
-        />
+        <AnswerComposer doubtId={doubt.id} />
 
         {/* Answers List */}
-        <AnswerList
-          doubt={doubt}
-          answers={answers}
-          onRefresh={() => {
-            loadData();
-          }}
-        />
+        <AnswerList doubt={doubt} answers={answers} />
       </div>
     </div>
   );

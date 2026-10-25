@@ -16,9 +16,38 @@ export function CourseCard({ course }: CourseCardProps) {
   const [copiedToast, setCopiedToast] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const thumbnailUrl = course.coverVideoId
-    ? `https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`
-    : null;
+  const primaryThumb =
+    course.coverThumbnailUrl ||
+    (course.coverVideoId ? `https://i.ytimg.com/vi/${course.coverVideoId}/mqdefault.jpg` : null);
+
+  const [currentThumb, setCurrentThumb] = useState<string | null>(primaryThumb);
+  const [hasThumbError, setHasThumbError] = useState(!primaryThumb);
+  const [fallbackAttempt, setFallbackAttempt] = useState(0);
+
+  useEffect(() => {
+    const nextThumb =
+      course.coverThumbnailUrl ||
+      (course.coverVideoId ? `https://i.ytimg.com/vi/${course.coverVideoId}/mqdefault.jpg` : null);
+    setCurrentThumb(nextThumb);
+    setHasThumbError(!nextThumb);
+    setFallbackAttempt(0);
+  }, [course.coverThumbnailUrl, course.coverVideoId]);
+
+  const handleThumbError = () => {
+    if (!course.coverVideoId) {
+      setHasThumbError(true);
+      return;
+    }
+    if (fallbackAttempt === 0) {
+      setFallbackAttempt(1);
+      setCurrentThumb(`https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`);
+    } else if (fallbackAttempt === 1) {
+      setFallbackAttempt(2);
+      setCurrentThumb(`https://i.ytimg.com/vi/${course.coverVideoId}/default.jpg`);
+    } else {
+      setHasThumbError(true);
+    }
+  };
 
   // Initial letter for creator avatar circle (YouTube-style channel icon)
   const creatorInitial = (course.creatorName || course.title || "V").charAt(0).toUpperCase();
@@ -96,30 +125,35 @@ export function CourseCard({ course }: CourseCardProps) {
     >
       {/* ── 1. Thumbnail Container (YouTube 16:9 Standard) ── */}
       <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-muted">
-        {thumbnailUrl ? (
+        {!hasThumbError && currentThumb ? (
           <Image
-            src={thumbnailUrl}
+            src={currentThumb}
             alt={`${course.title} thumbnail`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             unoptimized // YouTube CDN
+            onError={handleThumbError}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-teal-500/10">
-            <svg
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#0D9488"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-teal-400 p-4 text-center">
+            <div className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center mb-2 shadow-inner">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+            <span className="text-xs font-heading font-bold text-slate-200 line-clamp-1">
+              {course.title}
+            </span>
+            <span className="text-[10px] font-mono text-teal-400/80 uppercase tracking-wider mt-0.5">
+              {course.category || "Masterclass"}
+            </span>
           </div>
         )}
 

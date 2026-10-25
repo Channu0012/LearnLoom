@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
-  getDoubtsFeed,
-  getDoubtsByUser,
   getDoubtsForCompletedCourses,
   getUserEnrolledCourses,
   getHelperScore,
+  subscribeDoubtsFeed,
+  subscribeDoubtsByUser,
 } from "@/lib/firestore";
 import type { DoubtDoc } from "@/lib/types";
 import { DoubtCard } from "@/components/doubts/DoubtCard";
@@ -183,51 +183,56 @@ function ArenaPageContent() {
     }
   }, [user, userDoc?.helperScore]);
 
-  // Load doubts based on current tab & filter
-  const fetchDoubts = useCallback(async () => {
-    setLoadingDoubts(true);
-    try {
-      if (activeDoubtTab === "my-doubts") {
-        if (!user) {
-          setDoubts([]);
-        } else if (typeof getDoubtsByUser === "function") {
-          const res = await getDoubtsByUser(user.uid);
-          setDoubts(res);
-        } else {
-          setDoubts([]);
-        }
-      } else if (activeDoubtTab === "can-help") {
-        if (!user || enrolledCourses.length === 0) {
-          setDoubts([]);
-        } else if (typeof getDoubtsForCompletedCourses === "function") {
-          const courseIds = enrolledCourses.map((c) => c.id);
-          const res = await getDoubtsForCompletedCourses(courseIds, user.uid);
-          setDoubts(res);
-        } else {
-          setDoubts([]);
-        }
-      } else {
-        // "all" tab
-        if (typeof getDoubtsFeed === "function") {
-          const res = await getDoubtsFeed(30, filterCourseId || undefined);
-          setDoubts(res);
-        } else {
-          setDoubts([]);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch doubts:", err);
-      setDoubts([]);
-    } finally {
-      setLoadingDoubts(false);
-    }
-  }, [activeDoubtTab, user, enrolledCourses, filterCourseId]);
-
+  // ── Real-Time Doubts Feed Subscription ─────────────────────────────────────
   useEffect(() => {
-    if (activeSection === "doubts") {
-      fetchDoubts();
+    if (activeSection !== "doubts") return;
+
+    setLoadingDoubts(true);
+
+    if (activeDoubtTab === "my-doubts") {
+      if (!user) {
+        setDoubts([]);
+        setLoadingDoubts(false);
+        return;
+      }
+      const unsub = subscribeDoubtsByUser(user.uid, (list) => {
+        setDoubts(list);
+        setLoadingDoubts(false);
+      });
+      return () => unsub();
     }
-  }, [fetchDoubts, activeSection]);
+
+    if (activeDoubtTab === "can-help") {
+      if (!user || enrolledCourses.length === 0) {
+        setDoubts([]);
+        setLoadingDoubts(false);
+        return;
+      }
+      const courseIds = enrolledCourses.map((c) => c.id);
+      getDoubtsForCompletedCourses(courseIds, user.uid)
+        .then((res) => {
+          setDoubts(res);
+          setLoadingDoubts(false);
+        })
+        .catch(() => {
+          setDoubts([]);
+          setLoadingDoubts(false);
+        });
+      return;
+    }
+
+    // Default "all" tab — Real-Time Firestore onSnapshot feed
+    const unsub = subscribeDoubtsFeed(
+      (list) => {
+        setDoubts(list);
+        setLoadingDoubts(false);
+      },
+      filterCourseId || undefined,
+      40
+    );
+
+    return () => unsub();
+  }, [activeSection, activeDoubtTab, user, enrolledCourses, filterCourseId]);
 
   // Filtered doubts by search query
   const filteredDoubts = useMemo(() => {
@@ -249,72 +254,11 @@ function ArenaPageContent() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-16">
-      {/* ── Top Header ────────────────────────────────────────────────────── */}
-      <section className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-0">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-tight text-foreground">
-                Arena
-              </h1>
-              <p className="mt-1 text-xs sm:text-sm text-muted-foreground max-w-xl">
-                Collaborative doubt clearance, 1v1 technical knowledge duels, and verified skill
-                rankings.
-              </p>
-            </div>
-
-            {/* Action buttons contextual per section */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              {user && activeSection === "doubts" && (
-                <div className="flex items-center gap-2 bg-muted/60 border border-border px-3 py-1.5 rounded-xl text-xs">
-                  <span className="text-muted-foreground font-medium">Helper Score:</span>
-                  <HelperScoreBadge score={userScore} size="md" showLabel />
-                </div>
-              )}
-
-              {activeSection === "doubts" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!user) {
-                      openAuthModal("signin");
-                    } else {
-                      setComposerOpen(true);
-                    }
-                  }}
-                  className="px-4 py-2 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 shadow-sm active:scale-[0.98] transition-all flex items-center gap-2"
-                >
-                  <PlusIcon size={15} />
-                  <span>Ask a Doubt</span>
-                </button>
-              )}
-
-              {activeSection === "battle" && (
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("leaderboard")}
-                  className="px-3.5 py-1.5 rounded-xl font-heading font-semibold text-xs text-foreground bg-muted border border-border hover:bg-muted/80 transition-all flex items-center gap-1.5"
-                >
-                  <LeaderboardIcon size={14} />
-                  <span>View Standings</span>
-                </button>
-              )}
-
-              {activeSection === "leaderboard" && (
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("battle")}
-                  className="px-4 py-2 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 shadow-sm active:scale-[0.98] transition-all flex items-center gap-2"
-                >
-                  <BattleIcon size={15} />
-                  <span>Enter Battle</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* ── Section Navigation Tabs ───────────────────────────────────── */}
-          <div className="flex items-center gap-1 -mb-px overflow-x-auto scrollbar-none">
+      {/* ── Crazy Clean, Cool & Simple Arena Navigation Top Bar ─────────── */}
+      <section className="border-b border-border bg-card/60 backdrop-blur-md py-4 transition-all">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* The 3 Core Arena Options */}
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/60 border border-border/80 shadow-xs overflow-x-auto scrollbar-none">
             {sectionTabs.map((tab) => {
               const isActive = activeSection === tab.id;
               return (
@@ -322,8 +266,10 @@ function ArenaPageContent() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveSection(tab.id)}
-                  className={`relative flex items-center gap-2 px-4 sm:px-5 py-3 text-xs sm:text-sm font-heading font-semibold transition-colors whitespace-nowrap ${
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-heading font-bold transition-all whitespace-nowrap cursor-pointer select-none ${
+                    isActive
+                      ? "bg-card text-foreground shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/40"
                   }`}
                 >
                   <span
@@ -334,18 +280,68 @@ function ArenaPageContent() {
                     {tab.icon}
                   </span>
                   <span>{tab.label}</span>
-                  {tab.badge && (
-                    <span className="text-[9px] font-heading font-black px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 leading-none">
-                      {tab.badge}
+                  {tab.id === "doubts" && doubts.length > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">
+                      {doubts.length}
                     </span>
                   )}
-                  {/* Active Underline Indicator */}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-teal-600 dark:bg-teal-400" />
+                  {tab.badge && (
+                    <span className="text-[9px] font-heading font-black px-1.5 py-0.5 rounded-full bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 leading-none">
+                      {tab.badge}
+                    </span>
                   )}
                 </button>
               );
             })}
+          </div>
+
+          {/* Contextual Action (Ask Doubt / View Standings / Enter Battle) */}
+          <div className="flex items-center gap-2 justify-end">
+            {user && activeSection === "doubts" && (
+              <div className="hidden sm:flex items-center gap-1.5 bg-muted/60 border border-border px-3 py-1.5 rounded-xl text-xs">
+                <span className="text-muted-foreground font-medium">Helper Score:</span>
+                <HelperScoreBadge score={userScore} size="md" showLabel />
+              </div>
+            )}
+
+            {activeSection === "doubts" && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) {
+                    openAuthModal("signin");
+                  } else {
+                    setComposerOpen(true);
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+              >
+                <PlusIcon size={15} />
+                <span>Ask a Doubt</span>
+              </button>
+            )}
+
+            {activeSection === "battle" && (
+              <button
+                type="button"
+                onClick={() => setActiveSection("leaderboard")}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-heading font-semibold text-xs text-foreground bg-muted border border-border hover:bg-muted/80 transition-all flex items-center justify-center gap-1.5 flex-shrink-0 cursor-pointer"
+              >
+                <LeaderboardIcon size={14} />
+                <span>Leaderboard</span>
+              </button>
+            )}
+
+            {activeSection === "leaderboard" && (
+              <button
+                type="button"
+                onClick={() => setActiveSection("battle")}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+              >
+                <BattleIcon size={15} />
+                <span>Enter Battle</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -513,7 +509,8 @@ function ArenaPageContent() {
         onClose={() => setComposerOpen(false)}
         enrolledCourses={enrolledCourses}
         onCreated={() => {
-          fetchDoubts();
+          setActiveSection("doubts");
+          setActiveDoubtTab("all");
         }}
       />
     </div>

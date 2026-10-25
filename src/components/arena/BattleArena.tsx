@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getDomainQuestions, type QuizQuestion, type DomainType } from "@/lib/curriculumEngine";
+import { recordUserBattleResult } from "@/lib/firestore";
 
 // ── SVG Icons (Zero Emojis) ──────────────────────────────────────────────────
 
@@ -452,6 +453,17 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
       }
       return updated;
     });
+
+    // Real-Time persistence to Firestore users/{uid} collection
+    if (user?.uid) {
+      recordUserBattleResult(user.uid, {
+        xpEarned: earnedXp,
+        outcome,
+        userScore: finalUser,
+      }).catch((err) => {
+        console.error("Failed to persist battle XP to Firestore:", err);
+      });
+    }
   };
 
   // ── Render Views ────────────────────────────────────────────────────────────

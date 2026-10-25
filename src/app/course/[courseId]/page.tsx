@@ -37,9 +37,11 @@ export async function generateMetadata({
   if (!data) return { title: "Course | VeySkill" };
 
   const { course } = data;
-  const thumb = course.coverVideoId
-    ? `https://img.youtube.com/vi/${course.coverVideoId}/hqdefault.jpg`
-    : undefined;
+  const thumb =
+    course.coverThumbnailUrl ||
+    (course.coverVideoId
+      ? `https://i.ytimg.com/vi/${course.coverVideoId}/hqdefault.jpg`
+      : undefined);
 
   return {
     title: course.title,

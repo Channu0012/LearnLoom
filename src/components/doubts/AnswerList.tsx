@@ -172,6 +172,7 @@ export function AnswerList({ doubt, answers, onRefresh }: AnswerListProps) {
                       width={32}
                       height={32}
                       className="w-8 h-8 rounded-full object-cover shrink-0 border border-border"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 flex items-center justify-center font-heading font-bold text-xs shrink-0">
