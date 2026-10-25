@@ -120,40 +120,53 @@ export default function ContactPage() {
       <div className="space-y-6">
         <div className="enterprise-card p-6 border border-border">
           <h2 className="font-heading font-bold text-xl mb-4 text-foreground">
-            Operational &amp; Grievance Officer Details
+            Corporate Entity &amp; Grievance Redressal Details
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-body">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm font-body">
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Platform Operator
+                Corporate Entity
+              </p>
+              <p className="font-semibold text-foreground mt-0.5">VeySkill Technologies</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Registered Open Educational Technology Platform
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
+                Registered Office Address
               </p>
               <p className="font-semibold text-foreground mt-0.5">
-                VeySkill Open Education Platform
+                Brigade IRV Centre, 9th Floor, Nallurhalli, Whitefield
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Bengaluru, Karnataka 560066, India
               </p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Operating Region
+                Customer Care Helpline
               </p>
-              <p className="font-semibold text-foreground mt-0.5">Bengaluru, Karnataka, India</p>
+              <a
+                href="tel:+918045683920"
+                className="font-semibold text-primary-500 hover:underline mt-0.5 block"
+              >
+                +91 (080) 4568-3920
+              </a>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Mon – Sat: 9:00 AM – 6:00 PM IST
+              </p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Customer Support Hours
-              </p>
-              <p className="font-semibold text-foreground mt-0.5">
-                Monday – Saturday: 9:00 AM – 6:00 PM IST
-              </p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Response SLA
+                Response SLA &amp; Support Hours
               </p>
               <p className="font-semibold text-foreground mt-0.5">Within 24 to 48 business hours</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Ticket-tracked resolution</p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Official Support Desk
+                Customer Support Desk
               </p>
               <a
                 href="mailto:support@veyskill.in"
@@ -164,11 +177,12 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-mono">
-                Grievance Redressal
+                Designated Grievance Officer
               </p>
+              <p className="font-semibold text-foreground mt-0.5">Mr. Channabasav Patil</p>
               <a
                 href="mailto:grievance@veyskill.in"
-                className="font-semibold text-primary-500 hover:underline mt-0.5 block"
+                className="text-xs text-primary-500 hover:underline mt-0.5 block font-mono"
               >
                 grievance@veyskill.in
               </a>

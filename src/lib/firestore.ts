@@ -141,7 +141,9 @@ export async function updateCourse(courseId: string, data: CourseUpdatePayload):
 export function invalidateExploreCoursesCache(): void {
   if (typeof window !== "undefined") {
     try {
+      sessionStorage.removeItem("veyskill_explore_courses_cache_v1");
       sessionStorage.removeItem("learnloom_explore_courses_cache_v1");
+      window.dispatchEvent(new Event("veyskill:courses-updated"));
       window.dispatchEvent(new Event("learnloom:courses-updated"));
     } catch {
       // Ignore
@@ -733,7 +735,7 @@ export async function toggleUpvoteAnswer(
 export async function markAnswerAsSolution(
   doubtId: string,
   answerId: string,
-  doubtAuthorId: string,
+  _doubtAuthorId: string,
   answerAuthorId: string
 ): Promise<void> {
   // Update the answer
@@ -746,28 +748,28 @@ export async function markAnswerAsSolution(
     solvedAnswerId: answerId,
     updatedAt: serverTimestamp(),
   });
-  // Give +15 helper score to the answer author
-  await addHelperScore(answerAuthorId, DOUBT_LIMITS.HELPER_SCORE_SOLUTION);
-  // Increment studentsHelped on the answer author
+  // Safely award helper score (+15) and increment studentsHelped via server API
   try {
-    const userRef = doc(db, COLLECTIONS.USERS, answerAuthorId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const prev = (userSnap.data() as UserDoc).studentsHelped || 0;
-      await updateDoc(userRef, { studentsHelped: prev + 1 });
-    }
+    await fetch("/api/arena/reward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: answerAuthorId,
+        delta: DOUBT_LIMITS.HELPER_SCORE_SOLUTION,
+        incrementStudentsHelped: true,
+      }),
+    });
   } catch {}
 }
 
 /** Add/subtract helper score for a user */
 export async function addHelperScore(uid: string, delta: number): Promise<void> {
   try {
-    const userRef = doc(db, COLLECTIONS.USERS, uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const prev = (userSnap.data() as UserDoc).helperScore || 0;
-      await updateDoc(userRef, { helperScore: Math.max(0, prev + delta) });
-    }
+    await fetch("/api/arena/reward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid, delta }),
+    });
   } catch {}
 }
 

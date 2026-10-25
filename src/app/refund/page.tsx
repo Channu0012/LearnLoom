@@ -205,6 +205,15 @@ export default function RefundPage() {
               <span className="text-foreground font-medium">Within 24 to 48 business hours</span>
             </p>
             <p>
+              <span className="text-muted-foreground">Helpline: </span>
+              <a
+                href="tel:+918045683920"
+                className="text-primary-500 font-mono font-medium hover:underline"
+              >
+                +91 (080) 4568-3920 (Mon – Sat, 9 AM – 6 PM IST)
+              </a>
+            </p>
+            <p>
               <span className="text-muted-foreground">Help Center: </span>
               <Link href="/contact" className="text-primary-500 underline">
                 Contact &amp; Grievance Redressal Page

@@ -14,8 +14,8 @@ import type { CourseDoc } from "@/lib/types";
 import { CourseCard, CourseCardSkeleton } from "@/components/courses/CourseCard";
 
 const COURSES_PER_PAGE = 12;
-const SEEN_STORAGE_KEY = "learnloom_seen_courses_v1";
-const COURSES_CACHE_KEY = "learnloom_explore_courses_cache_v1";
+const SEEN_STORAGE_KEY = "veyskill_seen_courses_v1";
+const COURSES_CACHE_KEY = "veyskill_explore_courses_cache_v1";
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
 
 let memoryCoursesCache: { courses: CourseDoc[]; timestamp: number } | null = null;
@@ -168,6 +168,13 @@ export default function ExplorePage() {
           id: d.id,
         }));
 
+        // Prioritize newest published masterclasses
+        fetched.sort((a, b) => {
+          const timeA = a.publishedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+          const timeB = b.publishedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+
         setCachedCourses(fetched);
         setRawCourses(fetched);
         refreshFeed(fetched);
@@ -197,8 +204,10 @@ export default function ExplorePage() {
       fetchCourses(true);
     };
 
+    window.addEventListener("veyskill:courses-updated", handleCoursesUpdated);
     window.addEventListener("learnloom:courses-updated", handleCoursesUpdated);
     return () => {
+      window.removeEventListener("veyskill:courses-updated", handleCoursesUpdated);
       window.removeEventListener("learnloom:courses-updated", handleCoursesUpdated);
     };
   }, [fetchCourses]);

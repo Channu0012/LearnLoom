@@ -61,8 +61,10 @@ export default function CookiesPage() {
                     firebase:authUser
                   </td>
                   <td className="py-2.5 px-3">Session Storage</td>
-                  <td className="py-2.5 px-3">Keeps you signed in securely to create courses</td>
-                  <td className="py-2.5 px-3">Session / Auth duration</td>
+                  <td className="py-2.5 px-3">
+                    Keeps you signed in securely across platform modules
+                  </td>
+                  <td className="py-2.5 px-3">Session duration</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 px-3 font-mono text-xs text-foreground">
@@ -71,6 +73,44 @@ export default function CookiesPage() {
                   <td className="py-2.5 px-3">Local Storage</td>
                   <td className="py-2.5 px-3">Remembers your cookie banner acknowledgment</td>
                   <td className="py-2.5 px-3">1 year</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 px-3 font-mono text-xs text-foreground">
+                    veyskill_streak_data_v1
+                  </td>
+                  <td className="py-2.5 px-3">Local Storage</td>
+                  <td className="py-2.5 px-3">
+                    Maintains student daily learning streak accountability
+                  </td>
+                  <td className="py-2.5 px-3">Persistent</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 px-3 font-mono text-xs text-foreground">
+                    veyskill_quick_notes_*
+                  </td>
+                  <td className="py-2.5 px-3">Local Storage</td>
+                  <td className="py-2.5 px-3">
+                    Saves private lecture notes and code scratchpads on your device
+                  </td>
+                  <td className="py-2.5 px-3">Persistent</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 px-3 font-mono text-xs text-foreground">
+                    veyskill_battle_history_v1
+                  </td>
+                  <td className="py-2.5 px-3">Local Storage</td>
+                  <td className="py-2.5 px-3">
+                    Maintains recent 1v1 Knowledge Battle duel records
+                  </td>
+                  <td className="py-2.5 px-3">Persistent</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 px-3 font-mono text-xs text-foreground">theme</td>
+                  <td className="py-2.5 px-3">Local Storage</td>
+                  <td className="py-2.5 px-3">
+                    Preserves your dark/light workspace theme preference
+                  </td>
+                  <td className="py-2.5 px-3">Persistent</td>
                 </tr>
               </tbody>
             </table>

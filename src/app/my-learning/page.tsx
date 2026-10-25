@@ -99,14 +99,6 @@ export default function MyLearningPage() {
         // Check payment status for completed courses
         const paidSet = new Set<string>();
         for (const item of results) {
-          if (typeof window !== "undefined") {
-            try {
-              const localPaid = localStorage.getItem(`veyskill_paid_${item.course.id}`);
-              if (localPaid) {
-                paidSet.add(item.course.id);
-              }
-            } catch {}
-          }
           const isDone =
             (item.progress.completedLessonIds?.length || 0) >= (item.course.lessonCount || 1) &&
             (item.course.lessonCount || 0) > 0;

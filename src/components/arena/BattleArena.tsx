@@ -443,7 +443,15 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
       date: "Just now",
     };
 
-    setMatchHistory((prev) => [newRecord, ...prev.slice(0, 9)]);
+    setMatchHistory((prev) => {
+      const updated = [newRecord, ...prev.slice(0, 9)];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("veyskill_battle_history", JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
   };
 
   // ── Render Views ────────────────────────────────────────────────────────────

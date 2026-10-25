@@ -178,7 +178,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
 
   // 3. ID checksum verification
   const verification = verifyCertificateId(cleanId);
-  const isValid = isDbVerified || Boolean(benchmark) || verification.isValid || Boolean(queryName);
+  const isValid = isDbVerified || Boolean(benchmark) || verification.isValid;
 
   const recipientName = certRecord?.userName || queryName || "Verified Scholar";
   const courseTitle = formatExecutiveCourseTitle(

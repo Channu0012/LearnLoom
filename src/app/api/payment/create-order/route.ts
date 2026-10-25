@@ -73,8 +73,7 @@ export async function POST(request: NextRequest) {
       !appUrl ||
       appUrl.startsWith("http://") ||
       appUrl.includes("localhost") ||
-      appUrl.includes("127.0.0.1") ||
-      appUrl.includes("learnloom-zeta")
+      appUrl.includes("127.0.0.1")
     ) {
       appUrl = "https://veyskill.in";
     }

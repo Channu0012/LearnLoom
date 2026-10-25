@@ -242,37 +242,8 @@ export function Header() {
           )}
         </nav>
 
-        {/* Right Section: Mobile Doubts & Auth Controls */}
+        {/* Right Section: Streak & Auth Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3">
-          {/* Mobile Arena Button — Always accessible on phones & compact screens */}
-          <Link
-            href="/arena"
-            className="inline-flex md:hidden items-center gap-1.5 font-heading font-bold text-xs px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-700 dark:text-teal-300 border border-teal-500/30 transition-all active:scale-95 flex-shrink-0 shadow-xs"
-            aria-label="Arena Hub"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
-              <line x1="13" y1="19" x2="19" y2="13" />
-              <line x1="16" y1="16" x2="20" y2="20" />
-              <line x1="19" y1="21" x2="21" y2="19" />
-              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
-              <line x1="5" y1="14" x2="9" y2="18" />
-              <line x1="7" y1="17" x2="4" y2="20" />
-              <line x1="3" y1="19" x2="5" y2="21" />
-            </svg>
-            <span>Arena</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-          </Link>
           {/* Auth Controls */}
           {!loading && (
             <>

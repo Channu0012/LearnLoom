@@ -366,7 +366,7 @@ export default function TermsPage() {
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
               <span>
-                Legal:{" "}
+                Legal Desk:{" "}
                 <a
                   href="mailto:legal@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
@@ -392,12 +392,12 @@ export default function TermsPage() {
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
               <span>
-                Takedowns:{" "}
+                Customer Support Helpline:{" "}
                 <a
-                  href="mailto:takedown@veyskill.in"
-                  className="text-primary-500 underline hover:no-underline font-semibold"
+                  href="tel:+918045683920"
+                  className="text-primary-500 underline hover:no-underline font-semibold font-mono"
                 >
-                  takedown@veyskill.in
+                  +91 (080) 4568-3920
                 </a>
               </span>
             </li>
@@ -418,13 +418,36 @@ export default function TermsPage() {
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
               <span>
-                Privacy:{" "}
+                Grievance Officer:{" "}
+                <span className="font-semibold text-foreground">Mr. Channabasav Patil</span> (
                 <a
-                  href="mailto:privacy@veyskill.in"
+                  href="mailto:grievance@veyskill.in"
                   className="text-primary-500 underline hover:no-underline font-semibold"
                 >
-                  privacy@veyskill.in
+                  grievance@veyskill.in
                 </a>
+                )
+              </span>
+            </li>
+            <li className="flex items-center gap-2">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary-500"
+                aria-hidden="true"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>
+                Registered Office: VeySkill Technologies, Brigade IRV Centre, 9th Floor,
+                Nallurhalli, Whitefield, Bengaluru, Karnataka 560066, India
               </span>
             </li>
           </ul>

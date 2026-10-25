@@ -143,9 +143,9 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
   const [topicFilter, setTopicFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filtered leaderboard data
+  // Filtered and dynamically sorted leaderboard data
   const filteredList = useMemo(() => {
-    return LEADERBOARD_DATA.filter((student) => {
+    let list = LEADERBOARD_DATA.filter((student) => {
       if (topicFilter !== "all" && student.topicDomain !== topicFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -153,7 +153,34 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
       }
       return true;
     });
-  }, [topicFilter, searchQuery]);
+
+    if (timeframe === "weekly") {
+      // Sort by weekly sprint velocity: streak bonus + recent duel performance
+      list = [...list].sort((a, b) => {
+        const scoreA = a.streak * 85 + (a.xp % 1000) * 1.5;
+        const scoreB = b.streak * 85 + (b.xp % 1000) * 1.5;
+        return scoreB - scoreA;
+      });
+    } else if (timeframe === "campus") {
+      // Sort by collegiate institution prominence & campus pride index
+      list = [...list].sort((a, b) => {
+        const campusWeight = (c: string) =>
+          c.includes("IIT") ? 3 : c.includes("BITS") ? 2.5 : c.includes("NIT") ? 2 : 1;
+        const weightA = campusWeight(a.campus) * 10000 + a.xp;
+        const weightB = campusWeight(b.campus) * 10000 + b.xp;
+        return weightB - weightA;
+      });
+    } else {
+      // All time — career XP
+      list = [...list].sort((a, b) => b.xp - a.xp);
+    }
+
+    // Re-index ranks consecutively for the active view
+    return list.map((student, idx) => ({
+      ...student,
+      rank: idx + 1,
+    }));
+  }, [topicFilter, searchQuery, timeframe]);
 
   const topThree = useMemo(() => {
     return filteredList.slice(0, 3);
@@ -166,7 +193,11 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
         <div>
           <h2 className="text-lg font-heading font-bold text-foreground">Verified Standings</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Rankings calibrated from 1v1 battle victories, response speed, and question accuracy.
+            {timeframe === "weekly"
+              ? "Active 7-day sprint rankings — calibrated from recent duels, streak acceleration, and weekly bonus points."
+              : timeframe === "campus"
+                ? "Inter-collegiate rankings — premier engineering and science universities competing for national campus prestige."
+                : "Rankings calibrated from all-time 1v1 battle victories, response speed, and question accuracy."}
           </p>
         </div>
 

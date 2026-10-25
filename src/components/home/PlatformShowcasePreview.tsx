@@ -33,7 +33,11 @@ export function PlatformShowcasePreview() {
               <span className="w-px h-3.5 bg-white/15" aria-hidden="true" />
 
               {/* URL bar indicator */}
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-md bg-neutral-800/80 border border-white/10 text-[11px] font-mono text-neutral-300">
+              <Link
+                href="/explore"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-md bg-neutral-800/80 border border-white/10 text-[11px] font-mono text-neutral-300 hover:text-white hover:border-teal-500/40 transition-all cursor-pointer"
+                title="Explore Course Masterclasses"
+              >
                 <svg
                   width="11"
                   height="11"
@@ -46,8 +50,8 @@ export function PlatformShowcasePreview() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                <span>veyskill.in/course/cs-masterclass</span>
-              </div>
+                <span>veyskill.in/explore</span>
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">

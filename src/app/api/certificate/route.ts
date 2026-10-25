@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
     const sanitizedTitle = sanitizeInput(rawCourseTitle, 200);
     const courseTitle = formatExecutiveCourseTitle(sanitizedTitle);
 
-    if (!userName || !courseTitle) {
+    if (!uid || !courseId || !userName || !courseTitle) {
       return NextResponse.json(
-        { error: "Missing or invalid required fields: userName, courseTitle" },
+        { error: "Missing required authentication fields: uid, courseId, userName, courseTitle" },
         { status: 400 }
       );
     }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY
     );
 
-    if (isCashfreeConfigured && uid && courseId) {
+    if (isCashfreeConfigured) {
       const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
       let isVerified = false;
 

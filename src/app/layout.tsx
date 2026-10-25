@@ -119,7 +119,11 @@ const jsonLdWebsite = {
         width: 798,
         height: 220,
       },
-      sameAs: ["https://twitter.com/veyskill", "https://github.com/Channu0012/LearnLoom"],
+      sameAs: [
+        "https://twitter.com/veyskill",
+        "https://www.linkedin.com/company/veyskill",
+        "https://www.youtube.com/@veyskill",
+      ],
       description:
         "VeySkill transforms online video lectures and playlists into distraction-free masterclasses with interactive notes, quizzes, and cryptographic completion certificates.",
     },

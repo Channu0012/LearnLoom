@@ -231,9 +231,18 @@ service cloud.firestore {
         && inData().status == "open"
         && inData().answerCount == 0;
 
-      // Author can mark solved; admin can moderate
-      allow update: if isAuth()
-        && (exData().authorId == request.auth.uid || isAdmin());
+      // Author can mark solved; peer can increment answerCount; admin can moderate
+      allow update: if isAuth() && (
+        exData().authorId == request.auth.uid
+        || isAdmin()
+        || (
+          unchanged("authorId")
+          && unchanged("text")
+          && unchanged("courseId")
+          && unchanged("courseTitle")
+          && inData().answerCount == exData().answerCount + 1
+        )
+      );
 
       // Author or admin can delete
       allow delete: if isAuth()
@@ -250,8 +259,27 @@ service cloud.firestore {
           && validStr("text", 2000)
           && inData().upvotes == 0;
 
-        // Any logged-in user can update (for upvoting)
-        allow update: if isAuth();
+        // Secure updates:
+        // 1. Author can update text (authorId immutable)
+        // 2. Peers can upvote (text, authorId, and isSolution remain immutable)
+        // 3. Doubt author can mark solution (text and authorId remain immutable)
+        // 4. Admin can moderate
+        allow update: if isAuth() && (
+          (exData().authorId == request.auth.uid && validStr("text", 2000) && unchanged("authorId"))
+          || (
+            unchanged("text")
+            && unchanged("authorId")
+            && inData().upvotes is int
+            && inData().upvotedBy is list
+          )
+          || (
+            get(/databases/$(database)/documents/doubts/$(doubtId)).data.authorId == request.auth.uid
+            && unchanged("text")
+            && unchanged("authorId")
+            && inData().isSolution is bool
+          )
+          || isAdmin()
+        );
 
         // Author or admin can delete
         allow delete: if isAuth()
