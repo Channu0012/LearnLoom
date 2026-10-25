@@ -29,9 +29,11 @@ export function VerifyPdfDownloadButton({
 }: VerifyPdfDownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const handleDownload = async () => {
     setDownloading(true);
+    setDownloadError(null);
     try {
       await generatePdfCertificate({
         id,
@@ -46,6 +48,8 @@ export function VerifyPdfDownloadButton({
       setTimeout(() => setDownloaded(false), 4000);
     } catch (err) {
       console.error("Verification page PDF generation failed:", err);
+      setDownloadError("Unable to render PDF. Please retry or print this page.");
+      setTimeout(() => setDownloadError(null), 5000);
     } finally {
       setDownloading(false);
     }
@@ -100,6 +104,24 @@ export function VerifyPdfDownloadButton({
             <polyline points="20 6 9 17 4 12" />
           </svg>
           Official PDF Downloaded to Your Device!
+        </span>
+      )}
+
+      {downloadError && (
+        <span className="text-xs font-heading font-bold text-destructive inline-flex items-center gap-1.5 animate-fade-in">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          {downloadError}
         </span>
       )}
     </div>

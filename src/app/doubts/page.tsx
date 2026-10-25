@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   getDoubtsFeed,
@@ -131,9 +132,14 @@ export type DoubtTabType = "all" | "can-help" | "my-doubts";
 
 // ── Unified Arena Page Component ─────────────────────────────────────────────
 
-export default function ArenaPage() {
+function ArenaPageContent() {
   const { user, userDoc, openAuthModal } = useAuth();
-  const [activeSection, setActiveSection] = useState<SectionType>("doubts");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const validInitialTab: SectionType =
+    initialTab === "battle" || initialTab === "leaderboard" ? initialTab : "doubts";
+
+  const [activeSection, setActiveSection] = useState<SectionType>(validInitialTab);
   const [activeDoubtTab, setActiveDoubtTab] = useState<DoubtTabType>("all");
   const [doubts, setDoubts] = useState<DoubtDoc[]>([]);
   const [loadingDoubts, setLoadingDoubts] = useState(true);
@@ -142,6 +148,13 @@ export default function ArenaPage() {
   const [enrolledCourses, setEnrolledCourses] = useState<Array<{ id: string; title: string }>>([]);
   const [filterCourseId, setFilterCourseId] = useState<string>("");
   const [doubtSearchQuery, setDoubtSearchQuery] = useState("");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "battle" || tab === "leaderboard" || tab === "doubts") {
+      setActiveSection(tab);
+    }
+  }, [searchParams]);
 
   // Load user metadata (helper score & enrolled courses)
   useEffect(() => {
@@ -504,5 +517,13 @@ export default function ArenaPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function ArenaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <ArenaPageContent />
+    </Suspense>
   );
 }

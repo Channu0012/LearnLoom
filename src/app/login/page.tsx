@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -30,9 +30,14 @@ export default function LoginPage() {
   const [localError, setLocalError] = useState("");
   const [localSuccess, setLocalSuccess] = useState("");
 
-  // Redirect if already logged in
+  // Safe redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.replace("/my-learning");
+    }
+  }, [user, router]);
+
   if (user) {
-    router.replace("/my-learning");
     return null;
   }
 
