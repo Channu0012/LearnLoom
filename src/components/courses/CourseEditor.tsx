@@ -32,6 +32,7 @@ import {
   validateCourseEducation,
   validatePlaylistEducation,
 } from "@/lib/contentFilter";
+import { fetchYouTubeChannelInfo } from "@/lib/courseInstructor";
 
 // ── Lesson row component ──────────────────────────────────────────────────
 
@@ -364,6 +365,17 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             thumbnailUrl: l.thumbnailUrl,
           }))
         );
+        // If legacy course is missing authentic channelTitle, resolve it from first lesson
+        if (!course.channelTitle && existingLessons[0]?.youtubeId) {
+          fetchYouTubeChannelInfo(existingLessons[0].youtubeId).then((info) => {
+            if (info?.channelTitle) {
+              setChannelTitle((prev) => prev || info.channelTitle);
+              if (info.channelUrl) {
+                setChannelUrl((prev) => prev || info.channelUrl);
+              }
+            }
+          });
+        }
       } catch {
         setSaveError("Failed to load existing course details.");
       } finally {

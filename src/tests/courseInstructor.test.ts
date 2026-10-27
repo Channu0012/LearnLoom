@@ -1,16 +1,21 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   getCourseInstructor,
   getInstructorInitial,
+  fetchYouTubeChannelInfo,
   generateLinkedInShareUrl,
   generateTwitterShareUrl,
 } from "@/lib/courseInstructor";
 
 describe("Course Instructor & Channel Attribution Engine", () => {
-  it("prioritizes channelTitle when available", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("prioritizes authentic YouTube channelTitle when available", () => {
     const course = {
       channelTitle: "freeCodeCamp.org",
-      creatorName: "John Doe",
+      creatorName: "Channabasav Patil",
       title: "Python for Beginners",
     };
     const instructor = getCourseInstructor(course);
@@ -20,15 +25,17 @@ describe("Course Instructor & Channel Attribution Engine", () => {
     expect(instructor.avatarInitial).toBe("FR");
   });
 
-  it("falls back to creatorName when channelTitle is empty", () => {
+  it("strictly NEVER masquerades creatorName (uploader) as the YouTube instructor when channelTitle is empty", () => {
     const course = {
       channelTitle: "",
-      creatorName: "Hitesh Choudhary",
+      creatorName: "Channabasav Patil", // Platform user who imported the video
       title: "JavaScript Masterclass",
     };
     const instructor = getCourseInstructor(course);
-    expect(instructor.name).toBe("Hitesh Choudhary");
-    expect(instructor.avatarInitial).toBe("HC");
+    // Must NOT be the platform user!
+    expect(instructor.name).not.toBe("Channabasav Patil");
+    expect(instructor.name).toBe("YouTube Creator");
+    expect(instructor.avatarInitial).toBe("YT");
   });
 
   it("filters out generic/anonymous names and defaults to YouTube Creator", () => {
@@ -51,6 +58,26 @@ describe("Course Instructor & Channel Attribution Engine", () => {
     expect(getInstructorInitial("Traversy Media")).toBe("TM");
     expect(getInstructorInitial("CS50")).toBe("CS");
     expect(getInstructorInitial("")).toBe("YT");
+  });
+
+  it("fetches and caches authentic YouTube creator from video oEmbed", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        author_name: "Programming with Mosh",
+        author_url: "https://www.youtube.com/@programmingwithmosh",
+      }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const info = await fetchYouTubeChannelInfo("_uQrJ0TkZlc");
+    expect(info).not.toBeNull();
+    expect(info?.channelTitle).toBe("Programming with Mosh");
+    expect(info?.channelUrl).toBe("https://www.youtube.com/@programmingwithmosh");
+
+    // Second call should hit the cache without another fetch
+    const cachedInfo = await fetchYouTubeChannelInfo("_uQrJ0TkZlc");
+    expect(cachedInfo?.channelTitle).toBe("Programming with Mosh");
   });
 
   it("generates viral LinkedIn and Twitter share links crediting the instructor", () => {

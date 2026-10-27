@@ -344,10 +344,14 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFontSize(9.5);
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
   const cleanInstructor = options.instructorName?.trim();
-  const issuedText =
-    cleanInstructor && cleanInstructor !== "Anonymous" && cleanInstructor !== "Learner"
-      ? `Curriculum by : ${cleanInstructor}  \u2022  Issued by : VeySkill`
-      : "Issued by : veyskill";
+  const isGenericInstructor =
+    !cleanInstructor ||
+    ["anonymous", "learner", "user", "admin", "veyskill", "youtube creator"].includes(
+      cleanInstructor.toLowerCase()
+    );
+  const issuedText = !isGenericInstructor
+    ? `Curriculum by : ${cleanInstructor}  \u2022  Issued by : VeySkill`
+    : "Issued by : veyskill";
   doc.text(issuedText, centerX, 145.0, { align: "center" });
 
   // 7. Scannable Verification QR Code (Bottom Left)

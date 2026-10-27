@@ -34,7 +34,7 @@ import { StreakDashboard } from "@/components/courses/StreakDashboard";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { InPlayerCodeScratchpad } from "@/components/courses/InPlayerCodeScratchpad";
 import { DoubtFAB } from "@/components/doubts/DoubtFAB";
-import { getCourseInstructor } from "@/lib/courseInstructor";
+import { useCourseInstructor } from "@/lib/courseInstructor";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -201,7 +201,34 @@ function CoursePlayerContent({
   user: ReturnType<typeof useAuth>["user"];
   openAuthModal: (_mode?: "signin" | "signup") => void;
 }) {
-  const instructor = getCourseInstructor(course);
+  // Authentic YouTube Channel Owner / Instructor (reactively resolved)
+  const instructor = useCourseInstructor(course);
+
+  // Silently backfill Firestore course doc with resolved authentic YouTube channel name
+  useEffect(() => {
+    if (
+      !course.channelTitle &&
+      instructor.isResolved &&
+      instructor.name &&
+      instructor.name !== "YouTube Creator"
+    ) {
+      import("@/lib/firestore").then(({ updateCourse }) => {
+        updateCourse(courseId, {
+          channelTitle: instructor.name,
+          channelUrl: instructor.channelUrl,
+        }).catch(() => {
+          // Non-fatal, e.g. permissions or offline
+        });
+      });
+    }
+  }, [
+    course.channelTitle,
+    courseId,
+    instructor.isResolved,
+    instructor.name,
+    instructor.channelUrl,
+  ]);
+
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);

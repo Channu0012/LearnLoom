@@ -814,7 +814,11 @@ export default function MyLearningPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="badge-primary text-[10px] font-heading font-bold inline-block truncate max-w-[150px]">
-                          {course.creatorName ? `By ${course.creatorName}` : "Enrolled Masterclass"}
+                          {course.channelTitle
+                            ? `By ${course.channelTitle}`
+                            : course.creatorName
+                              ? `Curated by ${course.creatorName}`
+                              : "Enrolled Masterclass"}
                         </span>
 
                         {/* 3-Dot Dropdown Menu Trigger */}

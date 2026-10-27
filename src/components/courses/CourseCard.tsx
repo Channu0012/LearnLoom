@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CourseDoc } from "@/lib/types";
-import { getCourseInstructor } from "@/lib/courseInstructor";
+import { useCourseInstructor } from "@/lib/courseInstructor";
 
 interface CourseCardProps {
   course: CourseDoc;
@@ -50,8 +50,8 @@ export function CourseCard({ course }: CourseCardProps) {
     }
   };
 
-  // Authentic YouTube Channel Owner / Instructor Info
-  const instructor = getCourseInstructor(course);
+  // Authentic YouTube Channel Owner / Instructor Info (reactively resolved from video if needed)
+  const instructor = useCourseInstructor(course);
   const creatorInitial = instructor.avatarInitial;
 
   // Color palette for creator avatar based on instructor name hash

@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
         videoId,
         title: data.title?.slice(0, 200) ?? "Untitled Video",
         channelName: data.author_name ?? "",
+        channelUrl: data.author_url ?? "",
         thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
       },
       {

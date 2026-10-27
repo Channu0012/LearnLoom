@@ -132,7 +132,10 @@ export function OfficialCertificateView({
           style={{ top: "69.0%" }}
         >
           <span className="font-serif font-bold text-[#003049] text-[7.5px] sm:text-[11px] md:text-[13px] lg:text-[15px] tracking-tight whitespace-nowrap leading-none">
-            {instructorName && instructorName !== "Anonymous" && instructorName !== "Learner"
+            {instructorName &&
+            !["anonymous", "learner", "user", "admin", "veyskill", "youtube creator"].includes(
+              instructorName.trim().toLowerCase()
+            )
               ? `Curriculum by : ${instructorName}  •  Issued by : VeySkill`
               : "Issued by : veyskill"}
           </span>
