@@ -3,7 +3,12 @@
 // Generates a tamper-proof completion certificate with cryptographic verification ID
 // ---------------------------------------------------------------------------
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit, sanitizeInput, generateSecureCertificateId } from "@/lib/security";
+import {
+  checkRateLimit,
+  sanitizeInput,
+  generateSecureCertificateId,
+  buildCanonicalCertificateUrl,
+} from "@/lib/security";
 import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 
 export const dynamic = "force-dynamic";
@@ -174,19 +179,23 @@ export async function POST(request: NextRequest) {
     const date = completedDate ? new Date(completedDate) : new Date();
 
     const formattedDate = formatDate(date);
-    const queryParams = new URLSearchParams({
-      n: userName,
-      c: courseTitle,
-      d: formattedDate,
-      ...(lessonCount ? { l: String(lessonCount) } : {}),
-      ...(quizScore != null ? { s: String(quizScore) } : {}),
-    });
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
     const proto = request.headers.get("x-forwarded-proto") || "https";
     const origin = host
       ? `${proto}://${host}`
       : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
-    const verifyUrl = `${origin}/verify/${certificateId}?${queryParams.toString()}`;
+
+    const verifyUrl = buildCanonicalCertificateUrl(
+      certificateId,
+      {
+        userName,
+        courseTitle,
+        issuedDate: formattedDate,
+        lessonCount,
+        quizScore,
+      },
+      origin
+    );
 
     const certificate = {
       id: certificateId,

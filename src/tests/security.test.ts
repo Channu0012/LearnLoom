@@ -8,6 +8,9 @@ import {
   isDisposableEmail,
   validateSecurePassword,
   sanitizeDisplayName,
+  signCertificatePayload,
+  verifyCertificatePayloadSignature,
+  buildCanonicalCertificateUrl,
 } from "@/lib/security";
 
 describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
@@ -101,6 +104,37 @@ describe("Security Engine Tests (Z++ Enterprise Protection)", () => {
       expect(verifyCertificateId("").isValid).toBe(false);
       expect(verifyCertificateId("FAKE-12345678").isValid).toBe(false);
       expect(verifyCertificateId("VS-FAKECERT12").isValid).toBe(false);
+    });
+
+    it("signs and verifies certificate payload URLs preventing tampering", () => {
+      const id = "VS-9A3F1B8E2C";
+      const user = "Alex Morgan";
+      const course = "Java Programming Masterclass";
+
+      const sig = signCertificatePayload(id, user, course);
+      expect(sig).toBeDefined();
+      expect(sig.length).toBe(8);
+
+      expect(verifyCertificatePayloadSignature(id, user, course, sig)).toBe(true);
+      expect(verifyCertificatePayloadSignature(id, "Hacker User", course, sig)).toBe(false);
+      expect(verifyCertificatePayloadSignature(id, user, "Fake Course", sig)).toBe(false);
+    });
+
+    it("builds complete canonical verification URLs with signed metadata", () => {
+      const url = buildCanonicalCertificateUrl("VS-9A3F1B8E2C", {
+        userName: "Alex Morgan",
+        courseTitle: "Java Programming Masterclass",
+        issuedDate: "October 27, 2026",
+        quizScore: 95,
+        lessonCount: 16,
+      });
+
+      expect(url).toContain("https://veyskill.in/verify/VS-9A3F1B8E2C?");
+      expect(url).toContain("n=Alex+Morgan");
+      expect(url).toContain("c=Java+Programming+Masterclass");
+      expect(url).toContain("sig=");
+      expect(url).toContain("s=95");
+      expect(url).toContain("l=16");
     });
   });
 

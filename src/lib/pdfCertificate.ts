@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 import { jsPDF } from "jspdf";
 import { generateQRCodeDataUrl } from "@/lib/qrcode";
+import { buildCanonicalCertificateUrl } from "@/lib/security";
 
 export interface CertificatePdfOptions {
   id: string;
@@ -307,7 +308,7 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   }
 
   // 3. Recipient Full Legal Name (Elegant Italic Script, centered gracefully above flourish divider with NO underline)
-  const cleanName = userName.trim() || "channabasav bhimappa b patil";
+  const cleanName = userName?.trim() || "Distinguished Scholar";
   let nameSize = 28;
   if (cleanName.length > 20) nameSize = 23;
   if (cleanName.length > 28) nameSize = 18.5;
@@ -330,7 +331,9 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.text(`\u201C${executiveTitle}\u201D`, centerX, 109.5, { align: "center" });
 
   // 5. Date of Completion (Single clean line centered at 50%)
-  const cleanDate = issuedDate.trim() || "13 oct 2026";
+  const cleanDate =
+    issuedDate?.trim() ||
+    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
@@ -344,8 +347,16 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
 
   // 7. Scannable Verification QR Code (Bottom Left)
   const cleanId = options.id?.trim() || "VS-DEMO";
-  const effectiveVerifyUrl =
-    options.verifyUrl || `https://veyskill.in/verify/${encodeURIComponent(cleanId)}`;
+  let effectiveVerifyUrl = options.verifyUrl;
+  if (!effectiveVerifyUrl || !effectiveVerifyUrl.includes("?")) {
+    effectiveVerifyUrl = buildCanonicalCertificateUrl(cleanId, {
+      userName: cleanName,
+      courseTitle: executiveTitle,
+      issuedDate: cleanDate,
+      lessonCount: options.lessonCount,
+      quizScore: options.quizScore,
+    });
+  }
 
   try {
     const qrDataUrl = await generateQRCodeDataUrl(effectiveVerifyUrl, 256);

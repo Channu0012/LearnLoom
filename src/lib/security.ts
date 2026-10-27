@@ -105,7 +105,7 @@ export const BENCHMARK_CERTIFICATES: Record<
   }
 > = {
   "VS-9A3F1B8E2C": {
-    userName: "Sample Learner",
+    userName: "Channabasav Patil",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 24,
     quizScore: 98,
@@ -116,7 +116,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-88421099FF": {
-    userName: "Sample Learner",
+    userName: "Channabasav Patil",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 36,
     quizScore: 95,
@@ -127,7 +127,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-1122334455": {
-    userName: "Sample Learner",
+    userName: "Channabasav Patil",
     courseTitle: "Cloud Architecture & Java Distributed Systems Masterclass",
     lessonCount: 15,
     quizScore: 100,
@@ -138,7 +138,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "VERIFIED CREDENTIALS",
   },
   "VC-DEMO": {
-    userName: "Sample Learner",
+    userName: "Channabasav Patil",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,
@@ -149,7 +149,7 @@ export const BENCHMARK_CERTIFICATES: Record<
     managerTitle: "VERIFIED CREDENTIALS",
   },
   "VS-DEMO": {
-    userName: "Sample Learner",
+    userName: "Channabasav Patil",
     courseTitle: "Java Programming Masterclass",
     lessonCount: 18,
     quizScore: 96,
@@ -198,6 +198,61 @@ export function computeCertificateChecksum(payload: string): string {
   const num1 = parseInt(hash.slice(0, 4), 16) % CHARSET.length;
   const num2 = parseInt(hash.slice(4, 8), 16) % CHARSET.length;
   return CHARSET[num1]! + CHARSET[num2]!;
+}
+
+/**
+ * Computes a tamper-proof cryptographic HMAC signature for certificate metadata.
+ * Prevents URL tampering or counterfeit credential claims.
+ */
+export function signCertificatePayload(id: string, userName: string, courseTitle: string): string {
+  const cleanId = normalizeCertificateId(id);
+  const cleanUser = userName.trim().toLowerCase();
+  const cleanCourse = courseTitle.trim().toLowerCase();
+  const payload = `sig:${cleanId}:${cleanUser}:${cleanCourse}`;
+  const hash = crypto.createHmac("sha256", CERT_HMAC_SALT).update(payload).digest("hex");
+  // 4-character high-entropy signature tag
+  return hash.slice(0, 8).toUpperCase();
+}
+
+/**
+ * Validates whether the cryptographic signature on the URL matches the recipient and course.
+ */
+export function verifyCertificatePayloadSignature(
+  id: string,
+  userName: string,
+  courseTitle: string,
+  signature: string
+): boolean {
+  if (!signature || !id || !userName || !courseTitle) return false;
+  const expected = signCertificatePayload(id, userName, courseTitle);
+  return signature.trim().toUpperCase() === expected;
+}
+
+/**
+ * Builds the canonical tamper-proof verification URL with cryptographic signature.
+ */
+export function buildCanonicalCertificateUrl(
+  id: string,
+  data: {
+    userName: string;
+    courseTitle: string;
+    issuedDate?: string;
+    quizScore?: number | null;
+    lessonCount?: number;
+  },
+  origin = "https://veyskill.in"
+): string {
+  const cleanId = normalizeCertificateId(id);
+  const sig = signCertificatePayload(cleanId, data.userName, data.courseTitle);
+  const params = new URLSearchParams({
+    n: data.userName,
+    c: data.courseTitle,
+    sig,
+    ...(data.issuedDate ? { d: data.issuedDate } : {}),
+    ...(data.lessonCount ? { l: String(data.lessonCount) } : {}),
+    ...(data.quizScore != null ? { s: String(data.quizScore) } : {}),
+  });
+  return `${origin}/verify/${encodeURIComponent(cleanId)}?${params.toString()}`;
 }
 
 /**

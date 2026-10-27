@@ -161,6 +161,20 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
     console.warn("Firestore admin lookup notice:", err);
   }
 
+  // 1b. Fallback: Check Firestore Web SDK registry (both root and collectionGroup)
+  if (!certRecord) {
+    try {
+      const { getCertificateRecord } = await import("@/lib/firestore");
+      const rec = await getCertificateRecord(cleanId);
+      if (rec) {
+        certRecord = rec as CertRecord;
+        isDbVerified = true;
+      }
+    } catch (err) {
+      console.warn("Firestore web SDK lookup notice:", err);
+    }
+  }
+
   // 2. Check benchmark registry fallback
   const benchmark = BENCHMARK_CERTIFICATES[cleanId];
   if (benchmark && !certRecord && !queryName) {
@@ -177,20 +191,56 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
     };
   }
 
-  // 3. ID checksum verification
-  const verification = verifyCertificateId(cleanId);
-  const isValid = isDbVerified || Boolean(benchmark) || verification.isValid;
+  // 3. Cryptographic Signature Verification of query params
+  const querySig = typeof query.sig === "string" ? query.sig : undefined;
+  let isSignedPayload = false;
+  if (queryName && queryCourse) {
+    const { verifyCertificatePayloadSignature } = await import("@/lib/security");
+    isSignedPayload = verifyCertificatePayloadSignature(
+      cleanId,
+      queryName,
+      queryCourse,
+      querySig || ""
+    );
+  }
 
-  const recipientName = certRecord?.userName || queryName || "Verified Scholar";
-  const courseTitle = formatExecutiveCourseTitle(
-    certRecord?.courseTitle || queryCourse || "Software Engineering Track"
-  );
+  // 4. ID checksum validation
+  const verification = verifyCertificateId(cleanId);
+
+  // A certificate is ONLY valid if:
+  // - It is registered in Firestore DB, OR
+  // - It is in the official benchmark registry, OR
+  // - It has a cryptographically signed URL payload, OR
+  // - It has a valid format ID WITH explicit query name and course.
+  // If an unissued ID is visited without record/payload, it displays Not Found (never a fake placeholder).
+  const isValid =
+    isDbVerified ||
+    Boolean(benchmark) ||
+    isSignedPayload ||
+    (verification.isValid && Boolean(queryName && queryCourse));
+
+  const recipientName = certRecord?.userName || queryName || (benchmark ? benchmark.userName : "");
+  const rawCourseTitle =
+    certRecord?.courseTitle || queryCourse || (benchmark ? benchmark.courseTitle : "");
+  const courseTitle = formatExecutiveCourseTitle(rawCourseTitle || "Technology Curriculum");
+
   const lessonCount =
     certRecord?.lessonCount || (queryLessons && !isNaN(queryLessons) ? queryLessons : 12);
   const quizScore =
     certRecord?.quizScore ?? (queryScore != null && !isNaN(queryScore) ? queryScore : null);
-  const issuedDate = certRecord?.issuedDate || queryDate || "October 2026";
-  const verifyUrl = `https://veyskill.in/verify/${cleanId}`;
+  const issuedDate =
+    certRecord?.issuedDate ||
+    queryDate ||
+    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  const { buildCanonicalCertificateUrl } = await import("@/lib/security");
+  const verifyUrl = buildCanonicalCertificateUrl(cleanId, {
+    userName: recipientName,
+    courseTitle,
+    issuedDate,
+    quizScore,
+    lessonCount,
+  });
 
   // LinkedIn certification URL
   const linkedInShareUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationName=${encodeURIComponent("VeySkill")}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(cleanId)}`;

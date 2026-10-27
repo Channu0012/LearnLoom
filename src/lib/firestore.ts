@@ -489,7 +489,7 @@ export async function getLivePlatformStats(): Promise<{
   }
 }
 
-/** Save an issued certificate directly to user's verified credentials in Firestore */
+/** Save an issued certificate directly to user's verified credentials and global registry in Firestore */
 export async function saveUserCertificate(
   uid: string,
   cert: {
@@ -505,12 +505,17 @@ export async function saveUserCertificate(
 ): Promise<void> {
   try {
     if (!uid || !cert?.id) return;
-    await setDoc(doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.CERTIFICATES, cert.id), {
+    const payload = {
       ...cert,
+      uid,
       createdAt: serverTimestamp(),
-    });
+    };
+    // 1. Save to user subcollection
+    await setDoc(doc(db, COLLECTIONS.USERS, uid, COLLECTIONS.CERTIFICATES, cert.id), payload);
+    // 2. Also register in global root /certificates/{cert.id} collection for instant public QR verification
+    await setDoc(doc(db, COLLECTIONS.CERTIFICATES, cert.id), payload);
   } catch (err) {
-    console.warn("Notice saving user certificate to Firestore subcollection:", err);
+    console.warn("Notice saving user certificate to Firestore:", err);
   }
 }
 

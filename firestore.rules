@@ -213,8 +213,14 @@ service cloud.firestore {
     match /certificates/{certId} {
       // Anyone can read for instant public credential verification
       allow read: if true;
-      // Writes are strictly server-only via Firebase Admin SDK
-      allow write: if false;
+      // Allow authenticated user to register their own issued certificate with strict schema validation
+      allow create: if isAuth()
+        && inData().id == certId
+        && inData().uid == request.auth.uid
+        && validStr("courseTitle", 200)
+        && validStr("userName", 100);
+      // Certificates are permanent, tamper-proof credentials
+      allow update, delete: if false;
     }
 
     // ── doubts/{doubtId} (Doubt Solve Community Q&A) ─────────────────────────

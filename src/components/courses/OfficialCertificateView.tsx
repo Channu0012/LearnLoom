@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { CertificateQRCode } from "@/components/verify/CertificateQRCode";
+import { buildCanonicalCertificateUrl } from "@/lib/security";
 
 interface OfficialCertificateViewProps {
   recipientName: string;
@@ -32,19 +33,33 @@ export function OfficialCertificateView({
   courseTitle,
   certificateId,
   issuedDate,
+  lessonCount,
+  quizScore,
   verifyUrl,
   isInteractive = false,
   onNameChange,
   showQrCode = true,
 }: OfficialCertificateViewProps) {
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
-  const cleanDate = issuedDate.trim() || "13 oct 2026";
+  const cleanDate =
+    issuedDate?.trim() ||
+    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const cleanId = certificateId?.trim() || "VS-DEMO";
-  const effectiveVerifyUrl =
-    verifyUrl || `https://veyskill.in/verify/${encodeURIComponent(cleanId)}`;
+  const effectiveName = recipientName?.trim() || "Distinguished Scholar";
+
+  let effectiveVerifyUrl = verifyUrl;
+  if (!effectiveVerifyUrl || !effectiveVerifyUrl.includes("?")) {
+    effectiveVerifyUrl = buildCanonicalCertificateUrl(cleanId, {
+      userName: effectiveName,
+      courseTitle: executiveTitle,
+      issuedDate: cleanDate,
+      lessonCount,
+      quizScore,
+    });
+  }
 
   // Proportional responsive script font sizing for recipient name
-  const nameLength = recipientName.trim().length;
+  const nameLength = effectiveName.length;
   const getNameSizeClass = () => {
     if (nameLength > 36) return "text-sm sm:text-xl md:text-2xl lg:text-3xl";
     if (nameLength > 24) return "text-base sm:text-2xl md:text-3xl lg:text-4xl";
@@ -80,9 +95,9 @@ export function OfficialCertificateView({
           ) : (
             <h3
               className={`font-['Dancing_Script',_'Brush_Script_MT',_cursive,_serif] font-bold italic text-[#003049] tracking-normal whitespace-nowrap leading-none ${getNameSizeClass()}`}
-              title={recipientName}
+              title={effectiveName}
             >
-              {recipientName.trim() || "channabasav bhimappa b patil"}
+              {effectiveName}
             </h3>
           )}
         </div>

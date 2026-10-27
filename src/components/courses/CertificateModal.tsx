@@ -81,11 +81,22 @@ export function CertificateModal({
     setPaymentRequired(false);
     try {
       const executiveTitle = formatExecutiveCourseTitle(courseTitle);
+      const storedPaidName = courseId
+        ? localStorage.getItem(`veyskill_paid_name_${courseId}`)
+        : null;
+      const targetUserName =
+        (storedPaidName && storedPaidName.trim() && storedPaidName !== "Learner"
+          ? storedPaidName.trim()
+          : null) ||
+        recipientName.trim() ||
+        (userName && userName.trim() !== "Learner" ? userName.trim() : null) ||
+        "Distinguished Scholar";
+
       const res = await fetch("/api/certificate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userName: recipientName.trim() || userName || "Distinguished Scholar",
+          userName: targetUserName,
           courseTitle: executiveTitle,
           lessonCount,
           quizScore:
