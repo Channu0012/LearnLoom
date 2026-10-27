@@ -339,11 +339,16 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
   doc.text(`Date of Completion : ${cleanDate}`, centerX, 137.5, { align: "center" });
 
-  // 6. Issued by (Single clean line centered at 50%)
+  // 6. Issued by & Curriculum Attribution (Single clean line centered at 50%)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
-  doc.text("Issued by : veyskill", centerX, 145.0, { align: "center" });
+  const cleanInstructor = options.instructorName?.trim();
+  const issuedText =
+    cleanInstructor && cleanInstructor !== "Anonymous" && cleanInstructor !== "Learner"
+      ? `Curriculum by : ${cleanInstructor}  \u2022  Issued by : VeySkill`
+      : "Issued by : veyskill";
+  doc.text(issuedText, centerX, 145.0, { align: "center" });
 
   // 7. Scannable Verification QR Code (Bottom Left)
   const cleanId = options.id?.trim() || "VS-DEMO";

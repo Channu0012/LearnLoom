@@ -33,6 +33,7 @@ interface CertificateModalProps {
   uid?: string;
   courseId?: string;
   orderId?: string;
+  instructorName?: string;
   onRequestPayment?: () => void;
 }
 
@@ -47,6 +48,7 @@ export function CertificateModal({
   uid,
   courseId,
   orderId,
+  instructorName,
   onRequestPayment,
 }: CertificateModalProps) {
   const [certificate, setCertificate] = useState<CertificateData | null>(null);
@@ -232,6 +234,7 @@ export function CertificateModal({
         quizScore: certificate.quizScore,
         issuedDate: certificate.issuedDate,
         verifyUrl: certificate.verifyUrl,
+        instructorName,
       });
       setPdfDownloaded(true);
       setTimeout(() => setPdfDownloaded(false), 3500);
@@ -240,7 +243,7 @@ export function CertificateModal({
     } finally {
       setDownloadingPdf(false);
     }
-  }, [certificate, effectiveName]);
+  }, [certificate, effectiveName, instructorName]);
 
   const handleAddToLinkedIn = useCallback(() => {
     if (!certificate) return;
@@ -265,7 +268,11 @@ export function CertificateModal({
 
   const handleShare = useCallback(async () => {
     if (!certificate) return;
-    const shareText = `[VeySkill Verified Credential]\n${effectiveName} has successfully completed the curriculum "${certificate.courseTitle}" (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#VeySkill #GoogleCareerCertificates #LifelongLearning`;
+    const instructorLine =
+      instructorName && instructorName !== "Learner" && instructorName !== "Anonymous"
+        ? ` taught by ${instructorName}`
+        : "";
+    const shareText = `[VeySkill Verified Credential]\n${effectiveName} has successfully completed the curriculum "${certificate.courseTitle}"${instructorLine} (${certificate.lessonCount} modules completed${certificate.quizScore != null ? `, Assessment Grade: ${certificate.quizScore}%` : ""}).\n\nVerify credential: ${certificate.verifyUrl}\n\n#VeySkill #LifelongLearning`;
 
     if (navigator.share) {
       try {
@@ -286,7 +293,7 @@ export function CertificateModal({
     } catch {
       // Fallback
     }
-  }, [certificate, effectiveName]);
+  }, [certificate, effectiveName, instructorName]);
 
   if (!isOpen) return null;
 
@@ -503,6 +510,7 @@ export function CertificateModal({
                   lessonCount={certificate.lessonCount}
                   quizScore={certificate.quizScore}
                   verifyUrl={certificate.verifyUrl}
+                  instructorName={instructorName}
                   isInteractive={false}
                 />
               </div>

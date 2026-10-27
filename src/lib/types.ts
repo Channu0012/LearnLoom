@@ -35,6 +35,9 @@ export interface CourseDoc {
   category: Category;
   creatorId: string;
   creatorName: string;
+  channelTitle?: string | null; // The authentic YouTube instructor / channel owner
+  channelUrl?: string | null; // Link to original YouTube channel
+  channelAvatarUrl?: string | null; // Channel profile avatar
   status: CourseStatus;
   lessonCount: number;
   coverVideoId: string | null; // first lesson's YouTube ID
@@ -53,6 +56,9 @@ export interface SerializedCourseDoc {
   category: Category;
   creatorId: string;
   creatorName: string;
+  channelTitle?: string | null;
+  channelUrl?: string | null;
+  channelAvatarUrl?: string | null;
   status: CourseStatus;
   lessonCount: number;
   coverVideoId: string | null;

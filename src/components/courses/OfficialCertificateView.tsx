@@ -36,6 +36,7 @@ export function OfficialCertificateView({
   lessonCount,
   quizScore,
   verifyUrl,
+  instructorName,
   isInteractive = false,
   onNameChange,
   showQrCode = true,
@@ -125,13 +126,15 @@ export function OfficialCertificateView({
           </span>
         </div>
 
-        {/* 5. Issued by — Cleanly centered single line */}
+        {/* 5. Issued by & Curriculum Attribution — Cleanly centered single line */}
         <div
           className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 pointer-events-none flex items-center justify-center"
           style={{ top: "69.0%" }}
         >
           <span className="font-serif font-bold text-[#003049] text-[7.5px] sm:text-[11px] md:text-[13px] lg:text-[15px] tracking-tight whitespace-nowrap leading-none">
-            Issued by : veyskill
+            {instructorName && instructorName !== "Anonymous" && instructorName !== "Learner"
+              ? `Curriculum by : ${instructorName}  •  Issued by : VeySkill`
+              : "Issued by : veyskill"}
           </span>
         </div>
 

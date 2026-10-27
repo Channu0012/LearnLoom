@@ -34,6 +34,7 @@ import { StreakDashboard } from "@/components/courses/StreakDashboard";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { InPlayerCodeScratchpad } from "@/components/courses/InPlayerCodeScratchpad";
 import { DoubtFAB } from "@/components/doubts/DoubtFAB";
+import { getCourseInstructor } from "@/lib/courseInstructor";
 
 interface CoursePageClientProps {
   courseId: string;
@@ -200,6 +201,7 @@ function CoursePlayerContent({
   user: ReturnType<typeof useAuth>["user"];
   openAuthModal: (_mode?: "signin" | "signup") => void;
 }) {
+  const instructor = getCourseInstructor(course);
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -1504,34 +1506,64 @@ function CoursePlayerContent({
                   <h2 className="font-heading font-bold text-base sm:text-lg text-foreground line-clamp-1">
                     {activeLesson.title}
                   </h2>
-                  {/* Original Creator Attribution & Direct Source Link */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap font-body">
-                    <span>Curated lecture by</span>
-                    <span className="font-semibold text-foreground">
-                      {course.creatorName || "Featured Instructor"}
+                  {/* Authentic YouTube Creator Attribution + Direct Source Link + Channel Link */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5 flex-wrap font-body">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-500/10 text-red-700 dark:text-red-400 font-semibold text-xs border border-red-500/20">
+                      <svg
+                        className="w-3 h-3 fill-current shrink-0"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                      </svg>
+                      <span>
+                        Instructor: <strong className="text-foreground">{instructor.name}</strong>
+                      </span>
                     </span>
+
+                    {instructor.channelUrl && (
+                      <a
+                        href={instructor.channelUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline font-semibold"
+                        title="Visit authentic YouTube channel"
+                      >
+                        <span>Visit Channel</span>
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </a>
+                    )}
+
                     <span className="text-muted-foreground/60">&middot;</span>
                     <a
                       href={`https://www.youtube.com/watch?v=${activeLesson.youtubeId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline font-heading font-semibold"
+                      className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline font-medium"
                       title="Watch original source lecture directly on YouTube"
                     >
-                      <span>YouTube Source</span>
-                      <svg
-                        width="11"
-                        height="11"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
+                      <span>Watch on YouTube</span>
                     </a>
+
+                    {course.creatorName && course.creatorName !== instructor.name && (
+                      <>
+                        <span className="text-muted-foreground/60">&middot;</span>
+                        <span className="text-[11px] text-muted-foreground/80">
+                          Curated by {course.creatorName}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -2109,6 +2141,89 @@ function CoursePlayerContent({
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Authentic YouTube Creator Spotlight Card */}
+              <div className="enterprise-card p-5 sm:p-6 bg-card border border-border/80 rounded-2xl shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-600 to-amber-600 text-white font-heading font-black text-sm flex items-center justify-center shrink-0 shadow-md ring-2 ring-red-500/20">
+                      {instructor.avatarInitial}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-black uppercase text-red-600 dark:text-red-400 bg-red-500/10 px-2 py-0.5 rounded tracking-wide inline-flex items-center gap-1">
+                          <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                          </svg>
+                          <span>Original YouTube Educator</span>
+                        </span>
+                        <svg
+                          className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-label="Verified YouTube Creator"
+                        >
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                      </div>
+                      <h4 className="font-heading font-extrabold text-base sm:text-lg text-foreground mt-0.5">
+                        {instructor.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground font-body">
+                        Curriculum curated into a structured, distraction-free track on VeySkill
+                        {course.creatorName && course.creatorName !== instructor.name
+                          ? ` by ${course.creatorName}`
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 sm:shrink-0">
+                    {instructor.channelUrl && (
+                      <a
+                        href={instructor.channelUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary text-xs px-4 py-2 min-h-[40px] inline-flex items-center gap-1.5 shadow-sm active:scale-95"
+                      >
+                        <span>Support on YouTube</span>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Claim Course / Creator Partnership Banner */}
+                <div className="p-3 sm:p-3.5 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                    <span className="text-xs font-heading font-semibold text-foreground">
+                      Are you {instructor.name}?
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-body hidden sm:inline">
+                      Claim your instructor profile on VeySkill to verify coursework and access
+                      student metrics.
+                    </span>
+                  </div>
+                  <a
+                    href={`/contact?subject=Claim%20Channel%20${encodeURIComponent(instructor.name)}`}
+                    className="text-xs font-heading font-bold text-teal-700 dark:text-teal-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Claim Channel →</span>
+                  </a>
                 </div>
               </div>
 
@@ -3494,6 +3609,7 @@ function CoursePlayerContent({
         uid={user?.uid}
         courseId={courseId}
         orderId={paidOrderId ?? undefined}
+        instructorName={instructor.name}
         onRequestPayment={() => setIsPaymentGateOpen(true)}
       />
 

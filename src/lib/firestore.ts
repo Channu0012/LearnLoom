@@ -49,6 +49,9 @@ export function serializeCourse(course: CourseDoc): SerializedCourseDoc {
     category: course.category,
     creatorId: course.creatorId,
     creatorName: course.creatorName,
+    channelTitle: course.channelTitle ?? null,
+    channelUrl: course.channelUrl ?? null,
+    channelAvatarUrl: course.channelAvatarUrl ?? null,
     status: course.status,
     lessonCount: course.lessonCount,
     coverVideoId: course.coverVideoId,
@@ -125,6 +128,9 @@ type CourseUpdatePayload = {
   description?: string;
   category?: string;
   creatorName?: string;
+  channelTitle?: string | null;
+  channelUrl?: string | null;
+  channelAvatarUrl?: string | null;
   status?: "draft" | "published";
   lessonCount?: number;
   coverVideoId?: string | null;

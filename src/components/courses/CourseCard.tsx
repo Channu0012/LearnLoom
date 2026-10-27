@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CourseDoc } from "@/lib/types";
+import { getCourseInstructor } from "@/lib/courseInstructor";
 
 interface CourseCardProps {
   course: CourseDoc;
@@ -49,10 +50,11 @@ export function CourseCard({ course }: CourseCardProps) {
     }
   };
 
-  // Initial letter for creator avatar circle (YouTube-style channel icon)
-  const creatorInitial = (course.creatorName || course.title || "V").charAt(0).toUpperCase();
+  // Authentic YouTube Channel Owner / Instructor Info
+  const instructor = getCourseInstructor(course);
+  const creatorInitial = instructor.avatarInitial;
 
-  // Color palette for creator avatar based on name hash
+  // Color palette for creator avatar based on instructor name hash
   const avatarColors = [
     "from-teal-500 to-emerald-600",
     "from-indigo-500 to-purple-600",
@@ -60,7 +62,7 @@ export function CourseCard({ course }: CourseCardProps) {
     "from-amber-500 to-orange-600",
     "from-rose-500 to-pink-600",
   ];
-  const colorIndex = (course.creatorName?.length || 0) % avatarColors.length;
+  const colorIndex = (instructor.name.length || 0) % avatarColors.length;
   const avatarGradient = avatarColors[colorIndex];
 
   // Close dropdown on click outside
@@ -104,7 +106,7 @@ export function CourseCard({ course }: CourseCardProps) {
       try {
         await navigator.share({
           title: course.title,
-          text: `Check out this free course on VeySkill: ${course.title}`,
+          text: `Learn "${course.title}" by ${instructor.name} on VeySkill with AI notes and verified certificate:`,
           url,
         });
       } catch {
@@ -191,7 +193,7 @@ export function CourseCard({ course }: CourseCardProps) {
         {/* Creator Avatar / Channel Icon */}
         <div
           className={`w-9 h-9 rounded-full bg-gradient-to-tr ${avatarGradient} text-white font-heading font-black text-xs flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5 dark:ring-white/10`}
-          title={course.creatorName || "VeySkill Course"}
+          title={`Instructor: ${instructor.name}`}
         >
           {creatorInitial}
         </div>
@@ -203,16 +205,19 @@ export function CourseCard({ course }: CourseCardProps) {
             {course.title}
           </h3>
 
-          {/* Creator Name with Verified Checkmark */}
-          <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground font-body truncate">
-            <span className="font-medium text-foreground/90 truncate">
-              {course.creatorName || "VeySkill Learning"}
+          {/* Authentic YouTube Channel Owner / Instructor with Verified Checkmark */}
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground font-body truncate">
+            <span className="font-semibold text-foreground/95 truncate inline-flex items-center gap-1">
+              <span className="text-[9px] font-black uppercase text-red-600 dark:text-red-400 bg-red-500/10 px-1 py-0.2 rounded tracking-tight shrink-0">
+                YT
+              </span>
+              {instructor.name}
             </span>
             <svg
               className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0"
               viewBox="0 0 24 24"
               fill="currentColor"
-              aria-label="Verified Creator"
+              aria-label="Verified YouTube Instructor"
             >
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
             </svg>

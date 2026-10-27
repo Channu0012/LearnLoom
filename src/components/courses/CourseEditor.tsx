@@ -194,6 +194,10 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
   const [bulkImporting, setBulkImporting] = useState(false);
   const [bulkProgress, setBulkProgress] = useState("");
 
+  // YouTube Channel / Authentic Instructor Attribution
+  const [channelTitle, setChannelTitle] = useState("");
+  const [channelUrl, setChannelUrl] = useState("");
+
   // Submission state
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -262,6 +266,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             if (!title.trim() && data.title) {
               setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
             }
+            if (data.channelTitle) {
+              setChannelTitle(data.channelTitle);
+            }
             const newLessons: LessonInput[] = data.videos.map((v: any, index: number) => ({
               tempId: `tmp-pl-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
               youtubeId: v.videoId,
@@ -312,6 +319,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           if (!title.trim() && data.title) {
             setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
           }
+          if (data.channelName) {
+            setChannelTitle(data.channelName);
+          }
           setUrlInput("");
         } catch {
           setUrlError(
@@ -338,6 +348,12 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         setDescription(course.description);
         if (course.category) {
           setExistingCategory(course.category);
+        }
+        if (course.channelTitle) {
+          setChannelTitle(course.channelTitle);
+        }
+        if (course.channelUrl) {
+          setChannelUrl(course.channelUrl);
         }
         const existingLessons = await getLessons(courseId);
         setLessons(
@@ -411,6 +427,9 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         // Auto-populate course title if empty
         if (!title.trim() && data.title) {
           setTitle(data.title.slice(0, LIMITS.COURSE_TITLE));
+        }
+        if (data.channelTitle) {
+          setChannelTitle(data.channelTitle);
         }
 
         // Academic integrity check: Zero-tolerance playlist verification
@@ -517,6 +536,10 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
             "This video was identified as non-educational entertainment or music and cannot be added."
         );
         return;
+      }
+
+      if (data.channelName) {
+        setChannelTitle((prev) => prev || data.channelName!);
       }
 
       setLessons((prev) => [
@@ -730,6 +753,12 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
         category: existingCategory,
         creatorId: user.uid,
         creatorName: user.displayName ?? "Anonymous",
+        channelTitle: channelTitle.trim() || null,
+        channelUrl:
+          channelUrl.trim() ||
+          (channelTitle.trim()
+            ? `https://www.youtube.com/results?search_query=${encodeURIComponent(channelTitle.trim())}`
+            : null),
         status,
         lessonCount: lessons.length,
         coverVideoId: lessons[0]?.youtubeId ?? null,
@@ -970,6 +999,36 @@ export function CourseEditor({ courseId }: CourseEditorProps) {
           )}
           <p className="text-xs text-muted-foreground mt-1 text-right">
             {description.length}/{LIMITS.COURSE_DESCRIPTION}
+          </p>
+        </div>
+
+        {/* Authentic YouTube Creator / Instructor Attribution */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border/80 space-y-2">
+          <label
+            htmlFor="course-instructor"
+            className="flex items-center justify-between text-xs font-heading font-bold text-foreground"
+          >
+            <span className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-tight text-white bg-red-600 px-1.5 py-0.5 rounded shadow-xs">
+                YouTube
+              </span>
+              <span>Instructor / Channel Owner Name</span>
+            </span>
+            <span className="text-[11px] font-medium text-teal-600 dark:text-teal-400">
+              {channelTitle ? "Auto-detected" : "Optional"}
+            </span>
+          </label>
+          <input
+            id="course-instructor"
+            type="text"
+            value={channelTitle}
+            onChange={(e) => setChannelTitle(e.target.value)}
+            placeholder="e.g. freeCodeCamp.org, Chai aur Code, CS50"
+            className="input w-full"
+          />
+          <p className="text-[11px] text-muted-foreground font-body leading-relaxed">
+            Credits the authentic YouTube educator on course cards, player badges, and official
+            certificates.
           </p>
         </div>
 
