@@ -200,7 +200,6 @@ function CoursePlayerContent({
   user: ReturnType<typeof useAuth>["user"];
   openAuthModal: (_mode?: "signin" | "signup") => void;
 }) {
-  const { loading: authLoading } = useAuth();
   const [activeLessonId, setActiveLessonId] = useState(lessons[0]?.id ?? "");
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -293,27 +292,43 @@ function CoursePlayerContent({
   // 3. Handle return redirect from Cashfree payment gateway
   useEffect(() => {
     if (typeof window === "undefined" || !courseId) return;
-    if (authLoading) return; // Wait for Firebase client auth state to finish re-hydrating
 
     try {
       const params = new URLSearchParams(window.location.search);
       const paymentStatus = params.get("payment_status");
-      const returnedOrderId = params.get("order_id");
+      let returnedOrderId = params.get("order_id");
 
-      if (returnedOrderId && (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))) {
+      // Recover actual order ID from pending storage if gateway returned literal template tag
+      if (!returnedOrderId || returnedOrderId === "{order_id}") {
+        try {
+          const rawPending =
+            sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+            localStorage.getItem(`veyskill_pending_order_${courseId}`);
+          if (rawPending) {
+            const parsed = JSON.parse(rawPending);
+            if (parsed?.orderId) returnedOrderId = parsed.orderId;
+          }
+        } catch {}
+      }
+
+      if (
+        returnedOrderId &&
+        returnedOrderId !== "{order_id}" &&
+        (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))
+      ) {
         // Resolve uid from user or storage
         let effectiveUid = user?.uid || "";
-        if (!effectiveUid) {
-          try {
-            const raw =
-              sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
-              localStorage.getItem(`veyskill_pending_order_${courseId}`);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              if (parsed?.uid) effectiveUid = parsed.uid;
-            }
-          } catch {}
-        }
+        let cachedLegalName = "";
+        try {
+          const raw =
+            sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+            localStorage.getItem(`veyskill_pending_order_${courseId}`);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.uid && !effectiveUid) effectiveUid = parsed.uid;
+            if (parsed?.legalName) cachedLegalName = parsed.legalName;
+          }
+        } catch {}
 
         fetch("/api/payment/verify", {
           method: "POST",
@@ -322,6 +337,7 @@ function CoursePlayerContent({
             orderId: returnedOrderId,
             uid: effectiveUid,
             courseId,
+            legalName: cachedLegalName || certificateRecipientName || user?.displayName || "",
           }),
         })
           .then((res) => res.json())
@@ -329,9 +345,26 @@ function CoursePlayerContent({
             if (data.isPaid) {
               setHasPaidCertificate(true);
               setPaidOrderId(returnedOrderId);
+              const confirmedName =
+                data.customerName ||
+                cachedLegalName ||
+                certificateRecipientName ||
+                user?.displayName;
+              if (confirmedName && confirmedName !== "Learner") {
+                setCertificateRecipientName(confirmedName);
+                try {
+                  localStorage.setItem(`veyskill_paid_name_${courseId}`, confirmedName);
+                } catch {}
+              }
               try {
                 localStorage.setItem(`veyskill_paid_${courseId}`, returnedOrderId);
               } catch {}
+              if (effectiveUid) {
+                import("@/lib/firestore").then(({ recordPaidCertificate }) => {
+                  recordPaidCertificate(effectiveUid, courseId, returnedOrderId);
+                });
+              }
+              // Immediately launch certificate view with verified credentials
               setIsCertificateOpen(true);
               const cleanUrl = new URL(window.location.href);
               cleanUrl.searchParams.delete("payment_status");
@@ -342,7 +375,7 @@ function CoursePlayerContent({
           .catch((err) => console.warn("[Payment] Redirect verify notice:", err));
       }
     } catch {}
-  }, [courseId, user?.uid, authLoading]);
+  }, [courseId, user?.uid, user?.displayName, certificateRecipientName]);
 
   // Listen to fullscreen changes
   useEffect(() => {

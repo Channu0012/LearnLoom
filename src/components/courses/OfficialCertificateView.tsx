@@ -140,32 +140,32 @@ export function OfficialCertificateView({
           <div
             className="absolute z-10 flex flex-col items-center pointer-events-auto transition-transform hover:scale-105"
             style={{
-              left: "6.8%",
-              bottom: "6.8%",
+              left: "8.5%",
+              bottom: "7.8%",
             }}
           >
             <a
               href={effectiveVerifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block p-1 sm:p-1.5 bg-white rounded-md sm:rounded-lg shadow-sm border border-slate-200/90 hover:border-teal-500 transition-colors"
+              className="group block p-1 sm:p-1.5 bg-white/95 backdrop-blur-xs rounded-lg shadow-sm border border-slate-200/90 hover:border-teal-500 transition-all hover:shadow-md"
               title="Click or scan to verify official credential on VeySkill"
             >
-              <div className="w-9 sm:w-12 md:w-14 lg:w-16">
+              <div className="w-10 sm:w-13 md:w-15 lg:w-18">
                 <CertificateQRCode
                   verifyUrl={effectiveVerifyUrl}
                   certificateId={cleanId}
-                  size={120}
+                  size={140}
                   compact
                   showLabel={false}
                 />
               </div>
             </a>
             <div className="text-center mt-0.5 sm:mt-1 pointer-events-none">
-              <span className="font-mono font-bold text-[#003049] text-[5px] sm:text-[6.5px] md:text-[8px] lg:text-[9px] block leading-none tracking-tight">
+              <span className="font-mono font-bold text-[#003049] text-[5.5px] sm:text-[7px] md:text-[8.5px] lg:text-[10px] block leading-none tracking-tight">
                 {cleanId}
               </span>
-              <span className="font-sans font-extrabold text-teal-800 uppercase tracking-widest text-[4px] sm:text-[5.5px] md:text-[6.5px] lg:text-[7.5px] block leading-tight mt-0.5">
+              <span className="font-sans font-black text-teal-800 uppercase tracking-widest text-[4px] sm:text-[5.5px] md:text-[6.5px] lg:text-[7.5px] block leading-tight mt-0.5">
                 Scan to Verify
               </span>
             </div>

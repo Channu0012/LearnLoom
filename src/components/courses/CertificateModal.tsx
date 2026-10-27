@@ -158,30 +158,60 @@ export function CertificateModal({
   ]);
 
   const [hasFetched, setHasFetched] = useState(false);
+
+  // When payment is completed (orderId provided), reset error states and fetch latch
   useEffect(() => {
-    if (isOpen && !certificate) {
-      try {
-        const cached = localStorage.getItem(`veyskill_cert_${courseId || "default"}`);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed?.id) {
-            const confirmedLegalName =
-              (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||
-              parsed.userName ||
-              recipientName;
-            setCertificate({ ...parsed, userName: confirmedLegalName });
-            return;
-          }
-        }
-      } catch {
-        // Ignore
+    if (orderId) {
+      setHasFetched(false);
+      setError(null);
+      setPaymentRequired(false);
+      setCertificate(null); // Allow fresh generation with verified orderId
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (orderId && paymentRequired) {
+        setPaymentRequired(false);
+        setError(null);
+        setHasFetched(false);
       }
-      if (!hasFetched && !loading) {
-        setHasFetched(true);
-        generateCertificate();
+
+      if (!certificate) {
+        try {
+          const cached = localStorage.getItem(`veyskill_cert_${courseId || "default"}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.id) {
+              const confirmedLegalName =
+                (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||
+                parsed.userName ||
+                recipientName;
+              setCertificate({ ...parsed, userName: confirmedLegalName });
+              return;
+            }
+          }
+        } catch {
+          // Ignore
+        }
+
+        if (!hasFetched && !loading) {
+          setHasFetched(true);
+          generateCertificate();
+        }
       }
     }
-  }, [isOpen, certificate, courseId, hasFetched, loading, generateCertificate, recipientName]);
+  }, [
+    isOpen,
+    certificate,
+    courseId,
+    hasFetched,
+    loading,
+    generateCertificate,
+    recipientName,
+    orderId,
+    paymentRequired,
+  ]);
 
   const effectiveName =
     (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||

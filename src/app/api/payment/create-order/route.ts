@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     ) {
       appUrl = "https://veyskill.in";
     }
-    const returnUrl = `${appUrl}/course/${courseId}?payment_status=success&order_id={order_id}`;
+    const returnUrl = `${appUrl}/course/${encodeURIComponent(courseId)}?payment_status=success&order_id=${encodeURIComponent(orderId)}`;
 
     // 5. Create order via Cashfree API
     const order = await createCashfreeOrder({

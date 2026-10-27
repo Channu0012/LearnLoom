@@ -146,7 +146,7 @@ export async function createCashfreeOrder(
     safeReturnUrl.includes("localhost") ||
     safeReturnUrl.includes("127.0.0.1")
   ) {
-    safeReturnUrl = `https://veyskill.in/course/${params.courseId}?payment_status=success&order_id={order_id}`;
+    safeReturnUrl = `https://veyskill.in/course/${encodeURIComponent(params.courseId)}?payment_status=success&order_id=${encodeURIComponent(safeOrderId)}`;
   }
 
   const requestBody = {
