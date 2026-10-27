@@ -1285,7 +1285,9 @@ export function CourseViewer({ courseId }: { courseId: string }) {
   // ── SQL & DATABASE ERRORS & DOUBTS ──────────────────────────────────────
   if (
     (domain === "database" || /sql|database|query/i.test(qLower)) &&
-    /index|slow|explain|optimi|scan/i.test(qLower)
+    /index|slow.*query|explain\s+analyze|explain\s+plan|query\s+plan|optimi|seq.*scan|table.*scan/i.test(
+      qLower
+    )
   ) {
     return `### Database Query Optimization & Indexing
 
@@ -1308,8 +1310,247 @@ CREATE UNIQUE INDEX idx_users_email ON users (email);
 3. **Use Prepared Statements**: Never concatenate raw user input into SQL strings to prevent SQL Injection attacks.`;
   }
 
-  // ── EXECUTIVE SUMMARY & SYNTHESIS HANDLER ────────────────────────────────
+  // ── PYTHON SPECIFIC COMMON QUESTIONS ────────────────────────────────────
+  if (domain === "python" || /python/i.test(qLower)) {
+    // Tuple vs List
+    if (/tuple.*vs.*list|list.*vs.*tuple|difference.*between.*list.*tuple/i.test(qLower)) {
+      return `### Python: List vs. Tuple Architecture
+
+#### Key Architectural Differences:
+1. **Mutability**: Lists are mutable (can add, remove, modify elements in-place). Tuples are immutable (frozen after creation).
+2. **Memory & Performance**: Tuples have fixed size and are allocated in a single memory block, making them lighter and faster to iterate over than lists.
+3. **Dictionary Keys**: Because tuples are immutable, they are hashable (\`__hash__\`) and can be used as dictionary keys or set members (as long as all elements inside are also hashable). Lists cannot.
+
+\`\`\`python
+# 1. Lists: Dynamic, mutable collection
+shopping_cart = ["item_a", "item_b"]
+shopping_cart.append("item_c")
+shopping_cart[0] = "item_alpha"  # Valid in-place mutation
+
+# 2. Tuples: Fixed, immutable records (e.g. coordinates, database rows)
+point_3d = (10, 20, 30)
+# point_3d[0] = 15  # TypeError: 'tuple' object does not support item assignment
+
+# 3. Tuple as dictionary key (valid because it is hashable):
+route_matrix = {
+    ("NYC", "LON"): 3459,
+    ("SFO", "TOK"): 5142,
+}
+print(route_matrix[("NYC", "LON")])  # Output: 3459
+\`\`\`
+
+#### Production Rule of Thumb:
+Use **tuples** for fixed data records, return values from functions (\`return status, data\`), and dictionary keys. Use **lists** when collections need dynamic resizing or in-place sorting.`;
+    }
+
+    // Loops & Iteration
+    if (/loop|for loop|while loop|iteration|enumerate/i.test(qLower)) {
+      return `### Python Iteration: Idiomatic Loops & Patterns
+
+\`\`\`python
+# 1. Iterating with index and value using enumerate():
+frameworks = ["FastAPI", "Django", "Flask"]
+for idx, framework in enumerate(frameworks, start=1):
+    print(f"[{idx}] {framework}")
+
+# 2. Iterating two collections in parallel using zip():
+users = ["Alice", "Bob", "Charlie"]
+roles = ["Admin", "Engineer", "Analyst"]
+for user, role in zip(users, roles):
+    print(f"{user} -> {role}")
+
+# 3. Guarded while loop with clean termination:
+retry_count = 0
+max_retries = 3
+while retry_count < max_retries:
+    retry_count += 1
+    success = False  # simulated network operation
+    if success:
+        break
+print("Loop completed deterministically.")
+\`\`\`
+
+#### Performance Insight:
+Avoid manually incrementing an index variable like \`i = 0; for item in items: i += 1\`. Always prefer the built-in \`enumerate()\` which executes in optimized C-level speed.`;
+    }
+
+    // Classes / OOP
+    if (/class|oop|object.*oriented|__init__|inheritance|dunder/i.test(qLower)) {
+      return `### Python Object-Oriented Architecture (OOP)
+
+In Python, classes provide clean data encapsulation, inheritance, and polymorphic interfaces.
+
+\`\`\`python
+class BankAccount:
+    """Production bank account with input encapsulation and invariants."""
+    
+    def __init__(self, owner: str, initial_balance: float = 0.0) -> None:
+        if initial_balance < 0:
+            raise ValueError("Initial balance cannot be negative")
+        self.owner = owner
+        self._balance = initial_balance  # Protected attribute
+
+    def deposit(self, amount: float) -> float:
+        if amount <= 0:
+            raise ValueError("Deposit amount must be strictly positive")
+        self._balance += amount
+        return self._balance
+
+    def withdraw(self, amount: float) -> float:
+        if amount > self._balance:
+            raise ValueError("Insufficient funds")
+        self._balance -= amount
+        return self._balance
+
+    def __repr__(self) -> str:
+        return f"BankAccount(owner='{self.owner}', balance={self._balance:.2f})"
+
+# Usage:
+account = BankAccount("Sita", 500.0)
+account.deposit(250.0)
+print(account)  # Output: BankAccount(owner='Sita', balance=750.00)
+\`\`\`
+
+#### Key Takeaway:
+Always initialize instance attributes inside \`__init__\` rather than at class level to prevent unintentional state sharing across all instances.`;
+    }
+
+    // Functions & *args, **kwargs
+    if (/function|parameter|argument|\*args|\*\*kwargs|lambda/i.test(qLower)) {
+      return `### Python Function Signatures: *args and **kwargs
+
+\`\`\`python
+from typing import Any
+
+# *args collects extra positional arguments into a tuple
+# **kwargs collects extra keyword arguments into a dictionary
+def log_event(event_name: str, *tags: str, **metadata: Any) -> None:
+    print(f"Event: {event_name}")
+    if tags:
+        print(f"Tags: {', '.join(tags)}")
+    for key, value in metadata.items():
+        print(f"  {key}: {value}")
+
+# Invocation:
+log_event(
+    "USER_SIGNUP",
+    "auth", "security",
+    user_id="usr_981",
+    ip_address="192.168.1.1",
+    tier="pro"
+)
+\`\`\`
+
+#### Key Rule:
+Parameter ordering must always follow: \`standard_args\`, \`*args\`, \`keyword_only_args\`, \`**kwargs\`.`;
+    }
+  }
+
+  // ── SQL / DATABASE COMMON QUESTIONS ──────────────────────────────────────
+  if (domain === "database" || /sql|database|table|query/i.test(qLower)) {
+    // Joins
+    if (/join|inner join|left join|right join|cross join/i.test(qLower)) {
+      return `### SQL Joins: Intuition & Syntax Reference
+
+\`\`\`sql
+-- Sample Context: users table and orders table
+
+-- 1. INNER JOIN: Returns only rows where matching keys exist in BOTH tables
+SELECT u.id, u.name, o.order_id, o.total_amount
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+
+-- 2. LEFT JOIN: Returns ALL rows from left table (users), 
+-- plus matched data from right table (orders). Unmatched right columns evaluate to NULL.
+SELECT u.id, u.name, o.order_id
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id;
+
+-- 3. Finding users with zero orders (Anti-Join pattern):
+SELECT u.id, u.name
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+\`\`\`
+
+#### Performance Invariant:
+Ensure the foreign key (\`orders.user_id\`) has a B-Tree index created. Without an index, large joins result in costly full-table hash joins or nested loops.`;
+    }
+
+    // ACID & Transactions
+    if (/acid|transaction|commit|rollback|lock/i.test(qLower)) {
+      return `### ACID Guarantees in Relational Databases
+
+1. **Atomicity**: The entire transaction succeeds or fails as a single unit (no half-updated state).
+2. **Consistency**: Data adheres to all constraints, schema checks, and foreign keys.
+3. **Isolation**: Concurrent transactions execute without dirty reads or unrepeatable reads.
+4. **Durability**: Once committed, written data is recorded to write-ahead logs (WAL) and survives power loss.
+
+\`\`\`sql
+BEGIN;
+
+UPDATE accounts SET balance = balance - 100 WHERE id = 'usr_sender';
+UPDATE accounts SET balance = balance + 100 WHERE id = 'usr_receiver';
+
+-- If validation or business checks fail:
+-- ROLLBACK;
+
+-- When all assertions succeed:
+COMMIT;
+\`\`\``;
+    }
+  }
+
+  // ── JAVASCRIPT / TYPESCRIPT / ASYNC ──────────────────────────────────────
+  if (
+    /async|await|promise|event loop|microtask|closure/i.test(qLower) ||
+    domain === "javascript" ||
+    domain === "react"
+  ) {
+    if (/async|await|promise|then/i.test(qLower)) {
+      return `### Asynchronous JavaScript: Promises & Async/Await
+
+\`\`\`typescript
+interface UserProfile {
+  id: string;
+  username: string;
+}
+
+// Idiomatic async/await with typed error handling
+async function fetchUserProfile(userId: string): Promise<UserProfile> {
+  try {
+    const res = await fetch(\`/api/users/\${encodeURIComponent(userId)}\`);
+    
+    if (!res.ok) {
+      throw new Error(\`HTTP \${res.status}: Failed to retrieve profile\`);
+    }
+
+    const data: UserProfile = await res.json();
+    return data;
+  } catch (error) {
+    console.error("[Network Error]:", error);
+    throw error;
+  }
+}
+
+// Parallel execution with Promise.all (faster than sequential awaits):
+async function loadDashboardData(userId: string) {
+  const [profile, settings] = await Promise.all([
+    fetchUserProfile(userId),
+    fetch(\`/api/settings/\${userId}\`).then(r => r.json())
+  ]);
+  return { profile, settings };
+}
+\`\`\`
+
+#### Key Mental Model:
+\`async\` functions always return a \`Promise\`. An uncaught rejected promise crashes Node.js processes in modern runtimes; always encapsulate with \`try/catch\`.`;
+    }
+  }
+
+  // ── QUICK PILL: EXECUTIVE SUMMARY & SYNTHESIS HANDLER ─────────────────────
   if (/summar(y|ize)|executive summary|key takeaways|overview of/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
     return `### Executive Brief: ${videoTitle}
 
 #### 1. Core Thesis & Intuitive Analogy:
@@ -1321,24 +1562,18 @@ This module covers foundational principles in **${domain.toUpperCase()}** requir
 - **Fail-Safe Boundaries**: Catches edge conditions at the boundary before unhandled exceptions propagate upstream.
 
 #### 3. Production Code Blueprint:
-\`\`\`${domain === "python" ? "python" : domain === "database" ? "sql" : "typescript"}
-// Core implementation pattern for ${videoTitle}
-export function processModuleData(payload: unknown) {
-  if (!payload || typeof payload !== "object") {
-    throw new Error("Invalid payload: input validation failed");
-  }
-  // Deterministic transformation pipeline
-  return Object.freeze({ ...payload, verifiedAt: Date.now() });
-}
+\`\`\`${blueprint.lang}
+${blueprint.code}
 \`\`\`
 
 #### 4. Senior Invariants & Critical Pitfalls:
-- **Pitfall**: Avoid unbounded memory accumulation or leaking event listeners on unmount.
+- **Pitfall**: Avoid unbounded memory accumulation or leaking unmanaged handles.
 - **Defensive Rule**: Always decouple side-effects from pure data transformations.`;
   }
 
-  // ── CONCEPT INTUITION & EXPLAIN SIMPLY HANDLER ───────────────────────────
+  // ── QUICK PILL: CONCEPT INTUITION & EXPLAIN SIMPLY HANDLER ─────────────────
   if (/explain.*(simply|concept|core|intuition)|step-by-step/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
     return `### Conceptual Deep-Dive: ${videoTitle}
 
 #### The Big Picture:
@@ -1347,85 +1582,293 @@ At its core, **${videoTitle}** solves a fundamental bottleneck in modern softwar
 #### Step-by-Step Intuition:
 1. **The Problem**: Without this pattern, systems suffer from tight coupling, fragile dependencies, and unexpected runtime bugs.
 2. **The Solution**: By introducing clean separation of concerns and deterministic workflows, each layer only cares about its exact contract.
-3. **The Result**: You achieve high modularity and zero unexpected regressions in production.
+3. **The Result**: You achieve high modularity, predictable performance, and zero regressions.
 
 #### Concrete Implementation:
-\`\`\`${domain === "python" ? "python" : "typescript"}
-// Demonstrating the core concept in ${videoTitle}
-function executeOperation(input: string): boolean {
-  // 1. Guard against invalid state
-  if (!input.trim()) return false;
-  
-  // 2. Perform isolated execution
-  console.log("Executing verified step for:", input);
-  return true;
-}
+\`\`\`${blueprint.lang}
+${blueprint.code}
 \`\`\`
 
 #### Key Mental Model:
 Treat every function as an isolated transaction: either the contract succeeds completely, or it fails cleanly with meaningful diagnostics.`;
   }
 
-  // ── CODE BLUEPRINT & EXAMPLE HANDLER ────────────────────────────────────
+  // ── QUICK PILL: CODE BLUEPRINT & EXAMPLE HANDLER ──────────────────────────
   if (/code.*(blueprint|example|snippet)|runnable.*snippet/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
     return `### Implementation Blueprint: ${videoTitle}
 
 #### Production-Grade Code Pattern:
 Below is a clean, runnable, and documented pattern matching industry standards for **${domain.toUpperCase()}**:
 
-\`\`\`${domain === "python" ? "python" : domain === "database" ? "sql" : "typescript"}
-/**
- * Production pattern for: ${videoTitle}
- * Demonstrates input guard, error isolation, and deterministic return.
- */
-interface ExecutionContext {
-  id: string;
-  timestamp: number;
-}
-
-export async function runCurriculumTask(context: ExecutionContext): Promise<{ success: boolean }> {
-  try {
-    if (!context.id) {
-      throw new Error("Context validation failed: missing ID");
-    }
-    // Perform operations safely
-    return { success: true };
-  } catch (error) {
-    console.error("Task execution error:", error);
-    throw error;
-  }
-}
+\`\`\`${blueprint.lang}
+${blueprint.code}
 \`\`\`
 
 #### Implementation Checklist:
-- Input sanitization verified
-- Error boundary handles all failure branches
-- Return types strictly typed without any escape hatches`;
+- Input sanitization verified before processing
+- Error boundary handles all failure branches gracefully
+- Return types strictly typed without any untyped escape hatches`;
   }
 
-  // ── DEFAULT TECHNICAL PROBLEM SOLVER ─────────────────────────────────────
+  // ── QUICK PILL: SENIOR PITFALLS HANDLER ───────────────────────────────────
+  if (/pitfall|edge case|trap|mistake/i.test(qLower)) {
+    if (domain === "python") {
+      return `### Senior Engineering Pitfalls in Python: ${videoTitle}
+
+#### 1. Mutable Default Arguments
+- **The Trap**: \`def append_to(item, target=[])\` evaluates the default list once at definition time, sharing state across all callers.
+- **The Fix**: Use \`target=None\` and initialize \`target = []\` inside the function body.
+
+#### 2. Late-Binding Closures in Loops
+- **The Trap**: \`funcs = [lambda: i for i in range(5)]\` binds \`i\` by reference; calling any function later returns \`4\`.
+- **The Fix**: Bind early using default arguments: \`[lambda i=i: i for i in range(5)]\`.
+
+#### 3. Swallowing Exceptions
+- **The Trap**: \`except Exception: pass\` hides database disconnects, syntax errors, and keyboard interrupts.
+- **The Fix**: Always catch specific exceptions (\`except KeyError as e:\`) and log diagnostics.`;
+    } else if (domain === "database") {
+      return `### Senior Database Pitfalls: ${videoTitle}
+
+#### 1. The N+1 Query Anti-Pattern
+- **The Trap**: Executing 1 query for parents, then looping to execute N individual queries for each child.
+- **The Fix**: Use \`JOIN\` or an \`IN (...)\` subquery to fetch related data in a single batch.
+
+#### 2. Missing Composite Indexes
+- **The Trap**: Querying \`WHERE tenant_id = 'x' AND created_at > 'y'\` with only single-column indexes.
+- **The Fix**: Create a composite index: \`CREATE INDEX idx_tenant_created ON records (tenant_id, created_at)\`.
+
+#### 3. Long-Lived Transactions
+- **The Trap**: Keeping a database transaction open while waiting for third-party HTTP API responses.
+- **The Fix**: Perform network calls before beginning the transaction; keep transactions strictly under 50ms.`;
+    } else {
+      return `### Senior Engineering Pitfalls: ${videoTitle}
+
+#### 1. Unbounded Memory Leaks
+- **The Trap**: Adding event listeners or timers without unmounting or tearing them down.
+- **The Fix**: Always return cleanup functions in effects or explicitly call \`removeEventListener\`.
+
+#### 2. State Mutation Without Immutability
+- **The Trap**: Mutating state objects directly (\`obj.count++\`), preventing change detectors from triggering re-renders.
+- **The Fix**: Use shallow copies: \`{ ...obj, count: obj.count + 1 }\`.
+
+#### 3. Silent Async Rejections
+- **The Trap**: Forgetting to \`catch\` promises, leaving orphaned rejections in background threads.
+- **The Fix**: Always wrap asynchronous functions in structured \`try/catch\` blocks.`;
+    }
+  }
+
+  // ── QUICK PILL: INTERVIEW CHECK HANDLER ───────────────────────────────────
+  if (/interview|question|mastery/i.test(qLower)) {
+    if (domain === "python") {
+      return `### Senior Python Technical Interview Checkpoint: ${videoTitle}
+
+#### Question 1: How does Python's Global Interpreter Lock (GIL) impact multithreaded CPU-bound vs I/O-bound tasks?
+**Model Answer**: The GIL ensures only one thread executes Python bytecode at a time. For CPU-bound tasks (e.g. data processing, math), multithreading offers zero speedup and adds context-switching overhead; use \`multiprocessing\` or C extensions instead. For I/O-bound tasks (e.g. network requests, disk reads), threads release the GIL during blocking operations, making multithreading or \`asyncio\` highly effective.
+
+#### Question 2: What is the difference between \`__new__\` and \`__init__\` in Python?
+**Model Answer**: \`__new__\` is a static method responsible for creating and returning a new instance of the class (memory allocation). \`__init__\` is an instance method responsible for initializing the attributes of that created instance. \`__new__\` is used in metaclasses, singletons, and subclassing immutable types like \`int\` or \`tuple\`.`;
+    } else {
+      return `### Senior Technical Interview Checkpoint: ${videoTitle}
+
+#### Question 1: How do you design for idempotency across distributed network boundaries?
+**Model Answer**: Generate a unique, deterministic idempotency key (e.g. UUIDv4 or content hash) on the client before dispatch. The server records this key in a transactional database or Redis cache with a short TTL before processing. If a duplicate request arrives with the same key, return the cached response immediately without re-executing side-effects.
+
+#### Question 2: What is the trade-off between optimistic and pessimistic locking?
+**Model Answer**: Optimistic locking uses a version column (\`version = version + 1\`) and checks it during write; it assumes low contention and avoids locking overhead, but fails when concurrent writes collide. Pessimistic locking acquires explicit database locks (\`SELECT ... FOR UPDATE\`); it guarantees write exclusivity at the cost of latency and potential deadlocks under high concurrency.`;
+    }
+  }
+
+  // ── DEFAULT ADAPTIVE PROBLEM SOLVER ──────────────────────────────────────
+  const blueprint = getDomainCodeBlueprint(domain, videoTitle);
   return `### Technical Guidance: ${videoTitle}
 
-#### Structured Solution Strategy:
-When working through **${courseTitle}** (\`${category}\`), apply the following engineering workflow to resolve technical doubts:
+#### Problem Analysis & Core Architecture:
+When mastering **${videoTitle}** within **${courseTitle}** (\`${domain.toUpperCase()}\`), apply the following engineering invariants:
 
-\`\`\`text
-[Problem Breakdown]
-1. Reproduce with minimal reproducible example (isolate variables)
-2. Inspect compiler/runtime error stack trace (line number + error code)
-3. Check type constraints and input validation boundaries
-4. Verify return values and asynchronous promise fulfillment
+1. **Deterministic Contracts**: Validate all inputs at interface boundaries. Fail early with explicit error types rather than propagating \`None\`, \`undefined\`, or partial data.
+2. **Defensive Implementation**:
+\`\`\`${blueprint.lang}
+${blueprint.code}
 \`\`\`
 
-#### Practical Recommendations:
-1. **Log Input State**: Before invoking third-party libraries or async functions, log or print the exact data structure being passed.
-2. **Defensive Guards**: Add early returns or null checks:
-\`\`\`text
-if (!data) return fallback;
-\`\`\`
-3. **Unit Testing**: Write a small test assertion verifying expected input vs actual output to catch edge cases early.
+#### Step-by-Step Resolution Strategy:
+- **Step 1**: Check the runtime stack trace for line number and exact exception type.
+- **Step 2**: Inspect object types and values immediately before the failing line.
+- **Step 3**: Verify edge cases: empty strings, empty lists, \`None\` values, and boundary values ($0$, $-1$, $\\infty$).
 
-If you are facing a specific compiler error or bug in this lecture, paste your code and the exact error output and I will provide the exact line fix!`;
+If you are encountering a specific syntax or runtime error in this lecture, paste the code snippet and error message and I will provide the line-by-line solution!`;
+}
+
+// Helper to provide domain-accurate runnable code snippets
+function getDomainCodeBlueprint(
+  domain: string,
+  videoTitle: string
+): { lang: string; code: string } {
+  const cleanTitle = videoTitle.replace(/["'`]/g, "").trim() || "Module";
+
+  if (domain === "python") {
+    return {
+      lang: "python",
+      code: `"""
+Production blueprint for: ${cleanTitle}
+Includes type annotations, input guards, and error handling.
+"""
+from typing import Any, Dict, List, Optional
+import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class ModuleProcessor:
+    """Encapsulates business invariants and state transitions."""
+    
+    def __init__(self, module_name: str) -> None:
+        self.module_name = module_name
+        self._cache: Dict[str, Any] = {}
+
+    def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates payload contracts and executes pipeline."""
+        if not payload or not isinstance(payload, dict):
+            raise ValueError("Invalid payload: expected non-empty dictionary")
+
+        record_id = payload.get("id")
+        if not record_id:
+            raise KeyError("Payload missing required identifier 'id'")
+
+        logger.info(f"Processing record {record_id} in {self.module_name}")
+        result = {
+            "id": record_id,
+            "status": "verified",
+            "processed_at": datetime.datetime.utcnow().isoformat(),
+            "data": payload
+        }
+        self._cache[record_id] = result
+        return result
+
+# Verification Execution:
+if __name__ == "__main__":
+    processor = ModuleProcessor("${cleanTitle}")
+    output = processor.execute({"id": "rec_101", "name": "sample_data"})
+    print("Execution output:", output)`,
+    };
+  } else if (domain === "database") {
+    return {
+      lang: "sql",
+      code: `-- Production SQL blueprint for: ${cleanTitle}
+BEGIN TRANSACTION;
+
+-- 1. Create table with primary key and constraints
+CREATE TABLE IF NOT EXISTS lesson_records (
+    record_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Optimize indexing for high-frequency queries
+CREATE INDEX IF NOT EXISTS idx_lesson_records_status ON lesson_records(status);
+
+-- 3. Idempotent insertion
+INSERT INTO lesson_records (title, status)
+VALUES ('${cleanTitle.replace(/'/g, "''")}', 'active');
+
+-- 4. Analytical verification query
+SELECT record_id, title, status, created_at
+FROM lesson_records
+WHERE status = 'active'
+ORDER BY created_at DESC
+LIMIT 5;
+
+COMMIT;`,
+    };
+  } else if (domain === "react") {
+    return {
+      lang: "tsx",
+      code: `import React, { useState, useEffect, useCallback } from "react";
+
+interface RecordItem {
+  id: string;
+  title: string;
+  status: "pending" | "completed";
+}
+
+/**
+ * Production React component for: ${cleanTitle}
+ * Features: clean lifecycle, error boundary handling, and strict typing.
+ */
+export function ${cleanTitle.replace(/[^a-zA-Z0-9]/g, "") || "ModuleViewer"}() {
+  const [data, setData] = useState<RecordItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/records");
+      if (!res.ok) throw new Error("Failed to load records");
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  if (loading) return <div className="p-4 text-xs font-mono">Loading data...</div>;
+  if (error) return <div className="p-4 text-xs text-rose-500 font-mono">Error: {error}</div>;
+
+  return (
+    <div className="p-4 rounded-xl border border-border bg-card">
+      <h3 className="font-heading font-bold text-sm mb-3">${cleanTitle}</h3>
+      <ul className="space-y-1.5 text-xs font-mono">
+        {data.map((item) => (
+          <li key={item.id} className="p-2 rounded bg-muted/60 flex justify-between">
+            <span>{item.title}</span>
+            <span className="text-teal-600 font-bold">{item.status}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}`,
+    };
+  } else {
+    return {
+      lang: "typescript",
+      code: `/**
+ * Production-grade pattern for: ${cleanTitle}
+ */
+interface ExecutionContext {
+  readonly id: string;
+  readonly timestamp: number;
+}
+
+export async function executeModuleTask(context: ExecutionContext): Promise<{ success: boolean; data: string }> {
+  if (!context || !context.id) {
+    throw new Error("Validation failed: Context missing required 'id'");
+  }
+
+  try {
+    return {
+      success: true,
+      data: \`Processed \${context.id} at \${context.timestamp}\`
+    };
+  } catch (error) {
+    console.error("Execution error:", error);
+    throw error;
+  }
+}`,
+    };
+  }
 }
 
 // ===========================================================================

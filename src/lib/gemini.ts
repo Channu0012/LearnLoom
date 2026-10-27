@@ -299,7 +299,66 @@ function stripEmojis(text: string): string {
 }
 
 function getFallbackNotes(videoTitle: string, domain: string): string {
-  const codeLang = domain === "python" ? "python" : domain === "database" ? "sql" : "typescript";
+  let codeSnippet = "";
+  let codeLang = "typescript";
+
+  if (domain === "python") {
+    codeLang = "python";
+    codeSnippet = `"""
+Production-grade implementation pattern for ${videoTitle}
+"""
+from typing import Any, Dict
+import datetime
+
+def execute_curriculum_module(input_data: Any) -> Dict[str, Any]:
+    """Validates input contracts and executes deterministic pipeline."""
+    if input_data is None:
+        raise ValueError("Validation invariant failed: input cannot be None")
+    
+    # Process transformation pipeline
+    return {
+        "status": "verified",
+        "processed_at": datetime.datetime.utcnow().isoformat(),
+        "payload": input_data,
+    }`;
+  } else if (domain === "database") {
+    codeLang = "sql";
+    codeSnippet = `-- Production schema and verification for ${videoTitle}
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS module_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    module_name VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'verified',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optimize index access
+CREATE INDEX IF NOT EXISTS idx_module_records_status ON module_records (status);
+
+COMMIT;`;
+  } else {
+    codeLang = "typescript";
+    codeSnippet = `/**
+ * Production-grade pattern for: ${videoTitle}
+ */
+interface ExecutionContext {
+  readonly id: string;
+  readonly timestamp: number;
+}
+
+export async function executeCurriculumModule(context: ExecutionContext): Promise<{ success: boolean; processedAt: string }> {
+  if (!context || !context.id) {
+    throw new Error("Validation invariant failed: invalid context contract");
+  }
+  
+  return {
+    success: true,
+    processedAt: new Date().toISOString(),
+  };
+}`;
+  }
+
   return `## Executive Summary & Core Thesis
 This module explores the foundational mechanisms and system guarantees associated with **${videoTitle}**. In production **${domain.toUpperCase()}** architectures, this pattern guarantees deterministic state transitions, avoids resource leakage, and establishes clear separation between interface contracts and internal execution.
 
@@ -310,16 +369,7 @@ This module explores the foundational mechanisms and system guarantees associate
 
 ## Production Syntax & Blueprint
 \`\`\`${codeLang}
-// Production-grade pattern for ${videoTitle}
-export async function executeCurriculumModule(inputData: unknown) {
-  if (!inputData) throw new Error("Validation invariant failed: null input");
-  
-  // Pipeline execution
-  return {
-    status: "verified",
-    processedAt: new Date().toISOString(),
-  };
-}
+${codeSnippet}
 \`\`\`
 
 ## Critical Pitfalls & Edge Cases

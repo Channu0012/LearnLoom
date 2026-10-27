@@ -33,7 +33,6 @@ import { PaymentGate } from "@/components/courses/PaymentGate";
 import { StreakDashboard } from "@/components/courses/StreakDashboard";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { InPlayerCodeScratchpad } from "@/components/courses/InPlayerCodeScratchpad";
-import { DoubtFAB } from "@/components/doubts/DoubtFAB";
 import { useCourseInstructor } from "@/lib/courseInstructor";
 
 interface CoursePageClientProps {
@@ -1609,6 +1608,38 @@ function CoursePlayerContent({
                       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                     </svg>
                     <span>{playbackSpeed}x</span>
+                  </button>
+
+                  {/* AI Tutor Copilot Launcher */}
+                  <button
+                    type="button"
+                    onClick={() => setIsCompanionOpen((prev) => !prev)}
+                    className={`text-xs px-2.5 sm:px-3 py-2 min-h-[40px] rounded-xl font-heading font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
+                      isCompanionOpen
+                        ? "bg-teal-600 text-white shadow-teal-600/30 ring-2 ring-teal-400"
+                        : "bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30"
+                    }`}
+                    title="Ask AI Tutor (Open Copilot)"
+                    aria-label="Ask AI Tutor"
+                  >
+                    <span className="relative flex items-center justify-center">
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                      >
+                        <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                        <circle cx="9" cy="13" r="1" fill="currentColor" />
+                        <circle cx="15" cy="13" r="1" fill="currentColor" />
+                      </svg>
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    </span>
+                    <span className="hidden sm:inline">Ask AI Tutor</span>
+                    <span className="sm:hidden">AI Tutor</span>
                   </button>
 
                   {/* Cinema / Theater Mode Button (Desktop) */}
@@ -3727,14 +3758,6 @@ function CoursePlayerContent({
           </div>
         </div>
       )}
-
-      {/* Doubt Solve Floating Action Button */}
-      <DoubtFAB
-        courseId={courseId}
-        courseTitle={course.title}
-        lessonId={activeLesson?.id}
-        lessonTitle={activeLesson?.title}
-      />
     </div>
   );
 }

@@ -167,7 +167,7 @@ export function StudyCompanion({
       <button
         type="button"
         onClick={onToggle}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-[#0F766E] to-[#0D655E] text-white shadow-2xl shadow-teal-950/40 border border-teal-400/40 flex items-center gap-2 sm:gap-2.5 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+        className="fixed bottom-5 sm:bottom-6 right-5 sm:right-6 z-50 px-4 py-3 rounded-2xl bg-gradient-to-r from-[#003049] via-[#0D5C75] to-[#0F766E] text-white shadow-2xl shadow-teal-950/40 border border-teal-300/40 hover:border-teal-300/70 flex items-center gap-2.5 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
         aria-label="Open AI Tutor Copilot"
         title="Consult AI Academic Copilot"
       >
@@ -191,23 +191,21 @@ export function StudyCompanion({
           </svg>
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-teal-900 animate-pulse" />
         </span>
-        <span className="font-heading font-extrabold text-xs tracking-tight hidden xs:inline sm:inline">
-          AI Tutor Copilot
-        </span>
+        <span className="font-heading font-extrabold text-xs tracking-tight">Ask AI Tutor</span>
       </button>
     );
   }
 
   return (
     <div
-      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[440px] h-[88vh] sm:h-[580px] bg-card border-t-2 sm:border-2 border-border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
+      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[450px] md:w-[480px] h-[85vh] sm:h-[620px] max-h-[92vh] bg-card border-t-2 sm:border-2 border-border rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
       role="complementary"
       aria-label="AI Academic Coach"
     >
       {/* Header */}
-      <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between flex-shrink-0">
+      <div className="p-3.5 sm:p-4 border-b border-border bg-muted/40 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-primary-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#003049] to-[#0F766E] text-white flex items-center justify-center flex-shrink-0 shadow-sm border border-teal-400/30">
             <svg
               width="16"
               height="16"
@@ -226,32 +224,54 @@ export function StudyCompanion({
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <h3 className="font-heading font-extrabold text-xs uppercase tracking-wider text-foreground">
-                VeySkill Academic Coach
+                VeySkill Academic AI
               </h3>
             </div>
-            <p className="text-[10px] text-muted-foreground truncate max-w-[240px]">
-              Module: {videoTitle}
+            <p className="text-[10px] text-muted-foreground truncate max-w-[220px] sm:max-w-[260px]">
+              Lesson: {videoTitle}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="w-8 h-8 rounded-xl bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-          aria-label="Close assistant"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
+        <div className="flex items-center gap-1">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMessages([])}
+              className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all cursor-pointer"
+              title="Clear chat history"
+              aria-label="Clear chat history"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="w-8 h-8 rounded-xl bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+            aria-label="Close assistant"
           >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Quick Action Category Pills */}
@@ -262,7 +282,7 @@ export function StudyCompanion({
             type="button"
             onClick={() => sendMessage(pill.prompt)}
             disabled={isLoading}
-            className="px-2.5 py-1 rounded-lg bg-muted border border-border/80 hover:border-primary-500/50 hover:bg-muted/80 text-[11px] font-heading font-bold text-muted-foreground hover:text-foreground transition-all flex-shrink-0 cursor-pointer disabled:opacity-50"
+            className="px-2.5 py-1 rounded-lg bg-muted border border-border/80 hover:border-teal-500/50 hover:bg-muted/80 text-[11px] font-heading font-bold text-muted-foreground hover:text-foreground transition-all flex-shrink-0 cursor-pointer disabled:opacity-50"
           >
             {pill.label}
           </button>
@@ -273,7 +293,7 @@ export function StudyCompanion({
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
         {messages.length === 0 && (
           <div className="text-center py-6 space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-3xl bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 flex items-center justify-center shadow-inner">
+            <div className="w-14 h-14 mx-auto rounded-3xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center shadow-inner">
               <svg
                 width="24"
                 height="24"
@@ -287,12 +307,53 @@ export function StudyCompanion({
             </div>
             <div>
               <p className="font-heading font-extrabold text-sm text-foreground">
-                Technical Study Assistant
+                How can I assist your study today?
               </p>
-              <p className="text-xs text-muted-foreground mt-1 max-w-[290px] mx-auto leading-relaxed">
-                Stuck on a concept, syntax error, or algorithm? Ask below for step-by-step
-                derivations and real-world code solutions.
+              <p className="text-xs text-muted-foreground mt-1 max-w-[310px] mx-auto leading-relaxed">
+                Ask any question about this lecture, get step-by-step logic derivations, or debug
+                runtime errors.
               </p>
+            </div>
+
+            {/* Clickable starter suggestions */}
+            <div className="pt-2 flex flex-col gap-2 max-w-xs mx-auto text-left">
+              {[
+                {
+                  label: "Explain the core intuition simply",
+                  prompt: `Explain the fundamental concept in "${videoTitle}" simply with step-by-step intuition and a real-world analogy.`,
+                },
+                {
+                  label: "Show a runnable code blueprint",
+                  prompt: `Provide a clean, runnable, commented code snippet illustrating the concepts in "${videoTitle}".`,
+                },
+                {
+                  label: "What are the common pitfalls?",
+                  prompt: `Summarize the 3 most critical engineering pitfalls, edge cases, and memory traps in "${videoTitle}".`,
+                },
+              ].map((starter, sIdx) => (
+                <button
+                  key={sIdx}
+                  type="button"
+                  onClick={() => sendMessage(starter.prompt)}
+                  disabled={isLoading}
+                  className="p-2.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted/80 hover:border-teal-500/50 text-xs font-body text-foreground transition-all cursor-pointer flex items-center justify-between group text-left"
+                >
+                  <span className="font-medium text-muted-foreground group-hover:text-foreground">
+                    {starter.label}
+                  </span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    className="text-muted-foreground group-hover:text-teal-500 transition-colors flex-shrink-0"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -394,7 +455,7 @@ export function StudyCompanion({
             type="button"
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            className="w-10 h-10 rounded-xl bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center transition-all disabled:opacity-40 cursor-pointer active:scale-95 flex-shrink-0 shadow-sm"
+            className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#003049] to-[#0F766E] hover:from-[#002235] hover:to-[#0D655E] text-white flex items-center justify-center transition-all disabled:opacity-40 cursor-pointer active:scale-95 flex-shrink-0 shadow-sm border border-teal-400/30"
             aria-label="Send inquiry"
           >
             <svg
@@ -411,7 +472,7 @@ export function StudyCompanion({
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1.5 text-center font-mono">
-          VeySkill Socratic AI · Strict Academic Context · Zero Emojis
+          VeySkill Academic AI · Press Enter to send · Zero Emojis
         </p>
       </div>
     </div>
