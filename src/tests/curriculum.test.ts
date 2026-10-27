@@ -233,4 +233,67 @@ describe("Curriculum Engine & Domain Intelligence", () => {
     expect(timestampCourse.eligible).toBe(true);
     expect(timestampCourse.detectedHours).toBe(3);
   });
+
+  it("generates authentic Python code without TypeScript syntax when Explain Simply is clicked", async () => {
+    const response = await askStudyCompanion(
+      'Explain the fundamental concept in "Python Decorators & Closures" simply with step-by-step intuition and a real-world analogy.',
+      "Python Decorators & Closures",
+      "Python Complete Masterclass",
+      "Programming"
+    );
+
+    expect(response).toBeDefined();
+    expect(response).toContain("```python");
+    // Must NOT contain TypeScript syntax like "function executeOperation" or "console.log"
+    expect(response).not.toContain("function executeOperation");
+    expect(response).not.toContain("console.log");
+    expect(response).toContain("def ");
+    expect(response).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+  });
+
+  it("generates authentic Python code when Code Blueprint is requested", async () => {
+    const response = await askStudyCompanion(
+      'Provide a clean, runnable, commented code snippet illustrating the concepts in "Python Variables and Functions".',
+      "Python Variables and Functions",
+      "Python Complete Masterclass",
+      "Programming"
+    );
+
+    expect(response).toBeDefined();
+    expect(response).toContain("```python");
+    expect(response).not.toContain("interface ExecutionContext");
+    expect(response).toContain("class ModuleProcessor");
+    expect(response).toContain("def execute");
+    expect(response).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+  });
+
+  it("answers Python tuple vs list comparisons with idiomatic examples", async () => {
+    const response = await askStudyCompanion(
+      "What is the difference between a list and a tuple in Python?",
+      "Python Data Structures",
+      "Python Complete Masterclass",
+      "Programming"
+    );
+
+    expect(response).toBeDefined();
+    expect(response).toContain("Mutability");
+    expect(response).toContain("```python");
+    expect(response).toContain("point_3d");
+    expect(response).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+  });
+
+  it("answers SQL joins with clean query examples and performance guidelines", async () => {
+    const response = await askStudyCompanion(
+      "Explain how INNER JOIN vs LEFT JOIN works with an example",
+      "Relational Database Queries",
+      "SQL for Data Engineers",
+      "Database"
+    );
+
+    expect(response).toBeDefined();
+    expect(response).toContain("```sql");
+    expect(response).toContain("INNER JOIN");
+    expect(response).toContain("LEFT JOIN");
+    expect(response).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+  });
 });

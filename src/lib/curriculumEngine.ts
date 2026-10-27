@@ -1040,6 +1040,138 @@ export function getDomainTutorResponse(
   const qLower = question.toLowerCase();
   const domain = detectDomain(courseTitle, videoTitle, category);
 
+  // ── QUICK PILLS & DIRECT PEDAGOGICAL ACTIONS ─────────────────────────────
+  // 1. Code Blueprint
+  if (/code.*(blueprint|example|snippet)|runnable.*snippet|commented code/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
+    return `### Implementation Blueprint: ${videoTitle}
+
+#### Production-Grade Code Pattern:
+Below is a clean, runnable, and documented pattern matching industry standards for **${domain.toUpperCase()}**:
+
+\`\`\`${blueprint.lang}
+${blueprint.code}
+\`\`\`
+
+#### Implementation Checklist:
+- Input sanitization verified before processing
+- Error boundary handles all failure branches gracefully
+- Return types strictly typed without any untyped escape hatches`;
+  }
+
+  // 2. Explain Simply
+  if (/explain.*(simply|concept|core|intuition)|step-by-step/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
+    return `### Conceptual Deep-Dive: ${videoTitle}
+
+#### The Big Picture:
+At its core, **${videoTitle}** solves a fundamental bottleneck in modern software engineering: how to manage complex state transitions while keeping code readable, testable, and maintainable.
+
+#### Step-by-Step Intuition:
+1. **The Problem**: Without this pattern, systems suffer from tight coupling, fragile dependencies, and unexpected runtime bugs.
+2. **The Solution**: By introducing clean separation of concerns and deterministic workflows, each layer only cares about its exact contract.
+3. **The Result**: You achieve high modularity, predictable performance, and zero regressions.
+
+#### Concrete Implementation:
+\`\`\`${blueprint.lang}
+${blueprint.code}
+\`\`\`
+
+#### Key Mental Model:
+Treat every function as an isolated transaction: either the contract succeeds completely, or it fails cleanly with meaningful diagnostics.`;
+  }
+
+  // 3. Executive Summary
+  if (/summar(y|ize)|executive summary|key takeaways|overview of/i.test(qLower)) {
+    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
+    return `### Executive Brief: ${videoTitle}
+
+#### 1. Core Thesis & Intuitive Analogy:
+This module covers foundational principles in **${domain.toUpperCase()}** required for production systems. Think of this mechanism like a robust transit switchboard: inputs are validated, queued, and dispatched according to deterministic routing rules to guarantee state consistency without race conditions.
+
+#### 2. Technical Mechanism & Architecture:
+- **State Guarantee**: Enforces single-source-of-truth invariants across component lifecycles.
+- **Complexity Profile**: Designed to operate within predictable O(1) to O(n log n) time bounds with minimized allocation overhead.
+- **Fail-Safe Boundaries**: Catches edge conditions at the boundary before unhandled exceptions propagate upstream.
+
+#### 3. Production Code Blueprint:
+\`\`\`${blueprint.lang}
+${blueprint.code}
+\`\`\`
+
+#### 4. Senior Invariants & Critical Pitfalls:
+- **Pitfall**: Avoid unbounded memory accumulation or leaking unmanaged handles.
+- **Defensive Rule**: Always decouple side-effects from pure data transformations.`;
+  }
+
+  // 4. Senior Pitfalls
+  if (/pitfall|edge case|trap|mistake/i.test(qLower)) {
+    if (domain === "python") {
+      return `### Senior Engineering Pitfalls in Python: ${videoTitle}
+
+#### 1. Mutable Default Arguments
+- **The Trap**: \`def append_to(item, target=[])\` evaluates the default list once at definition time, sharing state across all callers.
+- **The Fix**: Use \`target=None\` and initialize \`target = []\` inside the function body.
+
+#### 2. Late-Binding Closures in Loops
+- **The Trap**: \`funcs = [lambda: i for i in range(5)]\` binds \`i\` by reference; calling any function later returns \`4\`.
+- **The Fix**: Bind early using default arguments: \`[lambda i=i: i for i in range(5)]\`.
+
+#### 3. Swallowing Exceptions
+- **The Trap**: \`except Exception: pass\` hides database disconnects, syntax errors, and keyboard interrupts.
+- **The Fix**: Always catch specific exceptions (\`except KeyError as e:\`) and log diagnostics.`;
+    } else if (domain === "database") {
+      return `### Senior Database Pitfalls: ${videoTitle}
+
+#### 1. The N+1 Query Anti-Pattern
+- **The Trap**: Executing 1 query for parents, then looping to execute N individual queries for each child.
+- **The Fix**: Use \`JOIN\` or an \`IN (...)\` subquery to fetch related data in a single batch.
+
+#### 2. Missing Composite Indexes
+- **The Trap**: Querying \`WHERE tenant_id = 'x' AND created_at > 'y'\` with only single-column indexes.
+- **The Fix**: Create a composite index: \`CREATE INDEX idx_tenant_created ON records (tenant_id, created_at)\`.
+
+#### 3. Long-Lived Transactions
+- **The Trap**: Keeping a database transaction open while waiting for third-party HTTP API responses.
+- **The Fix**: Perform network calls before beginning the transaction; keep transactions strictly under 50ms.`;
+    } else {
+      return `### Senior Engineering Pitfalls: ${videoTitle}
+
+#### 1. Unbounded Memory Leaks
+- **The Trap**: Adding event listeners or timers without unmounting or tearing them down.
+- **The Fix**: Always return cleanup functions in effects or explicitly call \`removeEventListener\`.
+
+#### 2. State Mutation Without Immutability
+- **The Trap**: Mutating state objects directly (\`obj.count++\`), preventing change detectors from triggering re-renders.
+- **The Fix**: Use shallow copies: \`{ ...obj, count: obj.count + 1 }\`.
+
+#### 3. Silent Async Rejections
+- **The Trap**: Forgetting to \`catch\` promises, leaving orphaned rejections in background threads.
+- **The Fix**: Always wrap asynchronous functions in structured \`try/catch\` blocks.`;
+    }
+  }
+
+  // 5. Interview Check
+  if (/interview|question|mastery/i.test(qLower)) {
+    if (domain === "python") {
+      return `### Senior Python Technical Interview Checkpoint: ${videoTitle}
+
+#### Question 1: How does Python's Global Interpreter Lock (GIL) impact multithreaded CPU-bound vs I/O-bound tasks?
+**Model Answer**: The GIL ensures only one thread executes Python bytecode at a time. For CPU-bound tasks (e.g. data processing, math), multithreading offers zero speedup and adds context-switching overhead; use \`multiprocessing\` or C extensions instead. For I/O-bound tasks (e.g. network requests, disk reads), threads release the GIL during blocking operations, making multithreading or \`asyncio\` highly effective.
+
+#### Question 2: What is the difference between \`__new__\` and \`__init__\` in Python?
+**Model Answer**: \`__new__\` is a static method responsible for creating and returning a new instance of the class (memory allocation). \`__init__\` is an instance method responsible for initializing the attributes of that created instance. \`__new__\` is used in metaclasses, singletons, and subclassing immutable types like \`int\` or \`tuple\`.`;
+    } else {
+      return `### Senior Technical Interview Checkpoint: ${videoTitle}
+
+#### Question 1: How do you design for idempotency across distributed network boundaries?
+**Model Answer**: Generate a unique, deterministic idempotency key (e.g. UUIDv4 or content hash) on the client before dispatch. The server records this key in a transactional database or Redis cache with a short TTL before processing. If a duplicate request arrives with the same key, return the cached response immediately without re-executing side-effects.
+
+#### Question 2: What is the trade-off between optimistic and pessimistic locking?
+**Model Answer**: Optimistic locking uses a version column (\`version = version + 1\`) and checks it during write; it assumes low contention and avoids locking overhead, but fails when concurrent writes collide. Pessimistic locking acquires explicit database locks (\`SELECT ... FOR UPDATE\`); it guarantees write exclusivity at the cost of latency and potential deadlocks under high concurrency.`;
+    }
+  }
+
   // ── PYTHON ERRORS & DOUBTS ──────────────────────────────────────────────
   if (domain === "python" || /python/i.test(qLower)) {
     // 1. NoneType error
@@ -1548,136 +1680,6 @@ async function loadDashboardData(userId: string) {
     }
   }
 
-  // ── QUICK PILL: EXECUTIVE SUMMARY & SYNTHESIS HANDLER ─────────────────────
-  if (/summar(y|ize)|executive summary|key takeaways|overview of/i.test(qLower)) {
-    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
-    return `### Executive Brief: ${videoTitle}
-
-#### 1. Core Thesis & Intuitive Analogy:
-This module covers foundational principles in **${domain.toUpperCase()}** required for production systems. Think of this mechanism like a robust transit switchboard: inputs are validated, queued, and dispatched according to deterministic routing rules to guarantee state consistency without race conditions.
-
-#### 2. Technical Mechanism & Architecture:
-- **State Guarantee**: Enforces single-source-of-truth invariants across component lifecycles.
-- **Complexity Profile**: Designed to operate within predictable O(1) to O(n log n) time bounds with minimized allocation overhead.
-- **Fail-Safe Boundaries**: Catches edge conditions at the boundary before unhandled exceptions propagate upstream.
-
-#### 3. Production Code Blueprint:
-\`\`\`${blueprint.lang}
-${blueprint.code}
-\`\`\`
-
-#### 4. Senior Invariants & Critical Pitfalls:
-- **Pitfall**: Avoid unbounded memory accumulation or leaking unmanaged handles.
-- **Defensive Rule**: Always decouple side-effects from pure data transformations.`;
-  }
-
-  // ── QUICK PILL: CONCEPT INTUITION & EXPLAIN SIMPLY HANDLER ─────────────────
-  if (/explain.*(simply|concept|core|intuition)|step-by-step/i.test(qLower)) {
-    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
-    return `### Conceptual Deep-Dive: ${videoTitle}
-
-#### The Big Picture:
-At its core, **${videoTitle}** solves a fundamental bottleneck in modern software engineering: how to manage complex state transitions while keeping code readable, testable, and maintainable.
-
-#### Step-by-Step Intuition:
-1. **The Problem**: Without this pattern, systems suffer from tight coupling, fragile dependencies, and unexpected runtime bugs.
-2. **The Solution**: By introducing clean separation of concerns and deterministic workflows, each layer only cares about its exact contract.
-3. **The Result**: You achieve high modularity, predictable performance, and zero regressions.
-
-#### Concrete Implementation:
-\`\`\`${blueprint.lang}
-${blueprint.code}
-\`\`\`
-
-#### Key Mental Model:
-Treat every function as an isolated transaction: either the contract succeeds completely, or it fails cleanly with meaningful diagnostics.`;
-  }
-
-  // ── QUICK PILL: CODE BLUEPRINT & EXAMPLE HANDLER ──────────────────────────
-  if (/code.*(blueprint|example|snippet)|runnable.*snippet/i.test(qLower)) {
-    const blueprint = getDomainCodeBlueprint(domain, videoTitle);
-    return `### Implementation Blueprint: ${videoTitle}
-
-#### Production-Grade Code Pattern:
-Below is a clean, runnable, and documented pattern matching industry standards for **${domain.toUpperCase()}**:
-
-\`\`\`${blueprint.lang}
-${blueprint.code}
-\`\`\`
-
-#### Implementation Checklist:
-- Input sanitization verified before processing
-- Error boundary handles all failure branches gracefully
-- Return types strictly typed without any untyped escape hatches`;
-  }
-
-  // ── QUICK PILL: SENIOR PITFALLS HANDLER ───────────────────────────────────
-  if (/pitfall|edge case|trap|mistake/i.test(qLower)) {
-    if (domain === "python") {
-      return `### Senior Engineering Pitfalls in Python: ${videoTitle}
-
-#### 1. Mutable Default Arguments
-- **The Trap**: \`def append_to(item, target=[])\` evaluates the default list once at definition time, sharing state across all callers.
-- **The Fix**: Use \`target=None\` and initialize \`target = []\` inside the function body.
-
-#### 2. Late-Binding Closures in Loops
-- **The Trap**: \`funcs = [lambda: i for i in range(5)]\` binds \`i\` by reference; calling any function later returns \`4\`.
-- **The Fix**: Bind early using default arguments: \`[lambda i=i: i for i in range(5)]\`.
-
-#### 3. Swallowing Exceptions
-- **The Trap**: \`except Exception: pass\` hides database disconnects, syntax errors, and keyboard interrupts.
-- **The Fix**: Always catch specific exceptions (\`except KeyError as e:\`) and log diagnostics.`;
-    } else if (domain === "database") {
-      return `### Senior Database Pitfalls: ${videoTitle}
-
-#### 1. The N+1 Query Anti-Pattern
-- **The Trap**: Executing 1 query for parents, then looping to execute N individual queries for each child.
-- **The Fix**: Use \`JOIN\` or an \`IN (...)\` subquery to fetch related data in a single batch.
-
-#### 2. Missing Composite Indexes
-- **The Trap**: Querying \`WHERE tenant_id = 'x' AND created_at > 'y'\` with only single-column indexes.
-- **The Fix**: Create a composite index: \`CREATE INDEX idx_tenant_created ON records (tenant_id, created_at)\`.
-
-#### 3. Long-Lived Transactions
-- **The Trap**: Keeping a database transaction open while waiting for third-party HTTP API responses.
-- **The Fix**: Perform network calls before beginning the transaction; keep transactions strictly under 50ms.`;
-    } else {
-      return `### Senior Engineering Pitfalls: ${videoTitle}
-
-#### 1. Unbounded Memory Leaks
-- **The Trap**: Adding event listeners or timers without unmounting or tearing them down.
-- **The Fix**: Always return cleanup functions in effects or explicitly call \`removeEventListener\`.
-
-#### 2. State Mutation Without Immutability
-- **The Trap**: Mutating state objects directly (\`obj.count++\`), preventing change detectors from triggering re-renders.
-- **The Fix**: Use shallow copies: \`{ ...obj, count: obj.count + 1 }\`.
-
-#### 3. Silent Async Rejections
-- **The Trap**: Forgetting to \`catch\` promises, leaving orphaned rejections in background threads.
-- **The Fix**: Always wrap asynchronous functions in structured \`try/catch\` blocks.`;
-    }
-  }
-
-  // ── QUICK PILL: INTERVIEW CHECK HANDLER ───────────────────────────────────
-  if (/interview|question|mastery/i.test(qLower)) {
-    if (domain === "python") {
-      return `### Senior Python Technical Interview Checkpoint: ${videoTitle}
-
-#### Question 1: How does Python's Global Interpreter Lock (GIL) impact multithreaded CPU-bound vs I/O-bound tasks?
-**Model Answer**: The GIL ensures only one thread executes Python bytecode at a time. For CPU-bound tasks (e.g. data processing, math), multithreading offers zero speedup and adds context-switching overhead; use \`multiprocessing\` or C extensions instead. For I/O-bound tasks (e.g. network requests, disk reads), threads release the GIL during blocking operations, making multithreading or \`asyncio\` highly effective.
-
-#### Question 2: What is the difference between \`__new__\` and \`__init__\` in Python?
-**Model Answer**: \`__new__\` is a static method responsible for creating and returning a new instance of the class (memory allocation). \`__init__\` is an instance method responsible for initializing the attributes of that created instance. \`__new__\` is used in metaclasses, singletons, and subclassing immutable types like \`int\` or \`tuple\`.`;
-    } else {
-      return `### Senior Technical Interview Checkpoint: ${videoTitle}
-
-#### Question 1: How do you design for idempotency across distributed network boundaries?
-**Model Answer**: Generate a unique, deterministic idempotency key (e.g. UUIDv4 or content hash) on the client before dispatch. The server records this key in a transactional database or Redis cache with a short TTL before processing. If a duplicate request arrives with the same key, return the cached response immediately without re-executing side-effects.
-
-#### Question 2: What is the trade-off between optimistic and pessimistic locking?
-**Model Answer**: Optimistic locking uses a version column (\`version = version + 1\`) and checks it during write; it assumes low contention and avoids locking overhead, but fails when concurrent writes collide. Pessimistic locking acquires explicit database locks (\`SELECT ... FOR UPDATE\`); it guarantees write exclusivity at the cost of latency and potential deadlocks under high concurrency.`;
-    }
-  }
 
   // ── DEFAULT ADAPTIVE PROBLEM SOLVER ──────────────────────────────────────
   const blueprint = getDomainCodeBlueprint(domain, videoTitle);

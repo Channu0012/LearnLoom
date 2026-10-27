@@ -17,7 +17,14 @@ import {
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const claudeApiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
-const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
+// Only initialize Gemini if an authentic Generative Language key is configured,
+// not the client-side Firebase Browser key which lacks generativelanguage API permissions.
+const isDedicatedGeminiKey =
+  Boolean(geminiApiKey) &&
+  geminiApiKey !== process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+  !geminiApiKey?.startsWith("AIzaSyCaqADQyqxNJ4QhXZQj6ItS40XTiEnEZaY");
+
+const genAI = isDedicatedGeminiKey && geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
 
 // Primary and fallback models for high availability
 const PRIMARY_MODEL = "gemini-2.0-flash";
@@ -47,6 +54,25 @@ async function callClaude(prompt: string): Promise<string | null> {
     const data = await res.json();
     const content = data?.content?.[0]?.text;
     return typeof content === "string" ? content : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Call Gemini API with strict 3.5s timeout to guarantee instant responsiveness.
+ */
+async function callGemini(prompt: string, modelName: string): Promise<string | null> {
+  if (!genAI) return null;
+  try {
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const resultPromise = model.generateContent(prompt);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Gemini timeout")), 3500)
+    );
+    const result = await Promise.race([resultPromise, timeoutPromise]);
+    const text = result.response.text();
+    return typeof text === "string" ? text : null;
   } catch {
     return null;
   }
@@ -130,13 +156,12 @@ Return ONLY a valid JSON array with this exact structure (no markdown fences, no
   // 2. Try Gemini (Primary then Fallback)
   if (genAI) {
     for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        const jsonMatch = text.match(/\[[\s\S]*\]/);
-        if (!jsonMatch) continue;
+      const text = await callGemini(prompt, modelName);
+      if (!text) continue;
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) continue;
 
+      try {
         const parsed = JSON.parse(jsonMatch[0]) as QuizQuestion[];
         if (!Array.isArray(parsed) || parsed.length === 0) continue;
 
@@ -154,7 +179,7 @@ Return ONLY a valid JSON array with this exact structure (no markdown fences, no
           })
         );
       } catch {
-        // Continue to fallback model or domain generator
+        continue;
       }
     }
   }
@@ -212,13 +237,8 @@ STRICT GUIDELINE: Do NOT use any emojis, icons, or unicode pictograms anywhere i
   // 2. Try Gemini
   if (genAI) {
     for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        return stripEmojis(result.response.text());
-      } catch {
-        // Continue to fallback
-      }
+      const text = await callGemini(prompt, modelName);
+      if (text) return stripEmojis(text);
     }
   }
 
@@ -273,13 +293,8 @@ Pedagogical Directives:
   // 2. Try Gemini
   if (genAI) {
     for (const modelName of [PRIMARY_MODEL, FALLBACK_MODEL]) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        return stripEmojis(result.response.text());
-      } catch {
-        // Continue to next model or fallback
-      }
+      const text = await callGemini(prompt, modelName);
+      if (text) return stripEmojis(text);
     }
   }
 
