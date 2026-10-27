@@ -816,9 +816,7 @@ export default function MyLearningPage() {
                         <span className="badge-primary text-[10px] font-heading font-bold inline-block truncate max-w-[150px]">
                           {course.channelTitle
                             ? `By ${course.channelTitle}`
-                            : course.creatorName
-                              ? `Curated by ${course.creatorName}`
-                              : "Enrolled Masterclass"}
+                            : "Enrolled Masterclass"}
                         </span>
 
                         {/* 3-Dot Dropdown Menu Trigger */}

@@ -1582,15 +1582,6 @@ function CoursePlayerContent({
                     >
                       <span>Watch on YouTube</span>
                     </a>
-
-                    {course.creatorName && course.creatorName !== instructor.name && (
-                      <>
-                        <span className="text-muted-foreground/60">&middot;</span>
-                        <span className="text-[11px] text-muted-foreground/80">
-                          Curated by {course.creatorName}
-                        </span>
-                      </>
-                    )}
                   </div>
                 </div>
 
@@ -2199,10 +2190,7 @@ function CoursePlayerContent({
                         {instructor.name}
                       </h4>
                       <p className="text-xs text-muted-foreground font-body">
-                        Curriculum curated into a structured, distraction-free track on VeySkill
-                        {course.creatorName && course.creatorName !== instructor.name
-                          ? ` by ${course.creatorName}`
-                          : ""}
+                        Curriculum structured into a focused, distraction-free track on VeySkill.
                       </p>
                     </div>
                   </div>

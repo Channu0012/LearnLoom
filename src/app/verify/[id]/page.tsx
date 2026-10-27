@@ -186,8 +186,8 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
       issuedDate: benchmark.issuedDate,
       verifyUrl: `https://veyskill.in/verify/${cleanId}`,
       platform: "VeySkill",
-      instructorName: "Channabasav Patil",
-      instructorTitle: "FOUNDER",
+      instructorName: benchmark.instructorName,
+      instructorTitle: benchmark.instructorTitle,
     };
   }
 
@@ -359,6 +359,7 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
               lessonCount={lessonCount}
               quizScore={quizScore}
               verifyUrl={verifyUrl}
+              instructorName={certRecord?.instructorName}
               isInteractive={false}
             />
           </div>
