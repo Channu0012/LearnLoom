@@ -1680,7 +1680,6 @@ async function loadDashboardData(userId: string) {
     }
   }
 
-
   // ── DEFAULT ADAPTIVE PROBLEM SOLVER ──────────────────────────────────────
   const blueprint = getDomainCodeBlueprint(domain, videoTitle);
   return `### Technical Guidance: ${videoTitle}
