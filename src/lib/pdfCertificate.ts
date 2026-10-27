@@ -6,6 +6,7 @@
 // credential ID directly underneath QR code, and issuance date.
 // ---------------------------------------------------------------------------
 import { jsPDF } from "jspdf";
+import { generateQRCodeDataUrl } from "@/lib/qrcode";
 
 export interface CertificatePdfOptions {
   id: string;
@@ -340,6 +341,45 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.setFontSize(9.5);
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
   doc.text("Issued by : veyskill", centerX, 145.0, { align: "center" });
+
+  // 7. Scannable Verification QR Code (Bottom Left)
+  const cleanId = options.id?.trim() || "VS-DEMO";
+  const effectiveVerifyUrl =
+    options.verifyUrl || `https://veyskill.in/verify/${encodeURIComponent(cleanId)}`;
+
+  try {
+    const qrDataUrl = await generateQRCodeDataUrl(effectiveVerifyUrl, 256);
+    if (qrDataUrl && qrDataUrl.startsWith("data:image/")) {
+      const qrSize = 22; // 22mm x 22mm
+      const qrX = 22;
+      const qrY = 148;
+
+      // Clean white backing card for flawless scanning contrast
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(226, 232, 240); // subtle border
+      doc.setLineWidth(0.3);
+      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1, 1, "FD");
+
+      // Draw high-contrast QR code image
+      doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+
+      // Micro credential ID and scan prompt
+      doc.setFont("courier", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(0, 48, 73);
+      doc.text(cleanId, qrX + qrSize / 2, qrY + qrSize + 3.8, { align: "center" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(5.5);
+      doc.setTextColor(13, 148, 136); // Teal-600
+      doc.text("SCAN TO VERIFY", qrX + qrSize / 2, qrY + qrSize + 6.4, { align: "center" });
+
+      // Interactive hyperlink on the QR block in PDF readers
+      doc.link(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 9, { url: effectiveVerifyUrl });
+    }
+  } catch (qrErr) {
+    console.warn("Could not render QR code onto PDF:", qrErr);
+  }
 
   return doc;
 }

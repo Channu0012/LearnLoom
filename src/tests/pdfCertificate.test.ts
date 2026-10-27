@@ -71,4 +71,17 @@ describe("PDF Certificate Generator", () => {
       );
     });
   });
+
+  describe("QR Code Verification System", () => {
+    it("generates scannable QR data URLs for certificate verification", async () => {
+      const { generateQRCodeDataUrl, buildVerifyUrl } = await import("@/lib/qrcode");
+      const url = buildVerifyUrl("VS-9A3F1B8E2C");
+      expect(url).toBe("https://veyskill.in/verify/VS-9A3F1B8E2C");
+
+      const dataUrl = await generateQRCodeDataUrl(url, 256);
+      expect(dataUrl).toBeDefined();
+      expect(dataUrl.startsWith("data:image/png;base64,")).toBe(true);
+      expect(dataUrl.length).toBeGreaterThan(100);
+    });
+  });
 });

@@ -7,8 +7,8 @@
 // centered "Date of Completion : {date}", centered "Issued by : veyskill",
 // and clean uncluttered certificate canvas (without QR code).
 // ---------------------------------------------------------------------------
-import React from "react";
 import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
+import { CertificateQRCode } from "@/components/verify/CertificateQRCode";
 
 interface OfficialCertificateViewProps {
   recipientName: string;
@@ -24,19 +24,24 @@ interface OfficialCertificateViewProps {
   managerTitle?: string;
   isInteractive?: boolean;
   onNameChange?: (_name: string) => void;
+  showQrCode?: boolean;
 }
 
 export function OfficialCertificateView({
   recipientName,
   courseTitle,
-  certificateId: _certificateId,
+  certificateId,
   issuedDate,
-  verifyUrl: _verifyUrl,
+  verifyUrl,
   isInteractive = false,
   onNameChange,
+  showQrCode = true,
 }: OfficialCertificateViewProps) {
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
   const cleanDate = issuedDate.trim() || "13 oct 2026";
+  const cleanId = certificateId?.trim() || "VS-DEMO";
+  const effectiveVerifyUrl =
+    verifyUrl || `https://veyskill.in/verify/${encodeURIComponent(cleanId)}`;
 
   // Proportional responsive script font sizing for recipient name
   const nameLength = recipientName.trim().length;
@@ -114,6 +119,43 @@ export function OfficialCertificateView({
             Issued by : veyskill
           </span>
         </div>
+
+        {/* 6. Scannable Verification QR Code (Bottom Left) */}
+        {showQrCode && (
+          <div
+            className="absolute z-10 flex flex-col items-center pointer-events-auto transition-transform hover:scale-105"
+            style={{
+              left: "6.8%",
+              bottom: "6.8%",
+            }}
+          >
+            <a
+              href={effectiveVerifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block p-1 sm:p-1.5 bg-white rounded-md sm:rounded-lg shadow-sm border border-slate-200/90 hover:border-teal-500 transition-colors"
+              title="Click or scan to verify official credential on VeySkill"
+            >
+              <div className="w-9 sm:w-12 md:w-14 lg:w-16">
+                <CertificateQRCode
+                  verifyUrl={effectiveVerifyUrl}
+                  certificateId={cleanId}
+                  size={120}
+                  compact
+                  showLabel={false}
+                />
+              </div>
+            </a>
+            <div className="text-center mt-0.5 sm:mt-1 pointer-events-none">
+              <span className="font-mono font-bold text-[#003049] text-[5px] sm:text-[6.5px] md:text-[8px] lg:text-[9px] block leading-none tracking-tight">
+                {cleanId}
+              </span>
+              <span className="font-sans font-extrabold text-teal-800 uppercase tracking-widest text-[4px] sm:text-[5.5px] md:text-[6.5px] lg:text-[7.5px] block leading-tight mt-0.5">
+                Scan to Verify
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

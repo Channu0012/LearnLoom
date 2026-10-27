@@ -9,6 +9,7 @@ import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 import { OfficialCertificateView } from "@/components/courses/OfficialCertificateView";
 import { VerifyPdfDownloadButton } from "@/components/verify/VerifyPdfDownloadButton";
 import { CopyCredentialLinkButton } from "@/components/verify/CopyCredentialLinkButton";
+import { CertificateQRCode } from "@/components/verify/CertificateQRCode";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -312,39 +313,63 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
             />
           </div>
 
-          {/* Clean Credential Details Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-card border border-border rounded-xl text-xs font-body">
-            <div>
-              <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
-                Recipient
-              </span>
-              <span className="font-bold text-foreground text-sm mt-0.5 block">
-                {recipientName}
-              </span>
+          {/* Official Verification & QR Authenticity Card */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-card border border-border rounded-2xl shadow-sm items-center">
+            {/* Left: Metadata Details */}
+            <div className="md:col-span-2 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 text-xs font-bold font-mono">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                IMMUTABLE CRYPTOGRAPHIC CREDENTIAL
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-body">
+                <div>
+                  <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
+                    Recipient
+                  </span>
+                  <span className="font-bold text-foreground text-sm mt-0.5 block">
+                    {recipientName}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
+                    Credential ID
+                  </span>
+                  <span className="font-mono font-bold text-foreground text-sm mt-0.5 block">
+                    {cleanId}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
+                    Course Curriculum
+                  </span>
+                  <span className="font-semibold text-foreground text-sm mt-0.5 block">
+                    {courseTitle}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
+                    Issuance Authority
+                  </span>
+                  <span className="font-bold text-foreground text-sm mt-0.5 block">
+                    VeySkill Academy
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed pt-1 border-t border-border/60">
+                This certificate contains a high-precision error-corrected QR code linked directly
+                to our tamper-evident registry. Any smartphone camera can scan and confirm
+                authenticity within seconds.
+              </p>
             </div>
-            <div>
-              <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
-                Course Completed
-              </span>
-              <span className="font-semibold text-foreground text-sm mt-0.5 block line-clamp-1">
-                {courseTitle}
-              </span>
-            </div>
-            <div>
-              <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
-                Credential ID
-              </span>
-              <span className="font-mono font-bold text-foreground text-sm mt-0.5 block">
-                {cleanId}
-              </span>
-            </div>
-            <div>
-              <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold">
-                Issuance Authority
-              </span>
-              <span className="font-bold text-foreground text-sm mt-0.5 block">
-                VeySkill Academy
-              </span>
+
+            {/* Right: Interactive High-Precision QR Code Card */}
+            <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-xl border border-border">
+              <CertificateQRCode
+                verifyUrl={verifyUrl}
+                certificateId={cleanId}
+                size={140}
+                showLabel={true}
+              />
             </div>
           </div>
 
