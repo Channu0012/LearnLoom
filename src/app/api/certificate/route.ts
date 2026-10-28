@@ -47,14 +47,37 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
     }
-    const rawUserName = body?.userName;
+    let rawUserName = body?.userName;
     const rawCourseTitle = body?.courseTitle;
     const lessonCount = Number(body?.lessonCount) || 0;
     const quizScore = body?.quizScore != null ? Number(body.quizScore) : null;
     const completedDate = body?.completedDate;
-    const uid = typeof body?.uid === "string" ? body.uid.trim() : "";
-    const courseId = typeof body?.courseId === "string" ? body.courseId.trim() : "";
+    let uid = typeof body?.uid === "string" ? body.uid.trim() : "";
+    let courseId = typeof body?.courseId === "string" ? body.courseId.trim() : "";
     const orderId = typeof body?.orderId === "string" ? body.orderId.trim() : "";
+
+    // If uid or courseId is missing due to client auth rehydration after redirect,
+    // recover them directly from the Cashfree order record
+    if ((!uid || !courseId) && orderId) {
+      try {
+        const { getCashfreeOrderStatus } = await import("@/lib/cashfree");
+        const cfOrder = await getCashfreeOrderStatus(orderId);
+        if (!uid && cfOrder?.customer_details?.customer_id) {
+          uid = String(cfOrder.customer_details.customer_id).trim();
+        }
+        if (!courseId && cfOrder?.order_tags?.courseId) {
+          courseId = String(cfOrder.order_tags.courseId).trim();
+        }
+        if (
+          (!rawUserName || rawUserName === "Learner") &&
+          cfOrder?.customer_details?.customer_name
+        ) {
+          rawUserName = cfOrder.customer_details.customer_name;
+        }
+      } catch (err) {
+        console.warn("[Certificate] Notice recovering order details:", err);
+      }
+    }
 
     let userName = sanitizeInput(rawUserName, 100);
     const sanitizedTitle = sanitizeInput(rawCourseTitle, 200);
@@ -156,6 +179,12 @@ export async function POST(request: NextRequest) {
           const cfOrder = await getCashfreeOrderStatus(orderId);
           if (cfOrder.order_status === "PAID") {
             isVerified = true;
+            if (
+              cfOrder.customer_details?.customer_name &&
+              (!userName || userName === "Learner" || userName === "Distinguished Scholar")
+            ) {
+              userName = sanitizeInput(cfOrder.customer_details.customer_name, 100);
+            }
           }
         } catch (cfErr) {
           console.warn("[Certificate] Direct Cashfree status fallback check:", cfErr);

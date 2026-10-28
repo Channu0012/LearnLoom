@@ -202,33 +202,32 @@ export function PaymentGate({
         throw new Error("Unable to initialize Cashfree payment interface.");
       }
 
-      // 3. Launch Checkout
-      // On mobile / touch screens, redirectTarget: "_self" is essential so native UPI apps
-      // (Google Pay, PhonePe, Paytm, CRED) can open directly without being blocked by an iframe sandbox.
-      const isMobileDevice =
-        typeof window !== "undefined" &&
-        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) ||
-          window.innerWidth < 768);
-
-      const redirectTarget = isMobileDevice ? "_self" : "_modal";
+      // 3. Launch Checkout via direct page redirect
+      // Using redirectTarget: "_self" guarantees that all UPI apps, QR codes, and bank 3DS
+      // redirects work seamlessly without iframe sandbox restrictions, and Cashfree automatically
+      // redirects the browser back to our return_url with the verified order_id upon completion.
+      const resolvedReturnUrl =
+        orderData.returnUrl ||
+        `${window.location.origin}/course/${encodeURIComponent(courseId)}?payment_status=success&order_id={order_id}`;
 
       let checkoutResult;
       try {
         checkoutResult = await cashfree.checkout({
           paymentSessionId,
-          redirectTarget,
+          redirectTarget: "_self",
+          returnUrl: resolvedReturnUrl,
         });
       } catch (checkoutErr) {
-        console.warn(
-          "Cashfree modal launch error, falling back to direct redirect checkout:",
-          checkoutErr
-        );
-        checkoutResult = await cashfree.checkout({
-          paymentSessionId,
-          redirectTarget: "_self",
-        });
+        console.warn("Cashfree checkout error:", checkoutErr);
+        // Fallback: direct window location redirection to Cashfree hosted session if SDK checkout errors
+        if (orderData.paymentSessionId) {
+          const apiHost =
+            mode === "production"
+              ? "https://api.cashfree.com/pg"
+              : "https://sandbox.cashfree.com/pg";
+          window.location.href = `${apiHost}/orders/sessions/${orderData.paymentSessionId}`;
+          return;
+        }
       }
 
       // 4. If modal completes or returns control

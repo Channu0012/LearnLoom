@@ -50,13 +50,21 @@ export function OfficialCertificateView({
 
   let effectiveVerifyUrl = verifyUrl;
   if (!effectiveVerifyUrl || !effectiveVerifyUrl.includes("?")) {
-    effectiveVerifyUrl = buildCanonicalCertificateUrl(cleanId, {
-      userName: effectiveName,
-      courseTitle: executiveTitle,
-      issuedDate: cleanDate,
-      lessonCount,
-      quizScore,
-    });
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
+    effectiveVerifyUrl = buildCanonicalCertificateUrl(
+      cleanId,
+      {
+        userName: effectiveName,
+        courseTitle: executiveTitle,
+        issuedDate: cleanDate,
+        lessonCount,
+        quizScore,
+      },
+      origin
+    );
   }
 
   // Proportional responsive script font sizing for recipient name

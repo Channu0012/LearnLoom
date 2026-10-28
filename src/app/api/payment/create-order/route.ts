@@ -68,7 +68,16 @@ export async function POST(request: NextRequest) {
     const orderId = generateOrderId(uid, courseId);
 
     // 4. Build return URL — Cashfree payment gateway strictly mandates an https:// return_url
-    let appUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
+    // Extract actual request host so return URL matches the exact domain the user is on
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    let appUrl = "";
+    if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
+      appUrl = `${proto}://${host}`;
+    }
+    if (!appUrl) {
+      appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in").trim();
+    }
     if (
       !appUrl ||
       appUrl.startsWith("http://") ||
@@ -77,7 +86,11 @@ export async function POST(request: NextRequest) {
     ) {
       appUrl = "https://veyskill.in";
     }
-    const returnUrl = `${appUrl}/course/${encodeURIComponent(courseId)}?payment_status=success&order_id=${encodeURIComponent(orderId)}`;
+    appUrl = appUrl.replace(/\/+$/, "");
+
+    // Cashfree PG API strictly mandates using the literal {order_id} placeholder token.
+    // Cashfree automatically substitutes {order_id} with the confirmed transaction order ID.
+    const returnUrl = `${appUrl}/course/${encodeURIComponent(courseId)}?payment_status=success&order_id={order_id}`;
 
     // 5. Create order via Cashfree API
     const order = await createCashfreeOrder({
@@ -100,6 +113,7 @@ export async function POST(request: NextRequest) {
         paymentSessionId: order.payment_session_id,
         orderAmount: CERTIFICATE_PRICE,
         cfOrderId: order.cf_order_id,
+        returnUrl,
         mode,
       },
       { status: 200 }

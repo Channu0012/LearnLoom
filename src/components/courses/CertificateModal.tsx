@@ -90,9 +90,42 @@ export function CertificateModal({
         (storedPaidName && storedPaidName.trim() && storedPaidName !== "Learner"
           ? storedPaidName.trim()
           : null) ||
-        recipientName.trim() ||
+        (recipientName.trim() && recipientName.trim() !== "Learner"
+          ? recipientName.trim()
+          : null) ||
         (userName && userName.trim() !== "Learner" ? userName.trim() : null) ||
         "Distinguished Scholar";
+
+      const effectiveOrderId =
+        orderId ||
+        (courseId ? localStorage.getItem(`veyskill_paid_${courseId}`) : null) ||
+        (courseId
+          ? (() => {
+              try {
+                const raw =
+                  sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+                  localStorage.getItem(`veyskill_pending_order_${courseId}`);
+                if (raw) return JSON.parse(raw)?.orderId;
+              } catch {}
+              return null;
+            })()
+          : null) ||
+        "";
+
+      const effectiveUid =
+        uid ||
+        (courseId
+          ? (() => {
+              try {
+                const raw =
+                  sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+                  localStorage.getItem(`veyskill_pending_order_${courseId}`);
+                if (raw) return JSON.parse(raw)?.uid;
+              } catch {}
+              return null;
+            })()
+          : null) ||
+        "";
 
       const res = await fetch("/api/certificate", {
         method: "POST",
@@ -103,9 +136,9 @@ export function CertificateModal({
           lessonCount,
           quizScore:
             quizScore != null && quizTotal ? Math.round((quizScore / quizTotal) * 100) : null,
-          uid,
+          uid: effectiveUid,
           courseId,
-          orderId,
+          orderId: effectiveOrderId,
         }),
       });
 

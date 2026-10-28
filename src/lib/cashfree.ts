@@ -138,7 +138,7 @@ export async function createCashfreeOrder(
   const safeCourseTag = (params.courseId || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
   const safeUserTag = (params.customerUid || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
 
-  // Cashfree API strictly requires order_meta.return_url to begin with https://
+  // Cashfree API strictly requires order_meta.return_url to begin with https:// and use {order_id} placeholder
   let safeReturnUrl = (params.returnUrl || "").trim();
   if (
     !safeReturnUrl ||
@@ -146,7 +146,10 @@ export async function createCashfreeOrder(
     safeReturnUrl.includes("localhost") ||
     safeReturnUrl.includes("127.0.0.1")
   ) {
-    safeReturnUrl = `https://veyskill.in/course/${encodeURIComponent(params.courseId)}?payment_status=success&order_id=${encodeURIComponent(safeOrderId)}`;
+    safeReturnUrl = `https://veyskill.in/course/${encodeURIComponent(params.courseId)}?payment_status=success&order_id={order_id}`;
+  } else if (!safeReturnUrl.includes("{order_id}")) {
+    const separator = safeReturnUrl.includes("?") ? "&" : "?";
+    safeReturnUrl = `${safeReturnUrl}${separator}order_id={order_id}`;
   }
 
   const requestBody = {

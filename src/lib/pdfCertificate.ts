@@ -358,13 +358,21 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   const cleanId = options.id?.trim() || "VS-DEMO";
   let effectiveVerifyUrl = options.verifyUrl;
   if (!effectiveVerifyUrl || !effectiveVerifyUrl.includes("?")) {
-    effectiveVerifyUrl = buildCanonicalCertificateUrl(cleanId, {
-      userName: cleanName,
-      courseTitle: executiveTitle,
-      issuedDate: cleanDate,
-      lessonCount: options.lessonCount,
-      quizScore: options.quizScore,
-    });
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || "https://veyskill.in";
+    effectiveVerifyUrl = buildCanonicalCertificateUrl(
+      cleanId,
+      {
+        userName: cleanName,
+        courseTitle: executiveTitle,
+        issuedDate: cleanDate,
+        lessonCount: options.lessonCount,
+        quizScore: options.quizScore,
+      },
+      origin
+    );
   }
 
   try {

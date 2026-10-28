@@ -324,27 +324,30 @@ function CoursePlayerContent({
     try {
       const params = new URLSearchParams(window.location.search);
       const paymentStatus = params.get("payment_status");
-      let returnedOrderId = params.get("order_id");
+      let rawOrderId = params.get("order_id");
 
       // Recover actual order ID from pending storage if gateway returned literal template tag
-      if (!returnedOrderId || returnedOrderId === "{order_id}") {
+      if (!rawOrderId || rawOrderId === "{order_id}") {
         try {
           const rawPending =
             sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
             localStorage.getItem(`veyskill_pending_order_${courseId}`);
           if (rawPending) {
             const parsed = JSON.parse(rawPending);
-            if (parsed?.orderId) returnedOrderId = parsed.orderId;
+            if (parsed?.orderId) rawOrderId = parsed.orderId;
           }
         } catch {}
       }
+
+      // Sanitize order ID against any accidental concatenated query string
+      const returnedOrderId = rawOrderId ? rawOrderId.split("?")[0].split("&")[0].trim() : "";
 
       if (
         returnedOrderId &&
         returnedOrderId !== "{order_id}" &&
         (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))
       ) {
-        // Resolve uid from user or storage
+        // Resolve uid and legal name from user or storage
         let effectiveUid = user?.uid || "";
         let cachedLegalName = "";
         try {
@@ -358,18 +361,24 @@ function CoursePlayerContent({
           }
         } catch {}
 
-        fetch("/api/payment/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId: returnedOrderId,
-            uid: effectiveUid,
-            courseId,
-            legalName: cachedLegalName || certificateRecipientName || user?.displayName || "",
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
+        let attempts = 0;
+        const maxAttempts = 4;
+
+        const verifyPayment = async () => {
+          attempts += 1;
+          try {
+            const res = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: returnedOrderId,
+                uid: effectiveUid,
+                courseId,
+                legalName: cachedLegalName || certificateRecipientName || user?.displayName || "",
+              }),
+            });
+
+            const data = await res.json();
             if (data.isPaid) {
               setHasPaidCertificate(true);
               setPaidOrderId(returnedOrderId);
@@ -398,9 +407,26 @@ function CoursePlayerContent({
               cleanUrl.searchParams.delete("payment_status");
               cleanUrl.searchParams.delete("order_id");
               window.history.replaceState({}, "", cleanUrl.toString());
+              return;
             }
-          })
-          .catch((err) => console.warn("[Payment] Redirect verify notice:", err));
+
+            // If bank status is still propagating, retry after a short delay
+            if (
+              attempts < maxAttempts &&
+              (data.status === "ACTIVE" || data.status === "PENDING" || !data.status)
+            ) {
+              setTimeout(verifyPayment, 1500);
+            }
+          } catch (err) {
+            if (attempts < maxAttempts) {
+              setTimeout(verifyPayment, 1500);
+            } else {
+              console.warn("[Payment] Redirect verify notice:", err);
+            }
+          }
+        };
+
+        verifyPayment();
       }
     } catch {}
   }, [courseId, user?.uid, user?.displayName, certificateRecipientName]);
@@ -557,6 +583,15 @@ function CoursePlayerContent({
               }
             });
             setQuizScores(map);
+          }
+          if (prog.hasPaidCertificate || prog.paidOrderId) {
+            setHasPaidCertificate(true);
+            if (prog.paidOrderId) {
+              setPaidOrderId(prog.paidOrderId);
+              try {
+                localStorage.setItem(`veyskill_paid_${courseId}`, prog.paidOrderId);
+              } catch {}
+            }
           }
         } else {
           // Only auto-enroll if user arrived via explicit "Get Started" link (?start=true)
@@ -3647,14 +3682,39 @@ function CoursePlayerContent({
       <CertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}
-        userName={certificateRecipientName || user?.displayName || "Learner"}
+        userName={
+          certificateRecipientName ||
+          (typeof window !== "undefined"
+            ? localStorage.getItem(`veyskill_paid_name_${courseId}`) || undefined
+            : undefined) ||
+          user?.displayName ||
+          "Learner"
+        }
         courseTitle={course.title}
         lessonCount={lessons.length}
         quizScore={totalQuizScore > 0 ? totalQuizScore : undefined}
         quizTotal={totalQuizTotal > 0 ? totalQuizTotal : undefined}
-        uid={user?.uid}
+        uid={
+          user?.uid ||
+          (typeof window !== "undefined"
+            ? (() => {
+                try {
+                  const raw =
+                    sessionStorage.getItem(`veyskill_pending_order_${courseId}`) ||
+                    localStorage.getItem(`veyskill_pending_order_${courseId}`);
+                  if (raw) return JSON.parse(raw)?.uid;
+                } catch {}
+                return undefined;
+              })()
+            : undefined)
+        }
         courseId={courseId}
-        orderId={paidOrderId ?? undefined}
+        orderId={
+          paidOrderId ||
+          (typeof window !== "undefined"
+            ? localStorage.getItem(`veyskill_paid_${courseId}`) || undefined
+            : undefined)
+        }
         instructorName={instructor.name}
         onRequestPayment={() => setIsPaymentGateOpen(true)}
       />

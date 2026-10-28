@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
     }
 
-    const orderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
+    const rawOrderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
+    const orderId = rawOrderId.split("?")[0].split("&")[0].trim();
     let uid = typeof body.uid === "string" ? body.uid.trim() : "";
     let courseId = typeof body.courseId === "string" ? body.courseId.trim() : "";
 
