@@ -240,12 +240,18 @@ export default function MyLearningPage() {
               ? new Date(raw.seconds * 1000)
               : new Date();
         return d.toLocaleDateString("en-US", {
+          timeZone: "Asia/Kolkata",
           month: "long",
           day: "numeric",
           year: "numeric",
         });
       } catch {
-        return "October 2026";
+        return new Date().toLocaleDateString("en-US", {
+          timeZone: "Asia/Kolkata",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
       }
     })();
 

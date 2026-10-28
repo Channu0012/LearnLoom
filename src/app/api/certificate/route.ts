@@ -14,11 +14,20 @@ import { formatExecutiveCourseTitle } from "@/lib/pdfCertificate";
 export const dynamic = "force-dynamic";
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  try {
+    return date.toLocaleDateString("en-US", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -205,7 +214,13 @@ export async function POST(request: NextRequest) {
 
     // 4. Generate Cryptographically Tamper-Proof Certificate ID
     const certificateId = generateSecureCertificateId();
-    const date = completedDate ? new Date(completedDate) : new Date();
+    let date = new Date();
+    if (completedDate) {
+      const parsed = new Date(completedDate);
+      if (!isNaN(parsed.getTime())) {
+        date = parsed;
+      }
+    }
 
     const formattedDate = formatDate(date);
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host");

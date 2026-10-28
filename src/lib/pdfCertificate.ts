@@ -331,9 +331,26 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   doc.text(`\u201C${executiveTitle}\u201D`, centerX, 109.5, { align: "center" });
 
   // 5. Date of Completion (Single clean line centered at 50%)
-  const cleanDate =
-    issuedDate?.trim() ||
-    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const cleanDate = (() => {
+    const raw = issuedDate?.trim();
+    if (!raw || raw === "October 2026" || !/\d{1,2}/.test(raw)) {
+      try {
+        return new Date().toLocaleDateString("en-US", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } catch {
+        return new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+    }
+    return raw;
+  })();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(0, 48, 73); // Deep Navy (#003049)
@@ -351,10 +368,10 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
     );
   const issuedText = !isGenericInstructor
     ? `Curriculum by : ${cleanInstructor}  \u2022  Issued by : VeySkill`
-    : "Issued by : veyskill";
+    : "Issued by : VeySkill";
   doc.text(issuedText, centerX, 145.0, { align: "center" });
 
-  // 7. Scannable Verification QR Code (Bottom Left)
+  // 7. Scannable Verification QR Code (Bottom Left Open Pedestal — Symmetrical to Right Signature)
   const cleanId = options.id?.trim() || "VS-DEMO";
   let effectiveVerifyUrl = options.verifyUrl;
   if (!effectiveVerifyUrl || !effectiveVerifyUrl.includes("?")) {
@@ -378,15 +395,15 @@ export async function createPdfCertificateDoc(options: CertificatePdfOptions): P
   try {
     const qrDataUrl = await generateQRCodeDataUrl(effectiveVerifyUrl, 256);
     if (qrDataUrl && qrDataUrl.startsWith("data:image/")) {
-      const qrSize = 22; // 22mm x 22mm
-      const qrX = 22;
-      const qrY = 148;
+      const qrSize = 20; // 20mm x 20mm
+      const qrX = 67; // Centered at 77mm (matches 26% symmetric pedestal)
+      const qrY = 153; // Matches baseline of right signature
 
-      // Clean white backing card for flawless scanning contrast
+      // Clean white backing card with subtle border and elevation
       doc.setFillColor(255, 255, 255);
       doc.setDrawColor(226, 232, 240); // subtle border
       doc.setLineWidth(0.3);
-      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1, 1, "FD");
+      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1.5, 1.5, "FD");
 
       // Draw high-contrast QR code image
       doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);

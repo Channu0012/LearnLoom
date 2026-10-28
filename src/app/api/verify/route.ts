@@ -12,6 +12,26 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function formatDefaultVerifyDate(rawDate?: string): string {
+  if (rawDate && rawDate !== "October 2026" && /\d{1,2}/.test(rawDate)) {
+    return rawDate;
+  }
+  try {
+    return new Date().toLocaleDateString("en-US", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const rawId = searchParams.get("id") || "";
@@ -71,7 +91,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
             courseTitle: data?.courseTitle || "Verified Course Curriculum",
             lessonCount: data?.lessonCount || 12,
             quizScore: data?.quizScore ?? null,
-            issuedDate: data?.issuedDate || "October 2026",
+            issuedDate: formatDefaultVerifyDate(data?.issuedDate),
             verifyUrl: `https://veyskill.in/verify/${cleanId}`,
             verificationMethod: "Cryptographic HMAC-SHA256 & Firestore Registry",
             platform: "VeySkill",
@@ -129,7 +149,7 @@ async function handleVerification(request: NextRequest, rawId: string) {
         courseTitle: qCourse || "Continuing Technical Education Masterclass",
         lessonCount: qLessons ? Number(qLessons) : 12,
         quizScore: qScore ? Number(qScore) : 100,
-        issuedDate: qDate || "October 2026",
+        issuedDate: formatDefaultVerifyDate(qDate),
         verifyUrl: `https://veyskill.in/verify/${cleanId}`,
         verificationMethod: "Cryptographic HMAC-SHA256 Tamper-Proof Checksum",
         platform: "VeySkill",

@@ -228,10 +228,16 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
     certRecord?.lessonCount || (queryLessons && !isNaN(queryLessons) ? queryLessons : 12);
   const quizScore =
     certRecord?.quizScore ?? (queryScore != null && !isNaN(queryScore) ? queryScore : null);
+  const rawIssuedDate = certRecord?.issuedDate || queryDate;
   const issuedDate =
-    certRecord?.issuedDate ||
-    queryDate ||
-    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    rawIssuedDate && rawIssuedDate !== "October 2026" && /\d{1,2}/.test(rawIssuedDate)
+      ? rawIssuedDate
+      : new Date().toLocaleDateString("en-US", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
 
   const { buildCanonicalCertificateUrl } = await import("@/lib/security");
   const verifyUrl = buildCanonicalCertificateUrl(cleanId, {

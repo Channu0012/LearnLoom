@@ -139,6 +139,7 @@ export function CertificateModal({
           uid: effectiveUid,
           courseId,
           orderId: effectiveOrderId,
+          completedDate: new Date().toISOString(),
         }),
       });
 
@@ -214,7 +215,10 @@ export function CertificateModal({
 
       if (!certificate) {
         try {
-          const cached = localStorage.getItem(`veyskill_cert_${courseId || "default"}`);
+          // If returning from payment (orderId present), always skip stale local cache
+          const cached = !orderId
+            ? localStorage.getItem(`veyskill_cert_${courseId || "default"}`)
+            : null;
           if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed?.id) {
@@ -222,7 +226,31 @@ export function CertificateModal({
                 (courseId ? localStorage.getItem(`veyskill_paid_name_${courseId}`) : null) ||
                 parsed.userName ||
                 recipientName;
-              setCertificate({ ...parsed, userName: confirmedLegalName });
+
+              let validDate = parsed.issuedDate;
+              if (
+                !validDate ||
+                validDate === "October 2026" ||
+                validDate === "October 9, 2026" ||
+                !/\d{1,2}/.test(validDate)
+              ) {
+                try {
+                  validDate = new Date().toLocaleDateString("en-US", {
+                    timeZone: "Asia/Kolkata",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  });
+                } catch {
+                  validDate = new Date().toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  });
+                }
+              }
+
+              setCertificate({ ...parsed, userName: confirmedLegalName, issuedDate: validDate });
               return;
             }
           }

@@ -42,9 +42,26 @@ export function OfficialCertificateView({
   showQrCode = true,
 }: OfficialCertificateViewProps) {
   const executiveTitle = formatExecutiveCourseTitle(courseTitle);
-  const cleanDate =
-    issuedDate?.trim() ||
-    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const cleanDate = (() => {
+    const raw = issuedDate?.trim();
+    if (!raw || raw === "October 2026" || !/\d{1,2}/.test(raw)) {
+      try {
+        return new Date().toLocaleDateString("en-US", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } catch {
+        return new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+    }
+    return raw;
+  })();
   const cleanId = certificateId?.trim() || "VS-DEMO";
   const effectiveName = recipientName?.trim() || "Distinguished Scholar";
 
@@ -74,6 +91,13 @@ export function OfficialCertificateView({
     if (nameLength > 24) return "text-base sm:text-2xl md:text-3xl lg:text-4xl";
     if (nameLength > 16) return "text-lg sm:text-3xl md:text-4xl lg:text-5xl";
     return "text-xl sm:text-4xl md:text-5xl lg:text-6xl";
+  };
+
+  // Proportional responsive font sizing for course title
+  const getTitleSizeClass = () => {
+    if (executiveTitle.length > 50) return "text-[8px] sm:text-xs md:text-base lg:text-lg";
+    if (executiveTitle.length > 35) return "text-[9px] sm:text-sm md:text-lg lg:text-xl";
+    return "text-[10px] sm:text-base md:text-xl lg:text-2xl";
   };
 
   return (
@@ -117,7 +141,7 @@ export function OfficialCertificateView({
           style={{ top: "52.0%" }}
         >
           <h4
-            className="font-serif font-bold text-[#003049] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none text-[10px] sm:text-base md:text-xl lg:text-2xl"
+            className={`font-serif font-bold text-[#003049] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none ${getTitleSizeClass()}`}
             title={executiveTitle}
           >
             &ldquo;{executiveTitle}&rdquo;
@@ -145,41 +169,41 @@ export function OfficialCertificateView({
               instructorName.trim().toLowerCase()
             )
               ? `Curriculum by : ${instructorName}  •  Issued by : VeySkill`
-              : "Issued by : veyskill"}
+              : "Issued by : VeySkill"}
           </span>
         </div>
 
-        {/* 6. Scannable Verification QR Code (Bottom Left) */}
+        {/* 6. Scannable Verification QR Code (Bottom Left Open Pedestal — Symmetrical to Founder Signature on Right) */}
         {showQrCode && (
           <div
             className="absolute z-10 flex flex-col items-center pointer-events-auto transition-transform hover:scale-105"
             style={{
-              left: "8.5%",
-              bottom: "7.8%",
+              left: "26.5%",
+              bottom: "7.2%",
+              transform: "translateX(-50%)",
             }}
           >
             <a
               href={effectiveVerifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block p-1 sm:p-1.5 bg-white/95 backdrop-blur-xs rounded-lg shadow-sm border border-slate-200/90 hover:border-teal-500 transition-all hover:shadow-md"
-              title="Click or scan to verify official credential on VeySkill"
+              className="group block p-1 sm:p-1.5 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-slate-200/90 hover:border-teal-500 transition-all hover:shadow-lg"
+              title="Click or scan with any smartphone camera to verify official credential on VeySkill"
             >
-              <div className="w-10 sm:w-13 md:w-15 lg:w-18">
+              <div className="w-9 sm:w-12 md:w-14 lg:w-16">
                 <CertificateQRCode
                   verifyUrl={effectiveVerifyUrl}
-                  certificateId={cleanId}
                   size={140}
                   compact
                   showLabel={false}
                 />
               </div>
             </a>
-            <div className="text-center mt-0.5 sm:mt-1 pointer-events-none">
-              <span className="font-mono font-bold text-[#003049] text-[5.5px] sm:text-[7px] md:text-[8.5px] lg:text-[10px] block leading-none tracking-tight">
+            <div className="text-center mt-1 pointer-events-none flex flex-col items-center">
+              <span className="font-mono font-bold text-[#003049] text-[5.5px] sm:text-[7.5px] md:text-[9px] lg:text-[10.5px] block leading-none tracking-tight">
                 {cleanId}
               </span>
-              <span className="font-sans font-black text-teal-800 uppercase tracking-widest text-[4px] sm:text-[5.5px] md:text-[6.5px] lg:text-[7.5px] block leading-tight mt-0.5">
+              <span className="font-sans font-black text-teal-800 uppercase tracking-widest text-[4px] sm:text-[5px] md:text-[6.5px] lg:text-[7.5px] block leading-tight mt-0.5">
                 Scan to Verify
               </span>
             </div>
