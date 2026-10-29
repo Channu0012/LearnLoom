@@ -248,6 +248,7 @@ function CoursePlayerContent({
   const [isPaymentGateOpen, setIsPaymentGateOpen] = useState(false);
   const [hasPaidCertificate, setHasPaidCertificate] = useState(false);
   const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [isCompanionOpen, setIsCompanionOpen] = useState(false);
   const [quizScores, setQuizScores] = useState<Map<string, { score: number; total: number }>>(
     new Map()
@@ -347,6 +348,7 @@ function CoursePlayerContent({
         returnedOrderId !== "{order_id}" &&
         (paymentStatus === "success" || returnedOrderId.startsWith("VS_"))
       ) {
+        setIsVerifyingPayment(true);
         // Resolve uid and legal name from user or storage
         let effectiveUid = user?.uid || "";
         let cachedLegalName = "";
@@ -380,6 +382,7 @@ function CoursePlayerContent({
 
             const data = await res.json();
             if (data.isPaid) {
+              setIsVerifyingPayment(false);
               setHasPaidCertificate(true);
               setPaidOrderId(returnedOrderId);
               const confirmedName =
@@ -416,11 +419,14 @@ function CoursePlayerContent({
               (data.status === "ACTIVE" || data.status === "PENDING" || !data.status)
             ) {
               setTimeout(verifyPayment, 1500);
+            } else {
+              setIsVerifyingPayment(false);
             }
           } catch (err) {
             if (attempts < maxAttempts) {
               setTimeout(verifyPayment, 1500);
             } else {
+              setIsVerifyingPayment(false);
               console.warn("[Payment] Redirect verify notice:", err);
             }
           }
@@ -561,6 +567,19 @@ function CoursePlayerContent({
   useEffect(() => {
     if (!user) {
       setIsEnrolled(false);
+      try {
+        const guestCompleted = localStorage.getItem(`veyskill_guest_completed_${courseId}`);
+        if (guestCompleted) {
+          const parsed = JSON.parse(guestCompleted);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCompletedIds(new Set(parsed));
+          }
+        }
+        const guestLastLesson = localStorage.getItem(`veyskill_last_lesson_${courseId}`);
+        if (guestLastLesson && lessons.find((l) => l.id === guestLastLesson)) {
+          setActiveLessonId(guestLastLesson);
+        }
+      } catch {}
       return;
     }
     let isMounted = true;
@@ -570,7 +589,25 @@ function CoursePlayerContent({
         if (!isMounted) return;
         if (prog) {
           setIsEnrolled(true);
-          setCompletedIds(new Set(prog.completedLessonIds || []));
+          const dbCompleted = new Set(prog.completedLessonIds || []);
+
+          // Seamlessly merge any guest completed modules into user's authenticated progress
+          try {
+            const guestCompleted = localStorage.getItem(`veyskill_guest_completed_${courseId}`);
+            if (guestCompleted) {
+              const parsed = JSON.parse(guestCompleted);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const newIds = parsed.filter((id: string) => !dbCompleted.has(id));
+                for (const lid of newIds) {
+                  dbCompleted.add(lid);
+                  markLessonComplete(user.uid, courseId, lid).catch(() => {});
+                }
+                localStorage.removeItem(`veyskill_guest_completed_${courseId}`);
+              }
+            }
+          } catch {}
+
+          setCompletedIds(dbCompleted);
           setExemptIds(new Set(prog.exemptLessonIds || []));
           if (prog.lastLessonId && lessons.find((l) => l.id === prog.lastLessonId)) {
             setActiveLessonId(prog.lastLessonId);
@@ -594,6 +631,21 @@ function CoursePlayerContent({
             }
           }
         } else {
+          // If no progress in DB yet, check if there was guest progress
+          try {
+            const guestCompleted = localStorage.getItem(`veyskill_guest_completed_${courseId}`);
+            if (guestCompleted) {
+              const parsed = JSON.parse(guestCompleted);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setCompletedIds(new Set(parsed));
+                for (const lid of parsed) {
+                  markLessonComplete(user.uid, courseId, lid).catch(() => {});
+                }
+                localStorage.removeItem(`veyskill_guest_completed_${courseId}`);
+              }
+            }
+          } catch {}
+
           // Only auto-enroll if user arrived via explicit "Get Started" link (?start=true)
           const urlParams =
             typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -640,12 +692,15 @@ function CoursePlayerContent({
       cancelAutoAdvance();
       setVideoError(null);
       setIsCredibilityModalOpen(false);
+      try {
+        localStorage.setItem(`veyskill_last_lesson_${courseId}`, lessonId);
+      } catch {}
       if (lessonId === activeLessonId && !isVideoLoading) return;
       setLoadingLessonId(lessonId);
       setIsVideoLoading(true);
       setActiveLessonId(lessonId);
     },
-    [activeLessonId, isVideoLoading, cancelAutoAdvance]
+    [activeLessonId, isVideoLoading, cancelAutoAdvance, courseId]
   );
 
   // Trigger 3-second auto-advance countdown for playlist
@@ -751,7 +806,18 @@ function CoursePlayerContent({
             if (user) {
               markLessonComplete(user.uid, courseId, activeLesson.id).catch(() => {});
             }
-            setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
+            setCompletedIds((prev) => {
+              const next = new Set([...prev, activeLesson.id]);
+              if (!user && typeof window !== "undefined") {
+                try {
+                  localStorage.setItem(
+                    `veyskill_guest_completed_${courseId}`,
+                    JSON.stringify(Array.from(next))
+                  );
+                } catch {}
+              }
+              return next;
+            });
 
             const activity = recordStudyActivity(10);
             setXpToast({
@@ -965,8 +1031,21 @@ function CoursePlayerContent({
 
     setIsMarkingComplete(true);
     try {
-      await markLessonComplete(user.uid, courseId, activeLesson.id);
-      setCompletedIds((prev) => new Set([...prev, activeLesson.id]));
+      if (user) {
+        await markLessonComplete(user.uid, courseId, activeLesson.id);
+      }
+      setCompletedIds((prev) => {
+        const next = new Set([...prev, activeLesson.id]);
+        if (!user && typeof window !== "undefined") {
+          try {
+            localStorage.setItem(
+              `veyskill_guest_completed_${courseId}`,
+              JSON.stringify(Array.from(next))
+            );
+          } catch {}
+        }
+        return next;
+      });
       setIsEnrolled(true);
 
       // Record daily streak and XP rewards (+10 points per completed module)
@@ -3677,6 +3756,43 @@ function CoursePlayerContent({
             : null
         }
       />
+
+      {/* High-Trust Post-Payment Verification Overlay */}
+      {isVerifyingPayment && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-background/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-card border border-border p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-4">
+            <div className="relative w-14 h-14 mx-auto">
+              <div className="absolute inset-0 rounded-2xl bg-teal-500/20 animate-ping opacity-30" />
+              <div className="relative w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                <svg className="w-7 h-7 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-heading font-extrabold text-lg text-foreground tracking-tight">
+                Payment Received
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-body">
+                Cryptographically signing and unlocking your official VeySkill verified
+                certificate...
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Bank Gateway Confirmed
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Certificate Modal */}
       <CertificateModal

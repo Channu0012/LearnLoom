@@ -20,16 +20,68 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { id } = await params;
   const cleanId = normalizeCertificateId(id);
   const query = (await searchParams) || {};
-  const queryName = typeof query.n === "string" ? query.n : undefined;
-  const queryCourse = typeof query.c === "string" ? query.c : undefined;
+  let queryName = typeof query.n === "string" ? query.n : undefined;
+  let queryCourse = typeof query.c === "string" ? query.c : undefined;
+
+  // If parameters are missing in URL (e.g. clean short link shared by user), check benchmark or DB
+  if (!queryName || !queryCourse) {
+    const benchmark = BENCHMARK_CERTIFICATES[cleanId];
+    if (benchmark) {
+      if (!queryName) queryName = benchmark.userName;
+      if (!queryCourse) queryCourse = benchmark.courseTitle;
+    } else {
+      try {
+        const { adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebase-admin");
+        if (isFirebaseAdminConfigured && cleanId) {
+          const docSnap = await adminDb.collection("certificates").doc(cleanId).get();
+          if (docSnap.exists) {
+            const data = docSnap.data();
+            if (!queryName && data?.userName) queryName = data.userName;
+            if (!queryCourse && data?.courseTitle) queryCourse = data.courseTitle;
+          }
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+  }
+
+  const effectiveCourse = formatExecutiveCourseTitle(
+    queryCourse || "Continuing Technical Education Masterclass"
+  );
   const scholar = queryName ? `${queryName} - ` : "";
-  const course = queryCourse ? `${queryCourse} | ` : "";
+  const title = `${scholar}${effectiveCourse} | VeySkill Verified Credential (${cleanId || id})`;
+  const description = `Official Certificate of Completion awarded by VeySkill to ${queryName || "verified learner"} for successfully completing "${effectiveCourse}". Cryptographically verified credential record.`;
+  const canonicalUrl = `https://veyskill.in/verify/${cleanId || id}`;
+  const bannerImage = "https://veyskill.in/images/veyskill-showcase-banner.jpg";
+
   return {
-    title: `${scholar}${course}Certificate of Completion (${cleanId || id})`,
-    description: `Official Certificate of Completion awarded by VeySkill to ${queryName || "verified learner"} for completing ${queryCourse || "curriculum"}.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: "VeySkill",
+      images: [
+        {
+          url: bannerImage,
+          width: 1200,
+          height: 630,
+          alt: `VeySkill Verified Certificate for ${queryName || "Scholar"}`,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [bannerImage],
+    },
     robots: {
-      index: false,
-      follow: false,
+      index: true,
+      follow: true,
     },
   };
 }
