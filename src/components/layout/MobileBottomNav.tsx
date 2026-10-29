@@ -132,7 +132,12 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border shadow-[0_-2px_8px_rgba(0,0,0,0.05)] pb-safe"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border shadow-[0_-1px_0_0_rgba(0,0,0,0.06),0_-4px_16px_rgba(0,0,0,0.04)]"
+      style={{
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transform: "translateZ(0)",
+        willChange: "transform",
+      }}
       aria-label="Mobile Bottom Navigation"
     >
       <div className="grid grid-cols-5 h-16 px-1 items-center max-w-lg mx-auto">

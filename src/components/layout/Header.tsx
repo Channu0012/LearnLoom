@@ -4,13 +4,23 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { StreakWidget } from "@/components/layout/StreakWidget";
 
 export function Header() {
   const { user, userDoc, openAuthModal, signOut, loading, isSigningIn, authError, clearAuthError } =
     useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Scroll elevation — adds shadow + backdrop when page has scrolled
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Dismiss dropdown menu on click outside or Escape key
   useEffect(() => {
@@ -33,10 +43,17 @@ export function Header() {
     };
   }, [userDropdownOpen]);
 
+  const isNavActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || Boolean(pathname?.startsWith(`${href}/`));
+  };
+
   return (
     <header
       suppressHydrationWarning
-      className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md"
+      className={`sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md transition-shadow duration-200 ${
+        scrolled ? "shadow-md" : "shadow-none"
+      }`}
     >
       {authError && (
         <aside
@@ -122,7 +139,12 @@ export function Header() {
           {/* Explore */}
           <Link
             href="/explore"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+              isNavActive("/explore")
+                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
+                : "text-foreground/85 hover:text-foreground hover:bg-muted"
+            }`}
+            aria-current={isNavActive("/explore") ? "page" : undefined}
           >
             <svg
               width="15"
@@ -144,7 +166,12 @@ export function Header() {
           {/* Arena Hub */}
           <Link
             href="/arena"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5 group flex-shrink-0"
+            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 group flex-shrink-0 ${
+              isNavActive("/arena")
+                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
+                : "text-foreground/85 hover:text-foreground hover:bg-muted"
+            }`}
+            aria-current={isNavActive("/arena") ? "page" : undefined}
           >
             <svg
               width="15"
@@ -176,7 +203,12 @@ export function Header() {
           {/* My Learning */}
           <Link
             href="/my-learning"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+              isNavActive("/my-learning")
+                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
+                : "text-foreground/85 hover:text-foreground hover:bg-muted"
+            }`}
+            aria-current={isNavActive("/my-learning") ? "page" : undefined}
           >
             <svg
               width="15"
@@ -199,7 +231,12 @@ export function Header() {
           {/* My Courses */}
           <Link
             href="/my-courses"
-            className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-foreground/85 hover:text-foreground hover:bg-muted transition-all inline-flex items-center gap-1.5"
+            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+              isNavActive("/my-courses")
+                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
+                : "text-foreground/85 hover:text-foreground hover:bg-muted"
+            }`}
+            aria-current={isNavActive("/my-courses") ? "page" : undefined}
           >
             <svg
               width="14"
@@ -222,7 +259,12 @@ export function Header() {
           {userDoc?.isAdmin && (
             <Link
               href="/admin"
-              className="font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl text-accent-500 hover:text-accent-600 hover:bg-accent-500/10 transition-colors inline-flex items-center gap-1.5"
+              className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1.5 ${
+                isNavActive("/admin")
+                  ? "text-accent-600 dark:text-accent-400 bg-accent-500/15 font-bold"
+                  : "text-accent-500 hover:text-accent-600 hover:bg-accent-500/10"
+              }`}
+              aria-current={isNavActive("/admin") ? "page" : undefined}
             >
               <svg
                 width="14"

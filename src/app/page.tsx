@@ -1,5 +1,99 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
+
+// ─── Intersection Observer hook for scroll-reveal animations ────────────────
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          obs.disconnect();
+        }
+      },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, inView };
+}
+
+// ─── Animated counter hook ───────────────────────────────────────────────────
+function useCounter(target: number, duration = 1400, active = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let start: number | null = null;
+    const step = (ts: number) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, active]);
+  return count;
+}
+
+// ─── FAQ accordion item ──────────────────────────────────────────────────────
+function FAQItem({ q, a, idx }: { q: string; a: string; idx: number }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden transition-all">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left cursor-pointer hover:bg-muted/40 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+        aria-expanded={open}
+        aria-controls={`faq-answer-${idx}`}
+        id={`faq-question-${idx}`}
+      >
+        <h3 className="font-heading font-bold text-base sm:text-lg text-foreground">{q}</h3>
+        <span
+          className={`flex-shrink-0 w-8 h-8 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 transition-transform duration-300 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+          aria-hidden="true"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
+      <div
+        id={`faq-answer-${idx}`}
+        role="region"
+        aria-labelledby={`faq-question-${idx}`}
+        className="overflow-hidden transition-all duration-300"
+        style={{ maxHeight: open ? "400px" : "0px" }}
+      >
+        <p className="font-body text-sm text-muted-foreground leading-relaxed px-5 sm:px-6 pb-5 sm:pb-6">
+          {a}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const disciplines = [
@@ -10,6 +104,9 @@ export default function HomePage() {
       badge: "Popular",
       query: "nextjs full stack web development",
       iconColor: "text-teal-600 dark:text-teal-400",
+      accentBg: "bg-teal-500/10",
+      accentBorder: "border-teal-500/20",
+      hoverBorder: "hover:border-teal-500/60",
     },
     {
       title: "Artificial Intelligence & LLMs",
@@ -18,6 +115,9 @@ export default function HomePage() {
       badge: "Trending",
       query: "python artificial intelligence machine learning",
       iconColor: "text-indigo-600 dark:text-indigo-400",
+      accentBg: "bg-indigo-500/10",
+      accentBorder: "border-indigo-500/20",
+      hoverBorder: "hover:border-indigo-500/60",
     },
     {
       title: "Data Structures & Algorithms",
@@ -26,6 +126,9 @@ export default function HomePage() {
       badge: "Career Essential",
       query: "data structures and algorithms dsa",
       iconColor: "text-amber-600 dark:text-amber-400",
+      accentBg: "bg-amber-500/10",
+      accentBorder: "border-amber-500/20",
+      hoverBorder: "hover:border-amber-500/60",
     },
     {
       title: "System Design & Cloud",
@@ -34,6 +137,9 @@ export default function HomePage() {
       badge: "Senior Track",
       query: "system design distributed systems cloud",
       iconColor: "text-emerald-600 dark:text-emerald-400",
+      accentBg: "bg-emerald-500/10",
+      accentBorder: "border-emerald-500/20",
+      hoverBorder: "hover:border-emerald-500/60",
     },
   ];
 
@@ -56,6 +162,30 @@ export default function HomePage() {
     },
   ];
 
+  // HowToSteps structured data for SEO
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to Turn a YouTube Playlist into a Structured Course on VeySkill",
+    step: [
+      {
+        "@type": "HowToStep",
+        name: "Paste a Playlist Link",
+        text: "Drop any YouTube tutorial series, university lecture, or coding bootcamp URL into VeySkill's converter.",
+      },
+      {
+        "@type": "HowToStep",
+        name: "Study Without Distractions",
+        text: "Focused theater playback with no recommendations, no comments. Take AI-powered notes and track your progress.",
+      },
+      {
+        "@type": "HowToStep",
+        name: "Earn Your Certificate",
+        text: "Complete all lessons, pass the comprehension quiz, and claim a verified Certificate of Completion.",
+      },
+    ],
+  };
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -69,11 +199,32 @@ export default function HomePage() {
     })),
   };
 
+  // Scroll-reveal refs
+  const howItWorksSection = useInView();
+  const disciplinesSection = useInView();
+  const statsSection = useInView();
+  const comparisonSection = useInView();
+  const faqSection = useInView();
+  const ctaSection = useInView();
+
+  // Animated counters
+  const learnersCount = useCounter(12000, 1600, statsSection.inView);
+  const coursesCount = useCounter(350, 1400, statsSection.inView);
+
+  const formatCount = useCallback((n: number, suffix = "+") => {
+    if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k${suffix}`;
+    return `${n}${suffix}`;
+  }, []);
+
   return (
     <div className="w-full overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
 
       {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
@@ -81,8 +232,13 @@ export default function HomePage() {
         className="relative overflow-hidden pt-16 sm:pt-20 lg:pt-28 pb-14 sm:pb-20"
         aria-labelledby="hero-title"
       >
+        {/* Subtle radial background glow — adds depth without distraction */}
+        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-teal-500/8 via-emerald-500/5 to-transparent rounded-full blur-3xl" />
+        </div>
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          {/* Compact trust badge */}
+          {/* Trust badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-xs font-heading font-semibold mb-6 shadow-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
             <span className="text-muted-foreground">Trusted by self-learners worldwide</span>
@@ -112,75 +268,39 @@ export default function HomePage() {
 
           {/* Benefit Ribbon */}
           <div className="inline-flex flex-wrap items-center justify-center gap-5 sm:gap-8 py-2 text-xs text-muted-foreground font-body max-w-2xl mx-auto">
-            <span className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-teal-600 dark:text-teal-400"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              <span className="font-heading font-semibold text-foreground">Zero Distractions</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-indigo-600 dark:text-indigo-400"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-              </svg>
-              <span className="font-heading font-semibold text-foreground">AI Study Notes</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-amber-600 dark:text-amber-400"
-              >
-                <polyline points="9 11 12 14 22 4" />
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-              </svg>
-              <span className="font-heading font-semibold text-foreground">Quizzes</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                className="text-emerald-600 dark:text-emerald-400"
-              >
-                <rect x="3" y="4" width="18" height="14" rx="2" />
-                <path d="M7 22h10" />
-                <path d="M12 18v4" />
-              </svg>
-              <span className="font-heading font-semibold text-foreground">
-                Verified Certificates
+            {[
+              {
+                label: "Zero Distractions",
+                color: "text-teal-600 dark:text-teal-400",
+              },
+              {
+                label: "AI Study Notes",
+                color: "text-indigo-600 dark:text-indigo-400",
+              },
+              {
+                label: "Quizzes",
+                color: "text-amber-600 dark:text-amber-400",
+              },
+              {
+                label: "Verified Certificates",
+                color: "text-emerald-600 dark:text-emerald-400",
+              },
+            ].map(({ label, color }) => (
+              <span key={label} className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full bg-current ${color}`} />
+                <span className={`font-heading font-semibold text-foreground`}>{label}</span>
               </span>
-            </span>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── 2. How It Works ─────────────────────────────────────────────── */}
       <section
-        className="py-14 sm:py-20 bg-muted/30 border-y border-border/50"
+        ref={howItWorksSection.ref as React.RefObject<HTMLElement>}
+        className={`py-14 sm:py-20 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+          howItWorksSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
         aria-labelledby="pipeline-title"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -197,68 +317,64 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Step 1 */}
-            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-teal-500/40 hover:shadow-md transition-all">
-              <div>
-                <div className="w-11 h-11 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4 border border-teal-500/20 font-heading font-black text-sm">
-                  01
+            {[
+              {
+                num: "01",
+                title: "Paste a Playlist Link",
+                desc: "Drop any YouTube tutorial series, university lecture, or coding bootcamp URL. VeySkill instantly generates a structured course syllabus.",
+                footer: "Instant Setup",
+                color: "teal",
+              },
+              {
+                num: "02",
+                title: "Study Without Distractions",
+                desc: "Focused theater playback with no recommendations, no comments, no rabbit holes. Take AI-powered notes and track your progress.",
+                footer: "Focused Learning",
+                color: "indigo",
+              },
+              {
+                num: "03",
+                title: "Earn Your Certificate",
+                desc: "Complete all lessons, pass the comprehension quiz, and claim a verified Certificate of Completion with public verification.",
+                footer: "Verified Credential",
+                color: "emerald",
+              },
+            ].map(({ num, title, desc, footer, color }, i) => (
+              <div
+                key={num}
+                className={`enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-${color}-500/40 hover:shadow-md transition-all duration-300`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div>
+                  <div
+                    className={`w-11 h-11 rounded-xl bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 flex items-center justify-center mb-4 border border-${color}-500/20 font-heading font-black text-sm`}
+                  >
+                    {num}
+                  </div>
+                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">{title}</h3>
+                  <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {desc}
+                  </p>
                 </div>
-                <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Paste a Playlist Link
-                </h3>
-                <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Drop any YouTube tutorial series, university lecture, or coding bootcamp URL.
-                  VeySkill instantly generates a structured course syllabus.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-teal-600 dark:text-teal-400">
-                Instant Setup
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-indigo-500/40 hover:shadow-md transition-all">
-              <div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20 font-heading font-black text-sm">
-                  02
+                <div
+                  className={`mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-${color}-600 dark:text-${color}-400`}
+                >
+                  {footer}
                 </div>
-                <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Study Without Distractions
-                </h3>
-                <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Focused theater playback with no recommendations, no comments, no rabbit holes.
-                  Take AI-powered notes and track your progress.
-                </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-indigo-600 dark:text-indigo-400">
-                Focused Learning
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/40 hover:shadow-md transition-all">
-              <div>
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20 font-heading font-black text-sm">
-                  03
-                </div>
-                <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                  Earn Your Certificate
-                </h3>
-                <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Complete all lessons, pass the comprehension quiz, and claim a verified
-                  Certificate of Completion with public verification.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-400">
-                Verified Credential
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── 3. Trending Courses ────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" aria-labelledby="disciplines-title">
+      <section
+        ref={disciplinesSection.ref as React.RefObject<HTMLElement>}
+        className={`py-14 sm:py-20 transition-all duration-700 ${
+          disciplinesSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+        aria-labelledby="disciplines-title"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
@@ -274,7 +390,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/explore"
-              className="text-xs sm:text-sm font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1.5"
+              className="text-xs sm:text-sm font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1.5 flex-shrink-0"
             >
               <span>Browse All Courses</span>
               <svg
@@ -295,7 +411,8 @@ export default function HomePage() {
               <Link
                 key={idx}
                 href={`/explore?q=${encodeURIComponent(item.query)}`}
-                className="enterprise-card p-5 rounded-xl hover:border-teal-500/60 hover:shadow-md transition-all flex flex-col justify-between group active:scale-[0.98]"
+                className={`enterprise-card p-5 rounded-xl ${item.hoverBorder} hover:shadow-md transition-all duration-300 flex flex-col justify-between group active:scale-[0.98]`}
+                style={{ transitionDelay: `${idx * 60}ms` }}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -325,44 +442,67 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 4. Stats Bar ───────────────────────────────────────────────── */}
-      <section className="py-10 sm:py-14 bg-muted/30 border-y border-border/50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      {/* ── 4. Animated Stats Bar ──────────────────────────────────────── */}
+      <section
+        ref={statsSection.ref as React.RefObject<HTMLElement>}
+        className={`py-10 sm:py-14 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+          statsSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+        }`}
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-            <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-teal-600 dark:text-teal-400 font-heading font-black text-2xl mb-1">
-                100%
+            {[
+              {
+                value: `${formatCount(learnersCount)}`,
+                label: "Learners",
+                sub: "Worldwide",
+                color: "text-teal-600 dark:text-teal-400",
+              },
+              {
+                value: "AI",
+                label: "Study Notes",
+                sub: "Auto-generated",
+                color: "text-indigo-600 dark:text-indigo-400",
+              },
+              {
+                value: `${formatCount(coursesCount)}`,
+                label: "Courses",
+                sub: "& growing",
+                color: "text-amber-600 dark:text-amber-400",
+              },
+              {
+                value: "∞",
+                label: "Free Forever",
+                sub: "No paywalls",
+                color: "text-emerald-600 dark:text-emerald-400",
+              },
+            ].map(({ value, label, sub, color }, i) => (
+              <div
+                key={label}
+                className="enterprise-card p-4 rounded-xl"
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div
+                  className={`${color} font-heading font-black text-2xl sm:text-3xl mb-1 tabular-nums`}
+                >
+                  {value}
+                </div>
+                <div className="font-heading font-bold text-xs text-foreground">{label}</div>
+                <div className="text-[11px] font-body text-muted-foreground">{sub}</div>
               </div>
-              <div className="font-heading font-bold text-xs text-foreground">Focused</div>
-              <div className="text-[11px] font-body text-muted-foreground">No distractions</div>
-            </div>
-            <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-indigo-600 dark:text-indigo-400 font-heading font-black text-2xl mb-1">
-                AI
-              </div>
-              <div className="font-heading font-bold text-xs text-foreground">Study Notes</div>
-              <div className="text-[11px] font-body text-muted-foreground">Auto-generated</div>
-            </div>
-            <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-amber-600 dark:text-amber-400 font-heading font-black text-2xl mb-1">
-                70%
-              </div>
-              <div className="font-heading font-bold text-xs text-foreground">Quiz Gate</div>
-              <div className="text-[11px] font-body text-muted-foreground">Prove mastery</div>
-            </div>
-            <div className="enterprise-card p-4 rounded-xl">
-              <div className="text-emerald-600 dark:text-emerald-400 font-heading font-black text-2xl mb-1">
-                ∞
-              </div>
-              <div className="font-heading font-bold text-xs text-foreground">Free Forever</div>
-              <div className="text-[11px] font-body text-muted-foreground">No paywalls</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── 5. Why VeySkill ────────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" aria-labelledby="comparison-title">
+      {/* ── 5. Why VeySkill — Comparison Table ──────────────────────────── */}
+      <section
+        ref={comparisonSection.ref as React.RefObject<HTMLElement>}
+        className={`py-14 sm:py-20 transition-all duration-700 ${
+          comparisonSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+        aria-labelledby="comparison-title"
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <h2
@@ -428,9 +568,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 6. FAQ Section ─────────────────────────────────────────────── */}
+      {/* ── 6. FAQ Accordion ────────────────────────────────────────────── */}
       <section
-        className="py-14 sm:py-20 bg-muted/30 border-y border-border/50"
+        ref={faqSection.ref as React.RefObject<HTMLElement>}
+        className={`py-14 sm:py-20 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+          faqSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
         aria-labelledby="faq-title"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -446,26 +589,21 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3" role="list">
             {faqs.map((faq, idx) => (
-              <div
-                key={idx}
-                className="p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-sm"
-              >
-                <h3 className="font-heading font-bold text-base sm:text-lg text-foreground mb-2">
-                  {faq.q}
-                </h3>
-                <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {faq.a}
-                </p>
-              </div>
+              <FAQItem key={idx} q={faq.q} a={faq.a} idx={idx} />
             ))}
           </div>
         </div>
       </section>
 
       {/* ── 7. Final CTA ───────────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20">
+      <section
+        ref={ctaSection.ref as React.RefObject<HTMLElement>}
+        className={`py-14 sm:py-20 transition-all duration-700 ${
+          ctaSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mb-3">
             Ready to start learning?
@@ -478,7 +616,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/explore"
-              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2.5 active:scale-95 font-heading font-extrabold rounded-2xl transition-all"
+              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[52px] w-full sm:w-auto inline-flex items-center justify-center gap-2.5 active:scale-95 font-heading font-extrabold rounded-2xl transition-all"
             >
               <span>Explore Courses</span>
               <svg
@@ -498,7 +636,7 @@ export default function HomePage() {
 
             <Link
               href="/create"
-              className="btn-secondary text-sm sm:text-base px-7 py-3.5 min-h-[48px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl font-heading font-bold transition-all"
+              className="btn-secondary text-sm sm:text-base px-7 py-3.5 min-h-[52px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl font-heading font-bold transition-all"
             >
               <svg
                 width="16"

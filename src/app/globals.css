@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600;700;800&display=swap");
+/* Fonts are preloaded via <link> in layout.tsx — no @import to avoid render-blocking */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,6 +51,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Fluid base font: 15px @ 375px → 17px @ 1440px */
+  font-size: clamp(15px, calc(14px + 0.2vw), 17px);
 }
 
 body {
@@ -61,9 +63,13 @@ body {
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+  /* Smooth font rendering on all platforms */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* ── Typography ────────────────────────────────────────────────────────── */
+/* ── Typography — Fluid scale with clamp() ─────────────────────────────── */
 h1,
 h2,
 h3,
@@ -73,6 +79,16 @@ h6 {
   @apply font-heading font-bold;
   line-height: 1.25;
   letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Fluid heading sizes — no media query needed */
+h1 { font-size: clamp(2rem, 5vw + 1rem, 4.5rem); }
+h2 { font-size: clamp(1.5rem, 3vw + 0.75rem, 2.75rem); }
+h3 { font-size: clamp(1.125rem, 2vw + 0.5rem, 1.75rem); }
+
+p {
+  text-wrap: pretty;
 }
 
 /* ── Focus ring (accessible, visible, custom) ──────────────────────────── */
@@ -496,9 +512,56 @@ body {
   }
 }
 
-/* Image rendering quality on retina / high-dpi mobile screens */
-img,
+/* Image rendering — smooth for photos, sharp only for pixel art */
+img {
+  image-rendering: auto;
+}
 video {
-  image-rendering: -webkit-optimize-contrast;
+  image-rendering: auto;
+}
+/* Pixel art / icons get sharp rendering */
+.pixel-art {
+  image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+/* ── Content-visibility — Massive LCP/FPS gains on long pages ──────────── */
+/* Sections below the fold get deferred paint — browser skips off-screen layout */
+section:not(:first-of-type) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* ── Container queries — Future-proof responsive components ─────────────── */
+.card-container {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* ── Print stylesheet — Professional hardcopy output ───────────────────── */
+@media print {
+  nav,
+  header,
+  footer,
+  [aria-label="Mobile Bottom Navigation"],
+  .btn-primary,
+  .btn-secondary,
+  .btn-accent,
+  [role="banner"],
+  [role="navigation"] {
+    display: none !important;
+  }
+  body {
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+  }
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #555;
+  }
+  @page {
+    margin: 2cm;
+  }
 }
