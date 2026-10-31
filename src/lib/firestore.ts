@@ -97,6 +97,13 @@ export async function createUserDoc(
   );
 }
 
+export async function updateUserDoc(
+  uid: string,
+  data: Partial<Omit<UserDoc, "createdAt" | "isAdmin">>
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTIONS.USERS, uid), data);
+}
+
 // ── Course helpers ─────────────────────────────────────────────────────────
 
 export async function getCourse(courseId: string): Promise<CourseDoc | null> {

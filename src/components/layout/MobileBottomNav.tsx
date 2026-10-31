@@ -149,10 +149,17 @@ export function MobileBottomNav() {
               pathname === "/doubts" ||
               pathname?.startsWith("/doubts/"));
 
+          const isLearningMatch =
+            item.href === "/my-learning" &&
+            (pathname === "/my-learning" ||
+              pathname?.startsWith("/my-learning/") ||
+              pathname === "/profile");
+
           const isActive =
             item.href === "/"
               ? pathname === "/"
               : isArenaMatch ||
+                isLearningMatch ||
                 pathname === item.href ||
                 Boolean(pathname?.startsWith(`${item.href}/`));
 
