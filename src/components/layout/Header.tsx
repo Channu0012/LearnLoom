@@ -295,15 +295,19 @@ export function Header() {
           {!loading && (
             <>
               {user ? (
-                <div ref={dropdownRef} className="flex items-center gap-2 relative">
+                <div ref={dropdownRef} className="flex items-center gap-1 sm:gap-1.5 relative">
                   <StreakWidget />
-                  <button
-                    id="user-menu-btn"
-                    onClick={() => setUserDropdownOpen((o) => !o)}
-                    className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full cursor-pointer hover:opacity-85 active:scale-95 transition-all p-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    aria-label="User profile menu"
-                    aria-expanded={userDropdownOpen}
-                    aria-haspopup="true"
+
+                  {/* Profile symbol — clicking opens /profile directly */}
+                  <Link
+                    href="/profile"
+                    className={`flex items-center justify-center rounded-full p-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 hover:opacity-90 active:scale-95 ${
+                      isNavActive("/profile")
+                        ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-background"
+                        : "hover:ring-1 hover:ring-border"
+                    }`}
+                    aria-label="My Profile"
+                    title="My Profile"
                   >
                     {user.photoURL ? (
                       <Image
@@ -311,32 +315,65 @@ export function Header() {
                         alt={user.displayName ?? "User profile"}
                         width={36}
                         height={36}
-                        className="rounded-full border-2 border-border object-cover"
+                        className="w-9 h-9 rounded-full border border-border object-cover"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-950 flex items-center justify-center font-heading font-bold text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-800">
+                      <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-950 flex items-center justify-center font-heading font-bold text-sm text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-800">
                         {(user.displayName ?? "U")[0].toUpperCase()}
                       </div>
                     )}
+                  </Link>
+
+                  {/* Dropdown toggle chevron */}
+                  <button
+                    id="user-menu-btn"
+                    onClick={() => setUserDropdownOpen((o) => !o)}
+                    className="w-6 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    aria-label="User profile menu"
+                    aria-expanded={userDropdownOpen}
+                    aria-haspopup="true"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`transition-transform duration-200 ${userDropdownOpen ? "rotate-180 text-foreground" : ""}`}
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
                   </button>
 
                   {/* Desktop / Tablet User Dropdown Menu */}
                   {userDropdownOpen && (
                     <div
-                      className="absolute top-12 right-0 enterprise-card p-2 min-w-[220px] z-50 bg-card border border-border shadow-xl rounded-xl animate-scale-in"
+                      className="absolute top-12 right-0 enterprise-card p-2 min-w-[230px] z-50 bg-card border border-border shadow-xl rounded-xl animate-scale-in"
                       role="menu"
                       aria-labelledby="user-menu-btn"
                     >
-                      <div className="px-3 py-2.5 bg-muted/40 rounded-xl mb-1">
-                        <p className="text-xs font-heading font-bold text-foreground truncate">
-                          {user.displayName ?? "VeySkill Scholar"}
-                        </p>
-                        {user.email && (
-                          <p className="text-[11px] text-muted-foreground font-body truncate">
-                            {user.email}
+                      <Link
+                        href="/profile"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/80 rounded-xl mb-1 transition-colors group cursor-pointer"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <p className="text-xs font-heading font-bold text-foreground truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                            {user.displayName ?? "VeySkill Scholar"}
                           </p>
-                        )}
-                      </div>
+                          {user.email && (
+                            <p className="text-[11px] text-muted-foreground font-body truncate">
+                              {user.email}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-heading font-bold text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
+                          Profile →
+                        </span>
+                      </Link>
                       <hr className="border-border/60 my-1" />
                       <Link
                         href="/profile"
