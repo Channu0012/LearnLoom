@@ -275,39 +275,37 @@ export function Header() {
                 <div className="flex items-center gap-2 sm:gap-2.5">
                   <StreakWidget />
 
-                  {/* Direct Profile Link — Futuristic glow, micro-scale, instant prefetch */}
+                  {/* Direct Profile Link — Opens /profile directly with zero menus, zero popovers, zero tooltips */}
                   <Link
                     href="/profile"
                     prefetch={true}
-                    className={`relative group flex items-center justify-center rounded-full p-0.5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-95 ${
+                    className={`relative group flex items-center justify-center rounded-full p-0.5 transition-all duration-200 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-90 ${
                       isNavActive("/profile")
                         ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-background shadow-[0_0_16px_rgba(20,184,166,0.4)]"
                         : "hover:ring-2 hover:ring-teal-500/70 hover:ring-offset-1 hover:ring-offset-background hover:shadow-[0_0_14px_rgba(20,184,166,0.3)]"
                     }`}
-                    aria-label="My Scholar Profile"
-                    title={
-                      user.displayName ? `${user.displayName} (Open Profile)` : "My Scholar Profile"
-                    }
+                    aria-label="Profile"
                   >
-                    <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden transition-transform duration-300 group-hover:scale-105 border border-border/80 bg-card">
+                    <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden transition-transform duration-200 group-hover:scale-105 border border-border/80 bg-card pointer-events-none select-none">
                       {user.photoURL ? (
                         <Image
                           src={user.photoURL}
                           alt={user.displayName ?? "User profile"}
                           width={40}
                           height={40}
-                          className="w-full h-full object-cover"
+                          draggable={false}
+                          className="w-full h-full object-cover pointer-events-none select-none"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center font-heading font-black text-sm text-white select-none">
+                        <div className="w-full h-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center font-heading font-black text-sm text-white select-none pointer-events-none">
                           {(user.displayName ?? user.email ?? "U")[0].toUpperCase()}
                         </div>
                       )}
                     </div>
                     {/* Active online pulse dot */}
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-card shadow-xs group-hover:scale-110 transition-transform"
-                      title="Online"
+                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-card shadow-xs group-hover:scale-110 transition-transform pointer-events-none select-none"
+                      aria-hidden="true"
                     />
                   </Link>
                 </div>
