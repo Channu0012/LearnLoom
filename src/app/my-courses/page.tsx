@@ -7,9 +7,14 @@ import { getCoursesByCreator, deleteCourse } from "@/lib/firestore";
 import type { CourseDoc } from "@/lib/types";
 
 export default function MyCoursesPage() {
-  const { user, loading, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [courses, setCourses] = useState<CourseDoc[]>([]);
   const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -130,7 +135,8 @@ export default function MyCoursesPage() {
     });
   };
 
-  if (loading || fetching) {
+  // 1. Authenticated creator actively fetching courses with no cached items yet
+  if (mounted && user && fetching && courses.length === 0) {
     return (
       <div
         className="container-page py-10 max-w-5xl"
@@ -219,7 +225,8 @@ export default function MyCoursesPage() {
     );
   }
 
-  if (!user) {
+  // 2. Server-side pre-rendering (SSR) or unauthenticated visitor showcase
+  if (!mounted || !user) {
     return (
       <div className="container-page py-12 max-w-6xl">
         {/* Creator Studio Hero */}

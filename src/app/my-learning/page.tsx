@@ -19,9 +19,14 @@ interface CourseWithProgress {
 
 export default function MyLearningPage() {
   const router = useRouter();
-  const { user, loading, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState<CourseWithProgress[]>([]);
   const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [filter, setFilter] = useState<"all" | "in_progress" | "completed" | "certificates">("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [courseToRemove, setCourseToRemove] = useState<CourseWithProgress | null>(null);
@@ -351,7 +356,8 @@ export default function MyLearningPage() {
     }
   };
 
-  if (loading || fetching) {
+  // 1. Authenticated user actively fetching data with no items yet
+  if (mounted && user && fetching && items.length === 0) {
     return (
       <div
         className="container-page py-12 max-w-5xl mx-auto px-4"
@@ -395,7 +401,8 @@ export default function MyLearningPage() {
     );
   }
 
-  if (!user) {
+  // 2. Server-side pre-rendering (SSR) or unauthenticated visitor showcase
+  if (!mounted || !user) {
     return (
       <div className="container-page py-12 max-w-6xl">
         {/* Hero Section */}

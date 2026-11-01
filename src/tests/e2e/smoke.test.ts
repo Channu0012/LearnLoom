@@ -7,27 +7,21 @@ test.describe("Home page", () => {
     await page.goto("/");
     await expect(page).toHaveTitle(/VeySkill/i);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.locator("#cta-create")).toBeVisible();
-    await expect(page.locator("#cta-explore")).toBeVisible();
+    await expect(page.getByPlaceholder(/Paste any YouTube playlist/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Convert to Course/i })).toBeVisible();
   });
 
-  test("Create course button navigates to /create", async ({ page }) => {
+  test("Trending starter chip navigates to /explore with query", async ({ page }) => {
     await page.goto("/");
-    await page.locator("#cta-create").click();
-    await expect(page).toHaveURL(/\/create/);
-  });
-
-  test("Explore courses button navigates to /explore", async ({ page }) => {
-    await page.goto("/");
-    await page.locator("#cta-explore").click();
-    await expect(page).toHaveURL(/\/explore/);
+    await page.getByRole("button", { name: /Next\.js 15 Full-Stack/i }).click();
+    await expect(page).toHaveURL(/\/explore\?q=/);
   });
 });
 
 test.describe("Explore page", () => {
   test("loads with search bar and refresh feed button", async ({ page }) => {
     await page.goto("/explore");
-    await expect(page.getByRole("searchbox", { name: /search masterclasses/i })).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: /search courses/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /refresh feed/i })).toBeVisible();
   });
 });
@@ -95,7 +89,7 @@ test.describe("Credential Verification", () => {
     await expect(
       page.getByRole("heading", { name: /Official Credential Verification/i, level: 1 })
     ).toBeVisible();
-    await expect(page.getByText("Alex Morgan").first()).toBeVisible();
+    await expect(page.getByText("Distinguished Scholar").first()).toBeVisible();
     await expect(page.getByText(/Cryptographically Verified/i).first()).toBeVisible();
   });
 
