@@ -257,7 +257,7 @@ export function AnswerList({ doubt, answers, onRefresh }: AnswerListProps) {
                 </button>
 
                 <span className="text-[11px] text-muted-foreground/80">
-                  {answer.isSolution ? "⭐ Solution rewarded" : "Community response"}
+                  {answer.isSolution ? "Solution rewarded" : "Community response"}
                 </span>
               </div>
             </div>

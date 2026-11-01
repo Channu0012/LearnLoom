@@ -303,10 +303,10 @@ export default async function VerifyCertificatePage({ params, searchParams }: Pr
   // LinkedIn certification URL
   const linkedInShareUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationName=${encodeURIComponent("VeySkill")}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(cleanId)}`;
   const whatsAppShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
-    `Take a look at my verified Certificate of Completion in "${courseTitle}" from VeySkill! 🎓 Verify here: ${verifyUrl}`
+    `Take a look at my verified Certificate of Completion in "${courseTitle}" from VeySkill! Verify here: ${verifyUrl}`
   )}`;
   const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    `Just earned my verified Certificate of Completion in "${courseTitle}" on @VeySkill! 🚀 Verify: ${verifyUrl}`
+    `Just earned my verified Certificate of Completion in "${courseTitle}" on @VeySkill! Verify: ${verifyUrl}`
   )}`;
 
   const estimatedStudyHours = Math.max(2, Math.round(lessonCount * 0.75));

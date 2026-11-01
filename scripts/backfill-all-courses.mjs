@@ -2,7 +2,12 @@ import fs from "fs";
 import path from "path";
 
 // Read Firebase CLI token
-const configPath = path.join(process.env.USERPROFILE, ".config", "configstore", "firebase-tools.json");
+const configPath = path.join(
+  process.env.USERPROFILE,
+  ".config",
+  "configstore",
+  "firebase-tools.json"
+);
 const configRaw = fs.readFileSync(configPath, "utf8");
 const config = JSON.parse(configRaw);
 let accessToken = config.tokens?.access_token;
@@ -10,7 +15,10 @@ const refreshToken = config.tokens?.refresh_token;
 
 async function getValidToken() {
   // If token is about to expire, refresh it
-  if (!accessToken || (config.tokens?.expires_at && Date.now() >= config.tokens.expires_at - 60000)) {
+  if (
+    !accessToken ||
+    (config.tokens?.expires_at && Date.now() >= config.tokens.expires_at - 60000)
+  ) {
     console.log("Refreshing Google OAuth token...");
     const res = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -40,7 +48,9 @@ async function fetchYouTubeAuthor(videoId) {
     if (data?.author_name) {
       return {
         channelTitle: String(data.author_name).trim(),
-        channelUrl: data.author_url ? String(data.author_url).trim() : `https://www.youtube.com/results?search_query=${encodeURIComponent(data.author_name)}`,
+        channelUrl: data.author_url
+          ? String(data.author_url).trim()
+          : `https://www.youtube.com/results?search_query=${encodeURIComponent(data.author_name)}`,
       };
     }
   } catch (err) {
@@ -107,8 +117,8 @@ async function main() {
   for (let i = 0; i < courses.length; i++) {
     const c = courses[i];
     console.log(`[${i + 1}/${courses.length}] Checking: "${c.title}" (ID: ${c.id})`);
-    console.log(`  Current Creator / Uploader: "${c.creatorName || 'None'}"`);
-    console.log(`  Current Channel Title: "${c.existingChannelTitle || 'MISSING'}"`);
+    console.log(`  Current Creator / Uploader: "${c.creatorName || "None"}"`);
+    console.log(`  Current Channel Title: "${c.existingChannelTitle || "MISSING"}"`);
 
     if (!c.coverVideoId) {
       console.log(`  ⚠️ No coverVideoId found. Skipping.`);
@@ -123,7 +133,9 @@ async function main() {
       continue;
     }
 
-    console.log(`  ✨ Authentic YouTube Channel: "${authorInfo.channelTitle}" (${authorInfo.channelUrl})`);
+    console.log(
+      `  ✨ Authentic YouTube Channel: "${authorInfo.channelTitle}" (${authorInfo.channelUrl})`
+    );
 
     try {
       await updateCourseInFirestore(c.id, authorInfo.channelTitle, authorInfo.channelUrl, token);

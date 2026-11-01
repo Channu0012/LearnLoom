@@ -249,6 +249,6 @@ export function generateTwitterShareUrl(params: {
   instructorName: string;
   certUrl: string;
 }): string {
-  const text = `Just completed "${params.courseTitle}" by ${params.instructorName} on @VeySkill! 🎓 Check out my verified credential:`;
+  const text = `Just completed "${params.courseTitle}" by ${params.instructorName} on @VeySkill! Check out my verified credential:`;
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(params.certUrl)}`;
 }

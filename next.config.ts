@@ -12,10 +12,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   experimental: {
-    optimizePackageImports: [
-      "jspdf",
-      "qrcode",
-    ],
+    optimizePackageImports: ["jspdf", "qrcode"],
   },
   images: {
     formats: ["image/avif", "image/webp"],

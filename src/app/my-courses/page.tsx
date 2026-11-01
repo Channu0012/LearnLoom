@@ -190,65 +190,259 @@ export default function MyCoursesPage() {
 
   if (!user) {
     return (
-      <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="enterprise-card p-8 bg-card border border-border text-center rounded-2xl shadow-sm">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-primary-100 dark:bg-primary-950/60 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm">
+      <div className="container-page py-12 max-w-6xl">
+        {/* Creator Studio Hero */}
+        <div className="relative rounded-3xl bg-gradient-to-b from-primary-950/20 via-card to-card border border-border p-8 sm:p-12 text-center overflow-hidden mb-12 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-heading font-bold mb-4 border border-primary-200 dark:border-primary-800">
             <svg
-              width="30"
-              height="30"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+              strokeWidth="2.5"
             >
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
+            <span>VeySkill Creator Studio</span>
           </div>
-          <div className="inline-block px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground font-mono text-[11px] font-bold uppercase tracking-wider mb-3">
-            Creator Studio Access
-          </div>
-          <h1 className="font-heading font-black text-2xl sm:text-3xl text-foreground mb-2">
-            My Courses & Studio
+
+          <h1 className="font-heading font-black text-3xl sm:text-5xl text-foreground max-w-3xl mx-auto tracking-tight leading-tight mb-4">
+            Transform YouTube Playlists into Structured Courses
           </h1>
-          <p className="font-body text-xs sm:text-sm text-muted-foreground mb-6 leading-relaxed max-w-xs mx-auto">
-            Sign in to create, publish, and monitor your courses, student analytics, and curriculum
-            chapters.
+
+          <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Organize any educational video series into accredited curriculum modules. Provide your
+            students with a distraction-free learning theater, auto-generated quizzes, and
+            verifiable certificates.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+            <Link
+              href="/create"
+              className="btn-accent w-full sm:w-auto px-7 py-3 text-sm font-heading font-bold shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center gap-2"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Build a Course Free</span>
+            </Link>
+
             <button
               type="button"
               onClick={() => openAuthModal("signin")}
-              className="btn-primary w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold shadow-md cursor-pointer"
+              className="btn-primary w-full sm:w-auto px-7 py-3 text-sm font-heading font-bold shadow-md hover:shadow-lg transition-all cursor-pointer inline-flex items-center justify-center gap-2"
             >
-              Sign In to Studio
-            </button>
-            <button
-              type="button"
-              onClick={() => openAuthModal("signup")}
-              className="btn-secondary w-full sm:w-auto px-6 py-2.5 text-xs font-heading font-bold cursor-pointer"
-            >
-              Create Account
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              <span>Sign In to Studio</span>
             </button>
           </div>
-          <div className="pt-4 mt-5 border-t border-border/60">
-            <Link
-              href="/quick-watch"
-              className="btn-ghost w-full py-2.5 px-4 text-xs font-heading font-semibold inline-flex items-center justify-center gap-2 border border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 rounded-xl transition-all"
-            >
-              <span className="w-4 h-4 rounded bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21 5 3" />
+        </div>
+
+        {/* 4 Creator Studio Value Pillars */}
+        <div className="mb-14">
+          <div className="text-center mb-8">
+            <h2 className="font-heading font-bold text-2xl sm:text-3xl text-foreground">
+              Powerful Creator Tools at Zero Cost
+            </h2>
+            <p className="font-body text-sm text-muted-foreground mt-1">
+              Curate, polish, and distribute video courses without managing video hosting or
+              expensive servers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-teal-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4 border border-teal-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
-              </span>
-              <span>Launch Quick Watch (Focus Theatre)</span>
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold">
-                No Login Required
-              </span>
-            </Link>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                1-Click Playlist Converter
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Paste any public YouTube playlist. VeySkill instantly extracts titles, durations,
+                video IDs, and chapter breakdowns.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-indigo-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Curriculum Editor
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Reorder lessons, write chapter summaries, embed interactive code scratchpads, and
+                add checkpoint quizzes.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-amber-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 border border-amber-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Automated Certification
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                When students finish your course, VeySkill automatically generates cryptographic
+                credentials bearing your course name.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-emerald-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Global Distribution
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Your courses are indexed in the public catalog at /explore and discoverable by
+                students worldwide.
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* 3-Step Publishing Workflow */}
+        <div className="rounded-3xl bg-muted/40 border border-border p-8 sm:p-10 mb-12">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <h2 className="font-heading font-bold text-xl sm:text-2xl text-foreground">
+              How Course Publishing Works
+            </h2>
+            <p className="font-body text-xs sm:text-sm text-muted-foreground mt-1">
+              Go from raw YouTube links to an interactive masterclass in under 2 minutes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-2xl bg-card border border-border text-center">
+              <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-heading font-bold text-sm flex items-center justify-center mx-auto mb-3">
+                1
+              </div>
+              <h3 className="font-heading font-bold text-base text-foreground mb-1">
+                Paste YouTube URL
+              </h3>
+              <p className="font-body text-xs text-muted-foreground">
+                Enter any public tutorial playlist, bootcamp series, or university lecture
+                collection.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border text-center">
+              <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-heading font-bold text-sm flex items-center justify-center mx-auto mb-3">
+                2
+              </div>
+              <h3 className="font-heading font-bold text-base text-foreground mb-1">
+                Review &amp; Refine Syllabus
+              </h3>
+              <p className="font-body text-xs text-muted-foreground">
+                Inspect auto-generated lesson order, adjust descriptions, and add quiz checkpoints.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border text-center">
+              <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-heading font-bold text-sm flex items-center justify-center mx-auto mb-3">
+                3
+              </div>
+              <h3 className="font-heading font-bold text-base text-foreground mb-1">
+                Publish &amp; Share
+              </h3>
+              <p className="font-body text-xs text-muted-foreground">
+                Your course goes live with a clean URL, SEO meta tags, and verified student
+                enrollment.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Launch Quick Watch CTA */}
+        <div className="rounded-2xl bg-card border border-border p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0 border border-teal-500/20">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+            <div>
+              <div className="font-heading font-bold text-sm text-foreground">
+                Just want to watch a playlist without signing in?
+              </div>
+              <div className="font-body text-xs text-muted-foreground">
+                Quick Watch lets you paste any playlist and study in distraction-free theatre mode
+                instantly.
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/quick-watch"
+            className="btn-ghost text-xs font-heading font-bold px-4 py-2 border border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 whitespace-nowrap"
+          >
+            Launch Quick Watch
+          </Link>
         </div>
       </div>
     );

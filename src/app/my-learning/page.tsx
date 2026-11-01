@@ -360,38 +360,297 @@ export default function MyLearningPage() {
 
   if (!user) {
     return (
-      <div className="container-page py-20 text-center max-w-md mx-auto">
-        <div className="enterprise-card p-8 bg-card border border-border text-center rounded-2xl">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-950/60 flex items-center justify-center text-primary-600 dark:text-primary-400">
+      <div className="container-page py-12 max-w-6xl">
+        {/* Hero Section */}
+        <div className="relative rounded-3xl bg-gradient-to-b from-primary-950/20 via-card to-card border border-border p-8 sm:p-12 text-center overflow-hidden mb-12 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-heading font-bold mb-4 border border-primary-200 dark:border-primary-800">
             <svg
-              width="28"
-              height="28"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+              strokeWidth="2.5"
             >
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
+            <span>VeySkill Student Portal</span>
           </div>
-          <h1 className="font-heading font-extrabold text-2xl mb-2 text-foreground">
-            Sign In for Learning Progress
+
+          <h1 className="font-heading font-black text-3xl sm:text-5xl text-foreground max-w-3xl mx-auto tracking-tight leading-tight mb-4">
+            Personalized Learning Dashboard &amp; Progress Tracker
           </h1>
-          <p className="text-muted-foreground font-body text-sm mb-6 leading-relaxed">
-            Sign in to track your started courses, claim verified completion certificates, and
-            resume where you left off across all devices.
+
+          <p className="font-body text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Pick up where you left off. Turn YouTube video playlists into distraction-free
+            masterclasses, take auto-saved notes, solve AI comprehension quizzes, and claim verified
+            certificates of completion.
           </p>
-          <button
-            type="button"
-            onClick={() => openAuthModal("signin")}
-            className="btn-primary w-full py-3"
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+            <button
+              type="button"
+              onClick={() => openAuthModal("signin")}
+              className="btn-primary w-full sm:w-auto px-7 py-3 text-sm font-heading font-bold shadow-md hover:shadow-lg transition-all cursor-pointer inline-flex items-center justify-center gap-2"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              <span>Sign In to Learning Portal</span>
+            </button>
+
+            <Link
+              href="/explore"
+              className="btn-ghost w-full sm:w-auto px-7 py-3 text-sm font-heading font-semibold border border-border hover:border-primary-500/50 bg-card hover:bg-muted transition-all inline-flex items-center justify-center gap-2"
+            >
+              <span>Explore Masterclasses</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        {/* 4 Feature Pillars Grid */}
+        <div className="mb-14">
+          <div className="text-center mb-8">
+            <h2 className="font-heading font-bold text-2xl sm:text-3xl text-foreground">
+              Built for Serious Self-Paced Learners
+            </h2>
+            <p className="font-body text-sm text-muted-foreground mt-1">
+              Everything you need to transform passive video watching into proven career skills.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-teal-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-4 border border-teal-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Distraction-Free Theater
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Study with zero algorithmic clickbait, zero comment distractions, and clean theater
+                mode controls.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-indigo-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="8" r="7" />
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Verified Certificates
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Earn cryptographic certificates of completion with unique credential IDs and public
+                verification links.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-amber-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 border border-amber-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Auto-Saved Notes &amp; Quizzes
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Timestamped note taking synchronized to lecture points and AI-powered assessments to
+                test retention.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-emerald-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-lg text-foreground mb-1.5">
+                Habit Tracking &amp; Streaks
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Keep daily learning momentum, earn study achievements, and compete in the Peer
+                Knowledge Arena.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Popular Tracks Preview */}
+        <div className="rounded-3xl bg-muted/40 border border-border p-8 sm:p-10 mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="font-heading font-bold text-xl sm:text-2xl text-foreground">
+                Popular Learning Paths Ready to Start
+              </h2>
+              <p className="font-body text-xs sm:text-sm text-muted-foreground mt-0.5">
+                Start learning with zero tuition fees. Sign in anytime to sync your progress.
+              </p>
+            </div>
+            <Link
+              href="/explore"
+              className="text-xs font-heading font-bold text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
+            >
+              <span>Browse All Tracks</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              href="/explore?q=fullstack"
+              className="p-4 rounded-xl bg-card border border-border hover:border-primary-500/40 transition-all group"
+            >
+              <div className="text-xs font-mono font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">
+                Development
+              </div>
+              <div className="font-heading font-bold text-sm text-foreground group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                Full-Stack Next.js &amp; React
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">30+ Modular Lessons</div>
+            </Link>
+
+            <Link
+              href="/explore?q=ai"
+              className="p-4 rounded-xl bg-card border border-border hover:border-primary-500/40 transition-all group"
+            >
+              <div className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">
+                Artificial Intelligence
+              </div>
+              <div className="font-heading font-bold text-sm text-foreground group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                Python, LLMs &amp; LangChain
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">24+ Modular Lessons</div>
+            </Link>
+
+            <Link
+              href="/explore?q=dsa"
+              className="p-4 rounded-xl bg-card border border-border hover:border-primary-500/40 transition-all group"
+            >
+              <div className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+                Algorithms
+              </div>
+              <div className="font-heading font-bold text-sm text-foreground group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                Data Structures &amp; Coding Prep
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">45+ Modular Lessons</div>
+            </Link>
+
+            <Link
+              href="/explore?q=cloud"
+              className="p-4 rounded-xl bg-card border border-border hover:border-primary-500/40 transition-all group"
+            >
+              <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
+                Cloud Architecture
+              </div>
+              <div className="font-heading font-bold text-sm text-foreground group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                System Design &amp; DevOps
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">18+ Modular Lessons</div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Verification Checkpoint Banner */}
+        <div className="rounded-2xl bg-card border border-border p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center flex-shrink-0">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div>
+              <div className="font-heading font-bold text-sm text-foreground">
+                Looking to verify an issued certificate?
+              </div>
+              <div className="font-body text-xs text-muted-foreground">
+                Official VeySkill credentials can be validated instantly via our public verification
+                registry.
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/verify"
+            className="btn-ghost text-xs font-heading font-bold px-4 py-2 border border-border hover:border-primary-500/50 whitespace-nowrap"
           >
-            Sign In with Email or Google
-          </button>
+            Verify Credential
+          </Link>
         </div>
       </div>
     );
