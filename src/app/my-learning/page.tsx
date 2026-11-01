@@ -11,7 +11,6 @@ import { PaymentGate } from "@/components/courses/PaymentGate";
 import { normalizeCertificateId, verifyCertificateId } from "@/lib/security";
 import { checkCertificateEligibility } from "@/lib/curriculumEngine";
 import { StreakWidget } from "@/components/layout/StreakWidget";
-import { generatePdfCertificate } from "@/lib/pdfCertificate";
 
 interface CourseWithProgress {
   course: CourseDoc;
@@ -69,21 +68,41 @@ export default function MyLearningPage() {
     }
 
     let isMounted = true;
+    const cacheKey = `veyskill_mylearning_cache_v2_${user.uid}`;
+
+    // 1. Instant 0ms cache retrieval — immediate render without waiting!
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setItems(parsed);
+          setFetching(false);
+        }
+      }
+    } catch {
+      // Ignore cache retrieval errors
+    }
+
     (async () => {
       try {
         const progressList = await getUserProgress(user.uid);
+        const startedProgs = progressList.filter(
+          (prog) =>
+            (prog.completedLessonIds?.length || 0) > 0 ||
+            Boolean(prog.started) ||
+            Boolean(prog.lastLessonId)
+        );
+
+        // 2. Fetch all courses in PARALLEL via Promise.all (no N+1 waterfall!)
+        const courseDocs = await Promise.all(startedProgs.map((prog) => getCourse(prog.courseId)));
+
         const results: CourseWithProgress[] = [];
-        for (const prog of progressList) {
-          const course = await getCourse(prog.courseId);
+        for (let i = 0; i < startedProgs.length; i++) {
+          const course = courseDocs[i];
+          const progress = startedProgs[i];
           if (course && course.status === "published") {
-            // Only show courses the user has actually started learning or enrolled in
-            const hasStarted =
-              (prog.completedLessonIds?.length || 0) > 0 ||
-              Boolean(prog.started) ||
-              Boolean(prog.lastLessonId);
-            if (hasStarted) {
-              results.push({ course, progress: prog });
-            }
+            results.push({ course, progress });
           }
         }
 
@@ -94,10 +113,20 @@ export default function MyLearningPage() {
           return timeB - timeA;
         });
 
-        if (isMounted) setItems(results);
+        if (isMounted) {
+          setItems(results);
+          setFetching(false);
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(results));
+          } catch {
+            // Ignore storage quota errors
+          }
+        }
 
-        // Check payment status for completed courses
+        // 3. Background parallel payment check without blocking UI
         const paidSet = new Set<string>();
+        const backgroundChecks: Promise<void>[] = [];
+
         for (const item of results) {
           const isDone =
             (item.progress.completedLessonIds?.length || 0) >= (item.course.lessonCount || 1) &&
@@ -110,19 +139,20 @@ export default function MyLearningPage() {
             ) {
               paidSet.add(item.course.id);
             } else {
-              try {
-                const res = await fetch(
-                  `/api/payment/check?uid=${user.uid}&courseId=${item.course.id}`
-                );
-                if (res.ok) {
-                  const data = await res.json();
-                  if (data.hasPaid) paidSet.add(item.course.id);
-                }
-              } catch {
-                // Ignore fetch error
-              }
+              backgroundChecks.push(
+                fetch(`/api/payment/check?uid=${user.uid}&courseId=${item.course.id}`)
+                  .then((res) => (res.ok ? res.json() : null))
+                  .then((data) => {
+                    if (data?.hasPaid) paidSet.add(item.course.id);
+                  })
+                  .catch(() => {})
+              );
             }
           }
+        }
+
+        if (backgroundChecks.length > 0) {
+          await Promise.allSettled(backgroundChecks);
         }
         if (isMounted) setPaidCourseIds(paidSet);
       } catch {
@@ -201,7 +231,13 @@ export default function MyLearningPage() {
     try {
       const { deleteUserProgress } = await import("@/lib/firestore");
       await deleteUserProgress(user.uid, courseToRemove.course.id);
-      setItems((prev) => prev.filter((i) => i.course.id !== courseToRemove.course.id));
+      setItems((prev) => {
+        const next = prev.filter((i) => i.course.id !== courseToRemove.course.id);
+        try {
+          sessionStorage.setItem(`veyskill_mylearning_cache_v2_${user.uid}`, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
       setCourseToRemove(null);
     } catch (err) {
       console.error("Failed to remove course from My Learning:", err);
@@ -257,6 +293,7 @@ export default function MyLearningPage() {
 
     setDownloadingCertId(item.course.id);
     try {
+      const { generatePdfCertificate } = await import("@/lib/pdfCertificate");
       await generatePdfCertificate({
         id: certId,
         userName,

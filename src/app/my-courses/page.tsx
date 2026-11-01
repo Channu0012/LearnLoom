@@ -37,9 +37,32 @@ export default function MyCoursesPage() {
       return;
     }
     let isMounted = true;
+    const cacheKey = `veyskill_mycourses_cache_v2_${user.uid}`;
+
+    // 1. Instant 0ms cache retrieval
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCourses(parsed);
+          setFetching(false);
+        }
+      }
+    } catch {
+      // Ignore cache retrieval errors
+    }
+
     getCoursesByCreator(user.uid)
       .then((data) => {
-        if (isMounted) setCourses(data);
+        if (isMounted) {
+          setCourses(data);
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+          } catch {
+            // Ignore quota errors
+          }
+        }
       })
       .finally(() => {
         if (isMounted) setFetching(false);
@@ -82,7 +105,15 @@ export default function MyCoursesPage() {
     setDeleteError("");
     try {
       await deleteCourse(courseToDelete.id);
-      setCourses((prev) => prev.filter((c) => c.id !== courseToDelete.id));
+      setCourses((prev) => {
+        const next = prev.filter((c) => c.id !== courseToDelete.id);
+        if (user) {
+          try {
+            sessionStorage.setItem(`veyskill_mycourses_cache_v2_${user.uid}`, JSON.stringify(next));
+          } catch {}
+        }
+        return next;
+      });
       setCourseToDelete(null);
     } catch {
       setDeleteError("Failed to delete the course. Please check your connection and try again.");

@@ -104,13 +104,31 @@ export async function updateUserDoc(
   await updateDoc(doc(db, COLLECTIONS.USERS, uid), data);
 }
 
-// ── Course helpers ─────────────────────────────────────────────────────────
+// In-memory course cache for ultra-fast navigation across views
+const courseMemoryCache = new Map<string, { course: CourseDoc; expires: number }>();
+const COURSE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export function invalidateCourseMemoryCache(courseId?: string): void {
+  if (courseId) {
+    courseMemoryCache.delete(courseId);
+  } else {
+    courseMemoryCache.clear();
+  }
+}
 
 export async function getCourse(courseId: string): Promise<CourseDoc | null> {
+  if (!courseId) return null;
+  const now = Date.now();
+  const cached = courseMemoryCache.get(courseId);
+  if (cached && cached.expires > now) {
+    return cached.course;
+  }
   try {
     const snap = await getDoc(doc(db, COLLECTIONS.COURSES, courseId));
     if (!snap.exists()) return null;
-    return snapToCourse(snap);
+    const course = snapToCourse(snap);
+    courseMemoryCache.set(courseId, { course, expires: now + COURSE_CACHE_TTL_MS });
+    return course;
   } catch {
     return null;
   }
@@ -147,6 +165,7 @@ type CourseUpdatePayload = {
 };
 
 export async function updateCourse(courseId: string, data: CourseUpdatePayload): Promise<void> {
+  invalidateCourseMemoryCache(courseId);
   await updateDoc(doc(db, COLLECTIONS.COURSES, courseId), {
     ...data,
     updatedAt: serverTimestamp(),
