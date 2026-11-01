@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { StreakWidget } from "@/components/layout/StreakWidget";
 
 export function Header() {
-  const { user, userDoc, signOut, loading, authError, clearAuthError } = useAuth();
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const { user, userDoc, loading, authError, clearAuthError } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // Scroll elevation — adds shadow + backdrop when page has scrolled
@@ -20,27 +18,6 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // Dismiss dropdown menu on click outside or Escape key
-  useEffect(() => {
-    if (!userDropdownOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setUserDropdownOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setUserDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [userDropdownOpen]);
 
   const isNavActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -295,210 +272,44 @@ export function Header() {
           {!loading && (
             <>
               {user ? (
-                <div ref={dropdownRef} className="flex items-center gap-1 sm:gap-1.5 relative">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <StreakWidget />
 
-                  {/* Profile avatar — clicking opens user account & profile menu */}
-                  <button
-                    id="user-menu-btn"
-                    onClick={() => setUserDropdownOpen((o) => !o)}
-                    className={`flex items-center justify-center rounded-full p-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 hover:opacity-90 active:scale-95 cursor-pointer ${
-                      userDropdownOpen || isNavActive("/profile")
-                        ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-background"
-                        : "hover:ring-1 hover:ring-border"
+                  {/* Direct Profile Link — Futuristic glow, micro-scale, instant prefetch */}
+                  <Link
+                    href="/profile"
+                    prefetch={true}
+                    className={`relative group flex items-center justify-center rounded-full p-0.5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-95 ${
+                      isNavActive("/profile")
+                        ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-background shadow-[0_0_16px_rgba(20,184,166,0.4)]"
+                        : "hover:ring-2 hover:ring-teal-500/70 hover:ring-offset-1 hover:ring-offset-background hover:shadow-[0_0_14px_rgba(20,184,166,0.3)]"
                     }`}
-                    aria-label="User profile and account menu"
-                    aria-expanded={userDropdownOpen}
-                    aria-haspopup="true"
+                    aria-label="My Scholar Profile"
                     title={
-                      user.displayName
-                        ? `${user.displayName} (Account & Profile)`
-                        : "Account & Profile"
+                      user.displayName ? `${user.displayName} (Open Profile)` : "My Scholar Profile"
                     }
                   >
-                    {user.photoURL ? (
-                      <Image
-                        src={user.photoURL}
-                        alt={user.displayName ?? "User profile"}
-                        width={36}
-                        height={36}
-                        className="w-9 h-9 rounded-full border border-border object-cover"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-950 flex items-center justify-center font-heading font-bold text-sm text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-800">
-                        {(user.displayName ?? "U")[0].toUpperCase()}
-                      </div>
-                    )}
-                  </button>
-
-                  {/* Desktop / Tablet User Dropdown Menu */}
-                  {userDropdownOpen && (
-                    <div
-                      className="absolute top-12 right-0 enterprise-card p-2 min-w-[230px] z-50 bg-card border border-border shadow-xl rounded-xl animate-scale-in"
-                      role="menu"
-                      aria-labelledby="user-menu-btn"
-                    >
-                      <Link
-                        href="/profile"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/80 rounded-xl mb-1 transition-colors group cursor-pointer"
-                      >
-                        <div className="min-w-0 pr-2">
-                          <p className="text-xs font-heading font-bold text-foreground truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                            {user.displayName ?? "VeySkill Scholar"}
-                          </p>
-                          {user.email && (
-                            <p className="text-[11px] text-muted-foreground font-body truncate">
-                              {user.email}
-                            </p>
-                          )}
+                    <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden transition-transform duration-300 group-hover:scale-105 border border-border/80 bg-card">
+                      {user.photoURL ? (
+                        <Image
+                          src={user.photoURL}
+                          alt={user.displayName ?? "User profile"}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center font-heading font-black text-sm text-white select-none">
+                          {(user.displayName ?? user.email ?? "U")[0].toUpperCase()}
                         </div>
-                        <span className="text-[10px] font-heading font-bold text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
-                          Profile →
-                        </span>
-                      </Link>
-                      <hr className="border-border/60 my-1" />
-                      <Link
-                        href="/profile"
-                        className={`flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body transition-colors ${
-                          isNavActive("/profile")
-                            ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold"
-                            : "hover:bg-muted text-foreground"
-                        }`}
-                        role="menuitem"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                          <circle cx="12" cy="7" r="4" />
-                        </svg>
-                        <span>My Scholar Profile</span>
-                      </Link>
-                      <Link
-                        href="/my-learning"
-                        className={`flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body transition-colors ${
-                          isNavActive("/my-learning")
-                            ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold"
-                            : "hover:bg-muted text-foreground"
-                        }`}
-                        role="menuitem"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        </svg>
-                        <span>My Learning &amp; Streaks</span>
-                      </Link>
-                      <Link
-                        href="/arena"
-                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
-                        role="menuitem"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
-                          <line x1="13" y1="19" x2="19" y2="13" />
-                          <line x1="16" y1="16" x2="20" y2="20" />
-                          <line x1="19" y1="21" x2="21" y2="19" />
-                          <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
-                          <line x1="5" y1="14" x2="9" y2="18" />
-                          <line x1="7" y1="17" x2="4" y2="20" />
-                          <line x1="3" y1="19" x2="5" y2="21" />
-                        </svg>
-                        <span>Arena (Doubts &amp; Battles)</span>
-                      </Link>
-                      <Link
-                        href="/my-courses"
-                        className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body hover:bg-muted transition-colors text-foreground"
-                        role="menuitem"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <span>My Published Courses</span>
-                      </Link>
-                      {userDoc?.isAdmin && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-lg text-xs font-body text-accent-500 hover:bg-muted transition-colors"
-                          role="menuitem"
-                          onClick={() => setUserDropdownOpen(false)}
-                        >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          </svg>
-                          <span>Admin Panel</span>
-                        </Link>
                       )}
-                      <hr className="border-border/60 my-1" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          signOut();
-                          setUserDropdownOpen(false);
-                        }}
-                        className="w-full text-left min-h-[40px] px-3 py-2 rounded-lg text-xs font-body text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2"
-                        role="menuitem"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                          <polyline points="16 17 21 12 16 7" />
-                          <line x1="21" y1="12" x2="9" y2="12" />
-                        </svg>
-                        <span>Sign out</span>
-                      </button>
                     </div>
-                  )}
+                    {/* Active online pulse dot */}
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-card shadow-xs group-hover:scale-110 transition-transform"
+                      title="Online"
+                    />
+                  </Link>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -520,15 +331,6 @@ export function Header() {
           )}
         </div>
       </div>
-
-      {/* Backdrop overlay for closing dropdown */}
-      {userDropdownOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[1px]"
-          onClick={() => setUserDropdownOpen(false)}
-          aria-hidden="true"
-        />
-      )}
     </header>
   );
 }
