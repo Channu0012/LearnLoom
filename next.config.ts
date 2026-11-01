@@ -128,6 +128,25 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/doubts",
+        destination: "/interview",
+        permanent: true,
+      },
+      {
+        source: "/doubts/:path*",
+        destination: "/interview",
+        permanent: true,
+      },
+      {
+        source: "/arena",
+        destination: "/interview",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

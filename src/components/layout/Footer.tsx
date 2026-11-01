@@ -23,6 +23,8 @@ export function Footer() {
     pathname?.startsWith("/my-courses") ||
     pathname === "/arena" ||
     pathname?.startsWith("/arena") ||
+    pathname === "/interview" ||
+    pathname?.startsWith("/interview") ||
     pathname === "/doubts" ||
     pathname?.startsWith("/doubts") ||
     pathname === "/create" ||
@@ -80,8 +82,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/arena" className="hover:text-primary-500 transition-colors">
-                  Arena (Doubts &amp; Battles)
+                <Link href="/interview" className="hover:text-primary-500 transition-colors">
+                  AI Mock Interview
                 </Link>
               </li>
               <li>

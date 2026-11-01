@@ -1088,3 +1088,75 @@ export async function recordUserBattleResult(
     });
   } catch {}
 }
+
+// ── Interview Engine Firestore Helpers ─────────────────────────────────────
+
+import type { InterviewSession } from "./interview";
+
+/** Save completed or active interview session */
+export async function saveInterviewSession(session: InterviewSession): Promise<string> {
+  const docId =
+    session.id || doc(collection(db, COLLECTIONS.USERS, session.userId, "interviews")).id;
+  const payload = {
+    ...session,
+    id: docId,
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    const userInterviewRef = doc(db, COLLECTIONS.USERS, session.userId, "interviews", docId);
+    await setDoc(userInterviewRef, payload, { merge: true });
+
+    // Award XP for completing an interview (up to 200 XP based on overall score)
+    if (session.scorecard && session.status === "completed") {
+      try {
+        const userRef = doc(db, COLLECTIONS.USERS, session.userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const prev = userSnap.data() as UserDoc;
+          const xpGained = Math.round(session.scorecard.overallScore * 2);
+          await updateDoc(userRef, {
+            xp: (prev.xp || 0) + xpGained,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to award interview XP:", err);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to save interview session:", err);
+    throw err;
+  }
+
+  return docId;
+}
+
+/** Get all previous interviews for a user */
+export async function getUserInterviews(uid: string): Promise<InterviewSession[]> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.USERS, uid, "interviews"),
+      orderBy("startedAt", "desc"),
+      limit(20)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => d.data() as InterviewSession);
+  } catch {
+    return [];
+  }
+}
+
+/** Get a single interview session by ID */
+export async function getInterviewSession(
+  uid: string,
+  sessionId: string
+): Promise<InterviewSession | null> {
+  try {
+    const snap = await getDoc(doc(db, COLLECTIONS.USERS, uid, "interviews", sessionId));
+    if (!snap.exists()) return null;
+    return snap.data() as InterviewSession;
+  } catch {
+    return null;
+  }
+}

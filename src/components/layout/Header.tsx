@@ -139,15 +139,15 @@ export function Header() {
             <span>Explore</span>
           </Link>
 
-          {/* Arena Hub */}
+          {/* AI Mock Interview */}
           <Link
-            href="/arena"
+            href="/interview"
             className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 group flex-shrink-0 ${
-              isNavActive("/arena")
+              isNavActive("/interview")
                 ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
                 : "text-foreground/85 hover:text-foreground hover:bg-muted"
             }`}
-            aria-current={isNavActive("/arena") ? "page" : undefined}
+            aria-current={isNavActive("/interview") ? "page" : undefined}
           >
             <svg
               width="15"
@@ -161,18 +161,13 @@ export function Header() {
               aria-hidden="true"
               className="text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"
             >
-              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
-              <line x1="13" y1="19" x2="19" y2="13" />
-              <line x1="16" y1="16" x2="20" y2="20" />
-              <line x1="19" y1="21" x2="21" y2="19" />
-              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
-              <line x1="5" y1="14" x2="9" y2="18" />
-              <line x1="7" y1="17" x2="4" y2="20" />
-              <line x1="3" y1="19" x2="5" y2="21" />
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
             </svg>
-            <span>Arena</span>
+            <span>Interview</span>
             <span className="text-[9px] font-heading font-black px-1.5 py-0.2 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30 tracking-tight">
-              NEW
+              AI
             </span>
           </Link>
 

@@ -58,9 +58,9 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Arena",
-      href: "/arena",
-      badge: "NEW",
+      name: "Interview",
+      href: "/interview",
+      badge: "AI",
       icon: (_active: boolean) => (
         <svg
           width="22"
@@ -73,14 +73,9 @@ export function MobileBottomNav() {
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
-          <line x1="13" y1="19" x2="19" y2="13" />
-          <line x1="16" y1="16" x2="20" y2="20" />
-          <line x1="19" y1="21" x2="21" y2="19" />
-          <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
-          <line x1="5" y1="14" x2="9" y2="18" />
-          <line x1="7" y1="17" x2="4" y2="20" />
-          <line x1="3" y1="19" x2="5" y2="21" />
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="22" />
         </svg>
       ),
     },
@@ -142,10 +137,11 @@ export function MobileBottomNav() {
     >
       <div className="grid grid-cols-5 h-16 px-1 items-center max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isArenaMatch =
-            item.href === "/arena" &&
-            (pathname === "/arena" ||
-              pathname?.startsWith("/arena/") ||
+          const isInterviewMatch =
+            item.href === "/interview" &&
+            (pathname === "/interview" ||
+              pathname?.startsWith("/interview/") ||
+              pathname === "/arena" ||
               pathname === "/doubts" ||
               pathname?.startsWith("/doubts/"));
 
@@ -158,7 +154,7 @@ export function MobileBottomNav() {
           const isActive =
             item.href === "/"
               ? pathname === "/"
-              : isArenaMatch ||
+              : isInterviewMatch ||
                 isLearningMatch ||
                 pathname === item.href ||
                 Boolean(pathname?.startsWith(`${item.href}/`));

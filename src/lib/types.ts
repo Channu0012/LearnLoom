@@ -158,3 +158,15 @@ export interface OEmbedResponse {
   thumbnail_url: string;
   provider_name: string;
 }
+
+// ── Interview Engine Types ────────────────────────────────────────────────
+export type {
+  InterviewRole,
+  InterviewLevel,
+  InterviewPhase,
+  InterviewConfig,
+  InterviewMessage,
+  ScorecardCategory,
+  InterviewScorecard,
+  InterviewSession,
+} from "./interview";

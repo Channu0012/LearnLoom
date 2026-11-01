@@ -23,13 +23,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/arena`,
+      url: `${baseUrl}/interview`,
       lastModified,
       changeFrequency: "daily",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
-      url: `${baseUrl}/doubts`,
+      url: `${baseUrl}/arena`,
       lastModified,
       changeFrequency: "daily",
       priority: 0.8,
