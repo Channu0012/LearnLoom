@@ -4,6 +4,227 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SVG Icons — Pure Vector, Zero Emojis (Google / Stripe aesthetic)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function IconCode({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function IconSparkles({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  );
+}
+
+function IconCpu({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <line x1="9" y1="1" x2="9" y2="4" />
+      <line x1="15" y1="1" x2="15" y2="4" />
+      <line x1="9" y1="20" x2="9" y2="23" />
+      <line x1="15" y1="20" x2="15" y2="23" />
+      <line x1="20" y1="9" x2="23" y2="9" />
+      <line x1="20" y1="14" x2="23" y2="14" />
+      <line x1="1" y1="9" x2="4" y2="9" />
+      <line x1="1" y1="14" x2="4" y2="14" />
+    </svg>
+  );
+}
+
+function IconCloud({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+    </svg>
+  );
+}
+
+function IconVideo({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polygon points="23 7 16 12 23 17 23 7" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </svg>
+  );
+}
+
+function IconAward({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="8" r="6" />
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+    </svg>
+  );
+}
+
+function IconCheck({ size = 14, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconFocus({ size = 14, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+    </svg>
+  );
+}
+
+function IconCheckSquare({ size = 14, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polyline points="9 11 12 14 22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  );
+}
+
+function IconArrowRight({ size = 14, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+function IconLink({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
 // ─── Intersection Observer hook for scroll-reveal animations ────────────────
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLElement>(null);
@@ -50,7 +271,7 @@ function useCounter(target: number, duration = 1400, active = false) {
 function FAQItem({ q, a, idx }: { q: string; a: string; idx: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden transition-all">
+    <div className="rounded-2xl bg-card border border-border shadow-xs overflow-hidden transition-all">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -61,7 +282,7 @@ function FAQItem({ q, a, idx }: { q: string; a: string; idx: number }) {
       >
         <h3 className="font-heading font-bold text-base sm:text-lg text-foreground">{q}</h3>
         <span
-          className={`flex-shrink-0 w-8 h-8 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 transition-transform duration-300 ${
+          className={`flex-shrink-0 w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 transition-transform duration-300 ${
             open ? "rotate-180" : "rotate-0"
           }`}
           aria-hidden="true"
@@ -103,10 +324,11 @@ export default function HomePage() {
       lessons: "30+ Lessons",
       badge: "Popular",
       query: "nextjs full stack web development",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      accentBg: "bg-teal-500/10",
-      accentBorder: "border-teal-500/20",
-      hoverBorder: "hover:border-teal-500/60",
+      Icon: IconCode,
+      colorClass: "text-teal-600 dark:text-teal-400",
+      bgClass: "bg-teal-500/10",
+      borderClass: "border-teal-500/20",
+      hoverBorder: "hover:border-teal-500/50",
     },
     {
       title: "Artificial Intelligence & LLMs",
@@ -114,21 +336,23 @@ export default function HomePage() {
       lessons: "24+ Lessons",
       badge: "Trending",
       query: "python artificial intelligence machine learning",
-      iconColor: "text-indigo-600 dark:text-indigo-400",
-      accentBg: "bg-indigo-500/10",
-      accentBorder: "border-indigo-500/20",
-      hoverBorder: "hover:border-indigo-500/60",
+      Icon: IconSparkles,
+      colorClass: "text-indigo-600 dark:text-indigo-400",
+      bgClass: "bg-indigo-500/10",
+      borderClass: "border-indigo-500/20",
+      hoverBorder: "hover:border-indigo-500/50",
     },
     {
       title: "Data Structures & Algorithms",
       description: "Interview-ready algorithm mastery in Java, C++, and Python.",
       lessons: "45+ Lessons",
-      badge: "Career Essential",
+      badge: "Core Track",
       query: "data structures and algorithms dsa",
-      iconColor: "text-amber-600 dark:text-amber-400",
-      accentBg: "bg-amber-500/10",
-      accentBorder: "border-amber-500/20",
-      hoverBorder: "hover:border-amber-500/60",
+      Icon: IconCpu,
+      colorClass: "text-amber-600 dark:text-amber-400",
+      bgClass: "bg-amber-500/10",
+      borderClass: "border-amber-500/20",
+      hoverBorder: "hover:border-amber-500/50",
     },
     {
       title: "System Design & Cloud",
@@ -136,10 +360,11 @@ export default function HomePage() {
       lessons: "18+ Lessons",
       badge: "Senior Track",
       query: "system design distributed systems cloud",
-      iconColor: "text-emerald-600 dark:text-emerald-400",
-      accentBg: "bg-emerald-500/10",
-      accentBorder: "border-emerald-500/20",
-      hoverBorder: "hover:border-emerald-500/60",
+      Icon: IconCloud,
+      colorClass: "text-emerald-600 dark:text-emerald-400",
+      bgClass: "bg-emerald-500/10",
+      borderClass: "border-emerald-500/20",
+      hoverBorder: "hover:border-emerald-500/50",
     },
   ];
 
@@ -227,21 +452,21 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
 
-      {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
+      {/* ── 1. Hero Section (Google-Style Simplicity) ────────────────────── */}
       <section
-        className="relative overflow-hidden pt-16 sm:pt-20 lg:pt-28 pb-14 sm:pb-20"
+        className="relative overflow-hidden pt-14 sm:pt-20 lg:pt-28 pb-12 sm:pb-16"
         aria-labelledby="hero-title"
       >
-        {/* Subtle radial background glow — adds depth without distraction */}
+        {/* Subtle radial background glow */}
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-teal-500/8 via-emerald-500/5 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[340px] bg-gradient-to-b from-teal-500/8 via-emerald-500/4 to-transparent rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          {/* Trust badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-xs font-heading font-semibold mb-6 shadow-sm animate-fade-in">
+          {/* Trust badge with crisp vector indicator */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-xs font-heading font-semibold mb-6 shadow-xs animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <span className="text-muted-foreground">Trusted by self-learners worldwide</span>
+            <span className="text-muted-foreground">Free, Open &amp; Verifiable Learning</span>
           </div>
 
           {/* Main Headline */}
@@ -261,44 +486,48 @@ export default function HomePage() {
             notes, quizzes, and verifiable certificates.
           </p>
 
-          {/* Hero Converter */}
+          {/* Hero Converter Input */}
           <div className="mb-8 animate-slide-up">
             <HeroConverterBar />
           </div>
 
-          {/* Benefit Ribbon */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-5 sm:gap-8 py-2 text-xs text-muted-foreground font-body max-w-2xl mx-auto">
+          {/* Benefit Ribbon with Crisp Vector Icons */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-4 sm:gap-7 py-2 text-xs text-muted-foreground font-body max-w-2xl mx-auto">
             {[
               {
                 label: "Zero Distractions",
+                Icon: IconFocus,
                 color: "text-teal-600 dark:text-teal-400",
               },
               {
                 label: "AI Study Notes",
+                Icon: IconSparkles,
                 color: "text-indigo-600 dark:text-indigo-400",
               },
               {
                 label: "Quizzes",
+                Icon: IconCheckSquare,
                 color: "text-amber-600 dark:text-amber-400",
               },
               {
                 label: "Verified Certificates",
+                Icon: IconAward,
                 color: "text-emerald-600 dark:text-emerald-400",
               },
-            ].map(({ label, color }) => (
-              <span key={label} className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full bg-current ${color}`} />
-                <span className={`font-heading font-semibold text-foreground`}>{label}</span>
+            ].map(({ label, Icon, color }) => (
+              <span key={label} className="inline-flex items-center gap-1.5">
+                <Icon size={14} className={color} />
+                <span className="font-heading font-semibold text-foreground">{label}</span>
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── 2. How It Works ─────────────────────────────────────────────── */}
+      {/* ── 2. How It Works (Clean 3-Step Architecture) ──────────────────── */}
       <section
         ref={howItWorksSection.ref as React.RefObject<HTMLElement>}
-        className={`py-14 sm:py-20 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+        className={`py-14 sm:py-20 bg-muted/25 border-y border-border/50 transition-all duration-700 ${
           howItWorksSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}
         aria-labelledby="pipeline-title"
@@ -306,7 +535,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 max-w-2xl mx-auto">
             <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-              How It Works
+              Structured Workflow
             </span>
             <h2
               id="pipeline-title"
@@ -322,44 +551,62 @@ export default function HomePage() {
                 num: "01",
                 title: "Paste a Playlist Link",
                 desc: "Drop any YouTube tutorial series, university lecture, or coding bootcamp URL. VeySkill instantly generates a structured course syllabus.",
-                footer: "Instant Setup",
-                color: "teal",
+                footer: "Instant Curriculum Indexing",
+                Icon: IconLink,
+                badgeBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
+                footerColor: "text-teal-600 dark:text-teal-400",
+                hoverBorder: "hover:border-teal-500/40",
               },
               {
                 num: "02",
                 title: "Study Without Distractions",
-                desc: "Focused theater playback with no recommendations, no comments, no rabbit holes. Take AI-powered notes and track your progress.",
-                footer: "Focused Learning",
-                color: "indigo",
+                desc: "Focused theater playback with no recommendations, no comments, no algorithmic rabbit holes. Take AI-powered notes and track progress.",
+                footer: "Theater Player & Checkpoints",
+                Icon: IconVideo,
+                badgeBg:
+                  "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
+                footerColor: "text-indigo-600 dark:text-indigo-400",
+                hoverBorder: "hover:border-indigo-500/40",
               },
               {
                 num: "03",
                 title: "Earn Your Certificate",
-                desc: "Complete all lessons, pass the comprehension quiz, and claim a verified Certificate of Completion with public verification.",
-                footer: "Verified Credential",
-                color: "emerald",
+                desc: "Complete all lessons, pass the comprehension quiz, and claim a verified Certificate of Completion with instant public verification URL.",
+                footer: "1-Click LinkedIn Endorsement",
+                Icon: IconAward,
+                badgeBg:
+                  "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                footerColor: "text-emerald-600 dark:text-emerald-400",
+                hoverBorder: "hover:border-emerald-500/40",
               },
-            ].map(({ num, title, desc, footer, color }, i) => (
+            ].map((step, i) => (
               <div
-                key={num}
-                className={`enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group hover:border-${color}-500/40 hover:shadow-md transition-all duration-300`}
+                key={step.num}
+                className={`enterprise-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between group ${step.hoverBorder} hover:shadow-md transition-all duration-300`}
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div>
-                  <div
-                    className={`w-11 h-11 rounded-xl bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 flex items-center justify-center mb-4 border border-${color}-500/20 font-heading font-black text-sm`}
-                  >
-                    {num}
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className={`w-10 h-10 rounded-xl ${step.badgeBg} flex items-center justify-center border font-heading font-black text-sm`}
+                    >
+                      {step.num}
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                      <step.Icon size={16} />
+                    </div>
                   </div>
-                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">{title}</h3>
+                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">
+                    {step.title}
+                  </h3>
                   <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {desc}
+                    {step.desc}
                   </p>
                 </div>
                 <div
-                  className={`mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold text-${color}-600 dark:text-${color}-400`}
+                  className={`mt-5 pt-3 border-t border-border/60 text-xs font-heading font-semibold ${step.footerColor}`}
                 >
-                  {footer}
+                  {step.footer}
                 </div>
               </div>
             ))}
@@ -367,7 +614,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 3. Trending Courses ────────────────────────────────────────── */}
+      {/* ── 3. Trending Curated Tracks ──────────────────────────────────── */}
       <section
         ref={disciplinesSection.ref as React.RefObject<HTMLElement>}
         className={`py-14 sm:py-20 transition-all duration-700 ${
@@ -379,7 +626,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-                Popular Right Now
+                Curated Learning Tracks
               </span>
               <h2
                 id="disciplines-title"
@@ -392,17 +639,8 @@ export default function HomePage() {
               href="/explore"
               className="text-xs sm:text-sm font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1.5 flex-shrink-0"
             >
-              <span>Browse All Courses</span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <span>Browse All Tracks</span>
+              <IconArrowRight size={14} />
             </Link>
           </div>
 
@@ -411,16 +649,18 @@ export default function HomePage() {
               <Link
                 key={idx}
                 href={`/explore?q=${encodeURIComponent(item.query)}`}
-                className={`enterprise-card p-5 rounded-xl ${item.hoverBorder} hover:shadow-md transition-all duration-300 flex flex-col justify-between group active:scale-[0.98]`}
+                className={`enterprise-card p-5 rounded-2xl ${item.hoverBorder} hover:shadow-md transition-all duration-300 flex flex-col justify-between group active:scale-[0.98]`}
                 style={{ transitionDelay: `${idx * 60}ms` }}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className={`w-9 h-9 rounded-xl ${item.bgClass} ${item.colorClass} border ${item.borderClass} flex items-center justify-center`}
+                    >
+                      <item.Icon size={18} />
+                    </div>
                     <span className="text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/60">
                       {item.badge}
-                    </span>
-                    <span className={`text-[11px] font-heading font-semibold ${item.iconColor}`}>
-                      {item.lessons}
                     </span>
                   </div>
                   <h3 className="font-heading font-bold text-base text-foreground mb-1.5 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
@@ -430,10 +670,10 @@ export default function HomePage() {
                     {item.description}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs font-heading font-bold text-foreground">
-                  <span>Start Learning</span>
-                  <span className="text-teal-500 group-hover:translate-x-1 transition-transform">
-                    →
+                <div className="mt-5 pt-3 border-t border-border/60 flex items-center justify-between text-xs font-heading font-bold text-foreground">
+                  <span className={item.colorClass}>{item.lessons}</span>
+                  <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform">
+                    Start <IconArrowRight size={12} />
                   </span>
                 </div>
               </Link>
@@ -445,7 +685,7 @@ export default function HomePage() {
       {/* ── 4. Animated Stats Bar ──────────────────────────────────────── */}
       <section
         ref={statsSection.ref as React.RefObject<HTMLElement>}
-        className={`py-10 sm:py-14 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+        className={`py-10 sm:py-14 bg-muted/25 border-y border-border/50 transition-all duration-700 ${
           statsSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
         }`}
       >
@@ -467,13 +707,13 @@ export default function HomePage() {
               {
                 value: `${formatCount(coursesCount)}`,
                 label: "Courses",
-                sub: "& growing",
+                sub: "Indexed & structured",
                 color: "text-amber-600 dark:text-amber-400",
               },
               {
-                value: "∞",
+                value: "100%",
                 label: "Free Forever",
-                sub: "No paywalls",
+                sub: "No paywalls to watch",
                 color: "text-emerald-600 dark:text-emerald-400",
               },
             ].map(({ value, label, sub, color }, i) => (
@@ -495,7 +735,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 5. Why VeySkill — Comparison Table ──────────────────────────── */}
+      {/* ── 5. Comparison Matrix (YouTube vs VeySkill) ─────────────────── */}
       <section
         ref={comparisonSection.ref as React.RefObject<HTMLElement>}
         className={`py-14 sm:py-20 transition-all duration-700 ${
@@ -512,11 +752,11 @@ export default function HomePage() {
               YouTube is great. VeySkill makes it better.
             </h2>
             <p className="font-body text-sm text-muted-foreground mt-2 max-w-lg mx-auto">
-              Same free content, but structured for real learning outcomes.
+              Same free content, structured for real retention and professional credentials.
             </p>
           </div>
 
-          <div className="overflow-hidden bg-card border border-border rounded-2xl shadow-sm">
+          <div className="overflow-hidden bg-card border border-border rounded-2xl shadow-xs">
             <div className="grid grid-cols-2 bg-muted/60 p-4 border-b border-border text-xs sm:text-sm font-heading font-bold">
               <div className="text-muted-foreground flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-400" />
@@ -524,7 +764,7 @@ export default function HomePage() {
               </div>
               <div className="text-teal-600 dark:text-teal-400 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-teal-500" />
-                <span>VeySkill</span>
+                <span>VeySkill Learning Space</span>
               </div>
             </div>
 
@@ -546,19 +786,16 @@ export default function HomePage() {
                   key={i}
                   className="grid grid-cols-2 p-3.5 sm:p-4 items-center hover:bg-muted/20 transition-colors"
                 >
-                  <div className="text-muted-foreground pr-3">{yt}</div>
+                  <div className="text-muted-foreground pr-3 flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-destructive/10 text-destructive flex items-center justify-center flex-shrink-0 text-[10px] font-bold">
+                      ✕
+                    </span>
+                    <span>{yt}</span>
+                  </div>
                   <div className="text-foreground font-semibold flex items-center gap-2">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="text-teal-600 flex-shrink-0"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                    <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                      <IconCheck size={11} />
+                    </span>
                     <span>{vs}</span>
                   </div>
                 </div>
@@ -571,7 +808,7 @@ export default function HomePage() {
       {/* ── 6. FAQ Accordion ────────────────────────────────────────────── */}
       <section
         ref={faqSection.ref as React.RefObject<HTMLElement>}
-        className={`py-14 sm:py-20 bg-muted/30 border-y border-border/50 transition-all duration-700 ${
+        className={`py-14 sm:py-20 bg-muted/25 border-y border-border/50 transition-all duration-700 ${
           faqSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}
         aria-labelledby="faq-title"
@@ -579,13 +816,13 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <span className="text-xs font-heading font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-              FAQ
+              Frequently Asked Questions
             </span>
             <h2
               id="faq-title"
               className="font-heading font-black text-2xl sm:text-4xl text-foreground tracking-tight mt-2"
             >
-              Frequently Asked Questions
+              Everything you need to know.
             </h2>
           </div>
 
@@ -597,7 +834,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. Final CTA ───────────────────────────────────────────────── */}
+      {/* ── 7. Final CTA (Google-Style Simplicity) ───────────────────────── */}
       <section
         ref={ctaSection.ref as React.RefObject<HTMLElement>}
         className={`py-14 sm:py-20 transition-all duration-700 ${
@@ -609,48 +846,23 @@ export default function HomePage() {
             Ready to start learning?
           </h2>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
-            Join thousands of learners mastering software engineering, AI, and computer science on
-            VeySkill.
+            Join thousands of scholars mastering software engineering, artificial intelligence, and
+            computer science on VeySkill.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/explore"
-              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[52px] w-full sm:w-auto inline-flex items-center justify-center gap-2.5 active:scale-95 font-heading font-extrabold rounded-2xl transition-all"
+              className="btn-primary text-sm sm:text-base px-8 py-3.5 min-h-[50px] w-full sm:w-auto inline-flex items-center justify-center gap-2 active:scale-95 font-heading font-bold rounded-xl transition-all"
             >
               <span>Explore Courses</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
+              <IconArrowRight size={14} />
             </Link>
 
             <Link
               href="/create"
-              className="btn-secondary text-sm sm:text-base px-7 py-3.5 min-h-[52px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl font-heading font-bold transition-all"
+              className="btn-secondary text-sm sm:text-base px-7 py-3.5 min-h-[50px] w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl font-heading font-semibold transition-all"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
               <span>Build a Course</span>
             </Link>
           </div>

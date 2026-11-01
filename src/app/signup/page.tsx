@@ -464,29 +464,93 @@ function SignUpForm() {
                     />
                   </div>
                   {/* Live Criteria Items */}
-                  <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-body text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-body text-muted-foreground">
                     <div
                       className={`flex items-center gap-1.5 ${passwordCriteria.length ? "text-emerald-600 dark:text-emerald-400 font-medium" : ""}`}
                     >
-                      <span>{passwordCriteria.length ? "✓" : "○"}</span>
+                      {passwordCriteria.length ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-500 flex-shrink-0"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-muted-foreground/40 inline-block flex-shrink-0" />
+                      )}
                       <span>8+ characters</span>
                     </div>
                     <div
                       className={`flex items-center gap-1.5 ${passwordCriteria.upper && passwordCriteria.lower ? "text-emerald-600 dark:text-emerald-400 font-medium" : ""}`}
                     >
-                      <span>{passwordCriteria.upper && passwordCriteria.lower ? "✓" : "○"}</span>
+                      {passwordCriteria.upper && passwordCriteria.lower ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-500 flex-shrink-0"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-muted-foreground/40 inline-block flex-shrink-0" />
+                      )}
                       <span>Upper &amp; lowercase</span>
                     </div>
                     <div
                       className={`flex items-center gap-1.5 ${passwordCriteria.number ? "text-emerald-600 dark:text-emerald-400 font-medium" : ""}`}
                     >
-                      <span>{passwordCriteria.number ? "✓" : "○"}</span>
+                      {passwordCriteria.number ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-500 flex-shrink-0"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-muted-foreground/40 inline-block flex-shrink-0" />
+                      )}
                       <span>Number (0-9)</span>
                     </div>
                     <div
                       className={`flex items-center gap-1.5 ${passwordCriteria.special ? "text-emerald-600 dark:text-emerald-400 font-medium" : ""}`}
                     >
-                      <span>{passwordCriteria.special ? "✓" : "○"}</span>
+                      {passwordCriteria.special ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-500 flex-shrink-0"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-muted-foreground/40 inline-block flex-shrink-0" />
+                      )}
                       <span>Special character</span>
                     </div>
                   </div>

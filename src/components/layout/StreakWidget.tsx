@@ -161,11 +161,11 @@ export function StreakWidget() {
             </div>
           </div>
 
-          {/* 7-Day Habit Tracker */}
+          {/* 7-Day Activity Tracker (Zero week names, clean Google-style activity pills) */}
           <div className="my-3 p-3 rounded-xl bg-muted/40 border border-border/60">
             <div className="flex items-center justify-between text-[11px] font-heading font-bold text-muted-foreground mb-2">
-              <span>Weekly Habit Tracker</span>
-              <span className="font-mono text-[10px]">Last 7 Days</span>
+              <span>Study Activity</span>
+              <span className="font-mono text-[10px]">Recent Days</span>
             </div>
             <div className="grid grid-cols-7 gap-1.5 text-center">
               {Array.from({ length: 7 }).map((_, i) => {
@@ -173,7 +173,6 @@ export function StreakWidget() {
                 d.setDate(d.getDate() - (6 - i));
                 const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                 const isToday = i === 6;
-                const dayName = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][d.getDay()];
                 const isCompleted =
                   (streak.recentActiveDates && streak.recentActiveDates.includes(dateStr)) ||
                   (isToday && isTodayComplete) ||
@@ -181,8 +180,8 @@ export function StreakWidget() {
 
                 return (
                   <div key={dateStr} className="flex flex-col items-center gap-1">
-                    <span className="text-[9px] font-mono font-medium text-muted-foreground uppercase">
-                      {dayName}
+                    <span className="text-[10px] font-mono font-semibold text-muted-foreground">
+                      {d.getDate()}
                     </span>
                     <div
                       className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${
@@ -190,16 +189,25 @@ export function StreakWidget() {
                           ? "bg-amber-500 text-white shadow-xs"
                           : isToday
                             ? "border-2 border-dashed border-amber-500/60 text-amber-600 dark:text-amber-400 bg-amber-500/10"
-                            : "bg-muted/80 text-muted-foreground/50 border border-border/40"
+                            : "bg-muted/80 text-muted-foreground/40 border border-border/40"
                       }`}
-                      title={`${dateStr}: ${isCompleted ? "Completed" : isToday ? "Pending today" : "Not completed"}`}
+                      title={`${dateStr}: ${isCompleted ? "Active session completed" : isToday ? "Pending today" : "No lesson recorded"}`}
                     >
                       {isCompleted ? (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                        <svg
+                          width="10"
+                          height="10"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       ) : (
-                        <span>{d.getDate()}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
                       )}
                     </div>
                   </div>
@@ -208,16 +216,28 @@ export function StreakWidget() {
             </div>
           </div>
 
-          {/* Monthly Streak Shield (Anti-Break Defense) */}
-          <div className="mb-3 p-2.5 rounded-xl bg-card border border-border flex items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-base" role="img" aria-label="Shield">
-                🛡️
-              </span>
+          {/* Monthly Streak Shield (Anti-Break Defense) — crisp vector icon */}
+          <div className="mb-3 p-2.5 rounded-xl bg-card border border-border flex items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
               <div>
                 <span className="font-heading font-bold text-foreground text-xs block leading-tight">
                   {streak.shieldUsedRecently
-                    ? "Streak Shield Deployed!"
+                    ? "Streak Shield Deployed"
                     : streak.streakShieldAvailable
                       ? "Streak Shield Active"
                       : "Streak Shield Depleted"}
@@ -226,7 +246,7 @@ export function StreakWidget() {
                   {streak.shieldUsedRecently
                     ? "Protected 1 missed day without breaking your streak."
                     : streak.streakShieldAvailable
-                      ? "1 free shield available this month for study breaks."
+                      ? "1 automatic shield available this month."
                       : "Renews on the 1st of next month."}
                 </span>
               </div>

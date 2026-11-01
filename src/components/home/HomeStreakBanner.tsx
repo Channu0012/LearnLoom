@@ -64,9 +64,23 @@ export function HomeStreakBanner() {
             </div>
             <p className="text-xs text-muted-foreground font-body mt-0.5">
               {isTodayActive ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                  ✓ Active today · {streak.todayLessonsCompleted} video
-                  {streak.todayLessonsCompleted === 1 ? "" : "s"} completed (+10 pts each)
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold inline-flex items-center gap-1.5">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>
+                    Active today &middot; {streak.todayLessonsCompleted} video
+                    {streak.todayLessonsCompleted === 1 ? "" : "s"} completed (+10 pts each)
+                  </span>
                 </span>
               ) : (
                 <span>

@@ -7,13 +7,28 @@ export function Footer() {
   const pathname = usePathname();
   const year = 2026;
 
-  // Hide footer only on immersive full-screen cinema players and editor canvas
-  const isImmersivePlayer =
+  // Footer visibility rule: strictly no footer on login/signup or internal dashboards;
+  // only display on Home (/), Explore (/explore), Profile (/profile), and public legal/verify pages
+  const isExcludedPage =
+    pathname === "/login" ||
+    pathname?.startsWith("/login") ||
+    pathname === "/signup" ||
+    pathname?.startsWith("/signup") ||
     pathname?.startsWith("/course/") ||
     pathname?.startsWith("/quick-watch") ||
-    pathname?.startsWith("/edit/");
+    pathname?.startsWith("/edit/") ||
+    pathname === "/my-learning" ||
+    pathname?.startsWith("/my-learning") ||
+    pathname === "/my-courses" ||
+    pathname?.startsWith("/my-courses") ||
+    pathname === "/arena" ||
+    pathname?.startsWith("/arena") ||
+    pathname === "/doubts" ||
+    pathname?.startsWith("/doubts") ||
+    pathname === "/create" ||
+    pathname === "/admin";
 
-  if (isImmersivePlayer) return null;
+  if (isExcludedPage) return null;
 
   return (
     <footer className="border-t border-border bg-card mt-16 w-full overflow-x-hidden pb-20 md:pb-6">

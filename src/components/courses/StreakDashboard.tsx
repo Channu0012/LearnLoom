@@ -26,7 +26,7 @@ export function StreakDashboard() {
 
   const { rank, color } = getRankBadge(streak.totalXp);
 
-  // Generate last 7 days
+  // Generate last 7 days (numerical dates only, zero weekday names)
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -34,10 +34,9 @@ export function StreakDashboard() {
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
-    const dayName = d.toLocaleDateString("en", { weekday: "short" });
     const isToday = dateStr === getLocalDateString();
     const isActive = dateStr === streak.lastActiveDate;
-    return { dateStr, dayName, isToday, isActive, dayNum: d.getDate() };
+    return { dateStr, isToday, isActive, dayNum: d.getDate() };
   });
 
   return (
@@ -94,17 +93,15 @@ export function StreakDashboard() {
         </div>
       </div>
 
-      {/* Weekly Activity Calendar */}
+      {/* Activity Calendar (Clean date pills, zero weekday names) */}
       <div>
         <p className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground mb-2">
-          Weekly Study Frequency
+          Study Activity Track
         </p>
         <div className="flex items-center justify-between gap-1 sm:gap-1.5">
           {last7Days.map((day) => (
             <div key={day.dateStr} className="flex flex-col items-center gap-1">
-              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-body">
-                {day.dayName}
-              </span>
+              <span className="text-[10px] font-mono text-muted-foreground">{day.dayNum}</span>
               <div
                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[11px] sm:text-xs font-heading font-bold transition-all ${
                   day.isActive
