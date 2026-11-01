@@ -298,16 +298,23 @@ export function Header() {
                 <div ref={dropdownRef} className="flex items-center gap-1 sm:gap-1.5 relative">
                   <StreakWidget />
 
-                  {/* Profile symbol — clicking opens /profile directly */}
-                  <Link
-                    href="/profile"
-                    className={`flex items-center justify-center rounded-full p-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 hover:opacity-90 active:scale-95 ${
-                      isNavActive("/profile")
+                  {/* Profile avatar — clicking opens user account & profile menu */}
+                  <button
+                    id="user-menu-btn"
+                    onClick={() => setUserDropdownOpen((o) => !o)}
+                    className={`flex items-center justify-center rounded-full p-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 hover:opacity-90 active:scale-95 cursor-pointer ${
+                      userDropdownOpen || isNavActive("/profile")
                         ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-background"
                         : "hover:ring-1 hover:ring-border"
                     }`}
-                    aria-label="My Profile"
-                    title="My Profile"
+                    aria-label="User profile and account menu"
+                    aria-expanded={userDropdownOpen}
+                    aria-haspopup="true"
+                    title={
+                      user.displayName
+                        ? `${user.displayName} (Account & Profile)`
+                        : "Account & Profile"
+                    }
                   >
                     {user.photoURL ? (
                       <Image
@@ -322,30 +329,6 @@ export function Header() {
                         {(user.displayName ?? "U")[0].toUpperCase()}
                       </div>
                     )}
-                  </Link>
-
-                  {/* Dropdown toggle chevron */}
-                  <button
-                    id="user-menu-btn"
-                    onClick={() => setUserDropdownOpen((o) => !o)}
-                    className="w-6 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                    aria-label="User profile menu"
-                    aria-expanded={userDropdownOpen}
-                    aria-haspopup="true"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`transition-transform duration-200 ${userDropdownOpen ? "rotate-180 text-foreground" : ""}`}
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
                   </button>
 
                   {/* Desktop / Tablet User Dropdown Menu */}
