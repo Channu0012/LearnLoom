@@ -283,48 +283,42 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0e1a] text-white flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#0b0f19] text-slate-100 flex flex-col font-body">
       {/* ── Top Bar ──────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0d1220]/80 backdrop-blur-md flex-shrink-0">
+      <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-slate-800 bg-[#0e1422]/90 backdrop-blur-md flex-shrink-0">
         <div className="flex items-center gap-3">
           {/* VeySkill Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-700/60 shadow-sm flex items-center justify-center bg-[#111827]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icon.png"
+                alt="VeySkill Logo"
+                width={26}
+                height={26}
+                className="w-6 h-6 object-contain rounded-lg"
+              />
             </div>
-            <span className="font-extrabold text-sm tracking-tight hidden sm:inline">
+            <span className="font-heading font-extrabold text-sm tracking-tight hidden sm:inline select-none">
               <span className="text-white">Vey</span>
-              <span className="text-teal-400">Skill</span>
-              <span className="text-white/40 ml-1.5 font-medium">Interview</span>
+              <span className="text-[#14b8a6]">skill</span>
+              <span className="text-slate-400 font-medium ml-1.5 text-xs uppercase tracking-wider">
+                Studio
+              </span>
             </span>
           </div>
 
           {/* Phase Indicator */}
-          <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-            <span className="text-xs font-medium text-white/70">
-              {PHASE_LABELS[currentPhase] || "Interview"}
-            </span>
+          <div className="hidden sm:flex items-center gap-2 ml-3 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-heading font-semibold text-slate-300">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{PHASE_LABELS[currentPhase] || "Interview"}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Timer */}
           <div className="flex items-center gap-2">
-            <div className="relative w-24 h-1.5 bg-white/10 rounded-full overflow-hidden hidden sm:block">
+            <div className="relative w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
               <div
                 className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000"
                 style={{
@@ -352,20 +346,22 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           </div>
 
           {/* Question Counter */}
-          <span className="text-xs text-white/50 hidden sm:inline">Q{questionCount}</span>
+          <span className="text-xs font-heading font-semibold text-slate-400 hidden sm:inline">
+            Q{questionCount}
+          </span>
 
           {/* End Interview */}
           {messages.filter((m) => m.role === "candidate").length >= 2 ? (
             <button
               onClick={() => setShowExitConfirm(true)}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors cursor-pointer"
             >
               End Interview
             </button>
           ) : (
             <button
               onClick={onExit}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 transition-colors"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:bg-slate-700/70 transition-colors cursor-pointer"
             >
               Exit
             </button>
@@ -384,10 +380,10 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           >
             {/* Avatar */}
             <div
-              className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
+              className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow-md ${
                 msg.role === "interviewer"
-                  ? "bg-gradient-to-br from-teal-500 to-emerald-600"
-                  : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                  ? "bg-gradient-to-br from-teal-500 to-emerald-600 shadow-teal-900/30"
+                  : "bg-gradient-to-br from-teal-600 to-cyan-600 shadow-teal-900/30"
               }`}
             >
               {msg.role === "interviewer" ? (
@@ -425,14 +421,14 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
 
             {/* Message Bubble */}
             <div
-              className={`rounded-2xl px-4 py-3 max-w-[85%] sm:max-w-[75%] ${
+              className={`rounded-2xl px-4 py-3.5 max-w-[85%] sm:max-w-[75%] shadow-xs ${
                 msg.role === "interviewer"
-                  ? "bg-white/[0.07] border border-white/10 text-white/90"
-                  : "bg-gradient-to-br from-teal-500/20 to-emerald-500/20 border border-teal-500/20 text-white/90"
+                  ? "bg-[#111827] border border-slate-800 text-slate-100"
+                  : "bg-teal-950/40 border border-teal-500/30 text-slate-100"
               }`}
             >
               <p className="text-sm leading-relaxed whitespace-pre-wrap font-body">{msg.content}</p>
-              <span className="block text-[10px] text-white/30 mt-1.5 select-none">
+              <span className="block text-[10px] text-slate-400 mt-1.5 select-none font-mono">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -445,7 +441,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
         {/* Loading Indicator */}
         {isLoading && (
           <div className="flex gap-3 max-w-3xl mr-auto animate-slide-up">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md shadow-teal-900/30">
               <svg
                 width="16"
                 height="16"
@@ -460,7 +456,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
-            <div className="bg-white/[0.07] border border-white/10 rounded-2xl px-4 py-3">
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl px-4 py-3.5 shadow-xs">
               <div className="flex items-center gap-1.5">
                 <div
                   className="w-2 h-2 rounded-full bg-teal-400 animate-bounce"
@@ -484,11 +480,13 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
 
       {/* ── Evaluating Overlay ────────────────────────────────────────── */}
       {isEvaluating && (
-        <div className="absolute inset-0 z-60 bg-[#0a0e1a]/95 flex flex-col items-center justify-center gap-6">
+        <div className="absolute inset-0 z-60 bg-[#0b0f19]/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6">
           <div className="w-16 h-16 rounded-full border-4 border-teal-500/30 border-t-teal-400 animate-spin" />
-          <div className="text-center">
-            <h3 className="text-xl font-bold text-white mb-2">Analyzing Your Performance</h3>
-            <p className="text-sm text-white/50 max-w-sm">
+          <div className="text-center px-4">
+            <h3 className="text-2xl font-heading font-extrabold text-white mb-2">
+              Analyzing Your Performance
+            </h3>
+            <p className="text-sm font-body text-slate-400 max-w-sm">
               Our AI panel is evaluating your technical depth, communication clarity, and
               problem-solving approach across {questionCount} questions.
             </p>
@@ -497,10 +495,10 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
       )}
 
       {/* ── Input Area ───────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 border-t border-white/10 bg-[#0d1220]/80 backdrop-blur-md px-4 sm:px-6 py-3">
+      <div className="flex-shrink-0 border-t border-slate-800 bg-[#0e1422]/90 backdrop-blur-md px-4 sm:px-6 py-3.5">
         {/* Voice Status */}
         {voiceEnabled && isListening && (
-          <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+          <div className="flex items-center gap-2 mb-2.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 max-w-3xl mx-auto">
             <div className="flex items-center gap-0.5">
               <div className="w-1 bg-red-400 rounded-full animate-soundwave-1" />
               <div className="w-1 bg-red-400 rounded-full animate-soundwave-2" />
@@ -514,7 +512,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
 
         {/* Speaking Status */}
         {isSpeaking && (
-          <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-lg bg-teal-500/10 border border-teal-500/20">
+          <div className="flex items-center gap-2 mb-2.5 px-3 py-1.5 rounded-lg bg-teal-500/10 border border-teal-500/20 max-w-3xl mx-auto">
             <div className="flex items-center gap-0.5">
               <div className="w-1 bg-teal-400 rounded-full animate-soundwave-1" />
               <div className="w-1 bg-teal-400 rounded-full animate-soundwave-2" />
@@ -523,14 +521,14 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
             <span className="text-xs text-teal-400 font-medium">Interviewer speaking...</span>
             <button
               onClick={stopSpeaking}
-              className="ml-auto text-xs text-white/40 hover:text-white/70 transition-colors"
+              className="ml-auto text-xs text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
             >
               Skip
             </button>
           </div>
         )}
 
-        <div className="flex items-end gap-2 max-w-3xl mx-auto">
+        <div className="flex items-end gap-2.5 max-w-3xl mx-auto">
           {/* Voice Toggle */}
           {sttSupported && (
             <button
@@ -545,12 +543,12 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
                   startListening();
                 }
               }}
-              className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+              className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                 voiceEnabled
                   ? isListening
                     ? "bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse"
                     : "bg-teal-500/20 text-teal-400 border border-teal-500/30"
-                  : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/10"
+                  : "bg-slate-800 text-slate-400 border border-slate-700/60 hover:bg-slate-700/70"
               }`}
               title={voiceEnabled ? "Disable voice" : "Enable voice input"}
             >
@@ -576,10 +574,10 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           {ttsSupported && (
             <button
               onClick={() => setAutoSpeak(!autoSpeak)}
-              className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+              className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                 autoSpeak
                   ? "bg-teal-500/20 text-teal-400 border border-teal-500/30"
-                  : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/10"
+                  : "bg-slate-800 text-slate-400 border border-slate-700/60 hover:bg-slate-700/70"
               }`}
               title={autoSpeak ? "Mute interviewer voice" : "Enable interviewer voice"}
             >
@@ -624,7 +622,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
               }
               disabled={isLoading || isEvaluating}
               rows={1}
-              className="w-full resize-none bg-white/[0.07] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 disabled:opacity-50 transition-all"
+              className="w-full resize-none bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 disabled:opacity-50 transition-all font-body"
               style={{ maxHeight: "120px", minHeight: "42px" }}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -638,7 +636,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           <button
             onClick={sendResponse}
             disabled={!inputText.trim() || isLoading || isEvaluating}
-            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:from-teal-400 hover:to-emerald-500 active:scale-95 transition-all"
+            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-r from-teal-500 to-emerald-600 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:from-teal-400 hover:to-emerald-500 active:scale-95 transition-all shadow-md shadow-teal-900/20 cursor-pointer"
           >
             <svg
               width="18"
@@ -656,17 +654,17 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           </button>
         </div>
 
-        <p className="text-[10px] text-white/20 text-center mt-2 select-none">
-          Powered by VeySkill AI — Your responses are evaluated in real-time
+        <p className="text-[11px] text-slate-500 text-center mt-2 select-none font-body">
+          Powered by VeySkill AI — Evaluated in real-time
         </p>
       </div>
 
       {/* ── Exit Confirmation Modal ──────────────────────────────────── */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-[#141924] border border-white/10 rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-white mb-2">End Interview?</h3>
-            <p className="text-sm text-white/60 mb-6">
+        <div className="fixed inset-0 z-[70] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-heading font-extrabold text-white mb-2">End Interview?</h3>
+            <p className="text-sm font-body text-slate-400 mb-6 leading-relaxed">
               Your interview will be evaluated based on the{" "}
               {messages.filter((m) => m.role === "candidate").length} responses you have provided so
               far. This action cannot be undone.
@@ -674,16 +672,16 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
             <div className="flex gap-3">
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl text-xs font-heading font-semibold bg-slate-800 border border-slate-700/60 text-slate-300 hover:bg-slate-700/70 transition-colors cursor-pointer"
               >
-                Continue Interview
+                Continue
               </button>
               <button
                 onClick={() => {
                   setShowExitConfirm(false);
                   endInterview();
                 }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:from-teal-400 hover:to-emerald-500 transition-all"
+                className="flex-1 px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:from-teal-400 hover:to-emerald-500 transition-all shadow-md shadow-teal-900/30 cursor-pointer"
               >
                 Get Scorecard
               </button>
