@@ -19,9 +19,10 @@ import {
 import { saveInterviewSession } from "@/lib/firestore";
 import { InterviewStudio } from "@/components/interview/InterviewStudio";
 import { ScorecardView } from "@/components/interview/ScorecardView";
+import { DeviceCheckLobby } from "@/components/interview/DeviceCheckLobby";
 
 // ── View State ─────────────────────────────────────────────────────────────
-type ViewState = "hub" | "configure" | "studio" | "scorecard";
+type ViewState = "hub" | "configure" | "lobby" | "studio" | "scorecard";
 
 // ── Role Card Data ─────────────────────────────────────────────────────────
 const ROLE_ICONS: Record<InterviewRole, React.ReactNode> = {
@@ -152,6 +153,13 @@ export default function InterviewPage() {
   const [selectedDuration, setSelectedDuration] = useState(30);
   const [interviewConfig, setInterviewConfig] = useState<InterviewConfig | null>(null);
   const [scorecard, setScorecard] = useState<InterviewScorecard | null>(null);
+  const [mediaSettings, setMediaSettings] = useState<{
+    cameraEnabled: boolean;
+    micEnabled: boolean;
+  }>({
+    cameraEnabled: true,
+    micEnabled: true,
+  });
 
   // ── Handlers ───────────────────────────────────────────────────────────
   const handleRoleSelect = (role: InterviewRole) => {
@@ -185,7 +193,7 @@ export default function InterviewPage() {
       language: "en",
     };
     setInterviewConfig(config);
-    setView("studio");
+    setView("lobby");
   };
 
   const handleInterviewComplete = useCallback(
@@ -229,11 +237,26 @@ export default function InterviewPage() {
     setInterviewConfig(null);
   };
 
+  // ── Lobby View (Hardware & Readiness Audit) ────────────────────────────
+  if (view === "lobby" && interviewConfig) {
+    return (
+      <DeviceCheckLobby
+        config={interviewConfig}
+        onReady={(settings) => {
+          setMediaSettings(settings);
+          setView("studio");
+        }}
+        onBack={() => setView("configure")}
+      />
+    );
+  }
+
   // ── Studio View ────────────────────────────────────────────────────────
   if (view === "studio" && interviewConfig) {
     return (
       <InterviewStudio
         config={interviewConfig}
+        initialMediaSettings={mediaSettings}
         onComplete={handleInterviewComplete}
         onExit={handleBackToHub}
       />
