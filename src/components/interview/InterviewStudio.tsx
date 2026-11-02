@@ -12,6 +12,7 @@ import {
   getPhaseForQuestion,
   ROLE_LABELS,
   LEVEL_LABELS,
+  INTERVIEWER_PROFILES,
 } from "@/lib/interview";
 import { useSpeechRecognition, useSpeechSynthesis } from "./useSpeech";
 
@@ -36,6 +37,8 @@ interface InterviewStudioProps {
 }
 
 export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioProps) {
+  const interviewer = INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
+
   // ── State ──────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<InterviewMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -47,6 +50,59 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // ── Real Interview Additions: Camera & Code Scratchpad ─────────────────
+  const [cameraActive, setCameraActive] = useState(false);
+  const [showScratchpad, setShowScratchpad] = useState(false);
+  const [scratchpadLang, setScratchpadLang] = useState("typescript");
+  const [scratchpadCode, setScratchpadCode] = useState(
+    `// ${interviewer.name}'s Technical Scratchpad\n// Write architecture diagrams, pseudo-code, or solutions here\n\nfunction solution() {\n  // Your code here\n}`
+  );
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  const toggleCamera = async () => {
+    if (cameraActive) {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+      setCameraActive(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 480, height: 360, facingMode: "user" },
+          audio: false,
+        });
+        mediaStreamRef.current = stream;
+        setCameraActive(true);
+      } catch (err) {
+        console.warn("Camera access denied or unavailable:", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (cameraActive && videoRef.current && mediaStreamRef.current) {
+      videoRef.current.srcObject = mediaStreamRef.current;
+    }
+  }, [cameraActive]);
+
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  const insertScratchpadIntoInput = () => {
+    const formatted = `\`\`\`${scratchpadLang}\n${scratchpadCode}\n\`\`\``;
+    setInputText((prev) => (prev ? `${prev}\n\n${formatted}` : formatted));
+    setShowScratchpad(false);
+    inputRef.current?.focus();
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -369,6 +425,86 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
         </div>
       </header>
 
+      {/* ── Interviewer Profile & Tools Ribbon ────────────────────────── */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2 bg-[#101726]/95 border-b border-slate-800 text-xs flex-shrink-0">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div
+            className={`w-7 h-7 rounded-lg bg-gradient-to-br ${interviewer.accent} flex items-center justify-center text-white font-extrabold text-xs shadow-xs flex-shrink-0`}
+          >
+            {interviewer.name.charAt(0)}
+          </div>
+          <div className="truncate">
+            <div className="flex items-center gap-1.5">
+              <span className="font-heading font-extrabold text-slate-100 text-xs sm:text-sm">
+                {interviewer.name}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse hidden sm:inline" />
+              <span className="text-[10px] font-mono text-emerald-400 font-bold hidden sm:inline">
+                LIVE INTERVIEWER
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 truncate hidden md:block">
+              {interviewer.title} &bull;{" "}
+              <span className="text-teal-400">{interviewer.company}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Scratchpad Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setShowScratchpad(!showScratchpad)}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-heading font-bold text-xs border transition-all cursor-pointer flex items-center gap-1.5 ${
+              showScratchpad
+                ? "bg-teal-500/20 text-teal-300 border-teal-500/40 shadow-xs"
+                : "bg-slate-800/80 text-slate-300 border-slate-700/60 hover:bg-slate-700/80"
+            }`}
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            <span>Scratchpad</span>
+          </button>
+
+          {/* Camera Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleCamera}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-heading font-bold text-xs border transition-all cursor-pointer flex items-center gap-1.5 ${
+              cameraActive
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs animate-pulse"
+                : "bg-slate-800/80 text-slate-300 border-slate-700/60 hover:bg-slate-700/80"
+            }`}
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M23 7l-7 5 7 5V7z" />
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+            </svg>
+            <span>{cameraActive ? "Camera ON" : "Camera"}</span>
+          </button>
+        </div>
+      </div>
+
       {/* ── Chat Area ────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4">
         {messages.map((msg) => (
@@ -382,24 +518,12 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
             <div
               className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow-md ${
                 msg.role === "interviewer"
-                  ? "bg-gradient-to-br from-teal-500 to-emerald-600 shadow-teal-900/30"
-                  : "bg-gradient-to-br from-teal-600 to-cyan-600 shadow-teal-900/30"
+                  ? `bg-gradient-to-br ${interviewer.accent} shadow-teal-900/30 text-white font-extrabold text-xs`
+                  : "bg-gradient-to-br from-teal-600 to-cyan-600 shadow-teal-900/30 text-white"
               }`}
             >
               {msg.role === "interviewer" ? (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                interviewer.name.charAt(0)
               ) : (
                 <svg
                   width="16"
@@ -427,6 +551,16 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
                   : "bg-teal-950/40 border border-teal-500/30 text-slate-100"
               }`}
             >
+              {msg.role === "interviewer" && (
+                <div className="flex items-center gap-1.5 mb-1.5 select-none">
+                  <span className="font-heading font-extrabold text-xs text-teal-400">
+                    {interviewer.name}
+                  </span>
+                  <span className="text-[10px] text-slate-500 hidden sm:inline">
+                    &bull; {interviewer.title}
+                  </span>
+                </div>
+              )}
               <p className="text-sm leading-relaxed whitespace-pre-wrap font-body">{msg.content}</p>
               <span className="block text-[10px] text-slate-400 mt-1.5 select-none font-mono">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
@@ -441,22 +575,12 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
         {/* Loading Indicator */}
         {isLoading && (
           <div className="flex gap-3 max-w-3xl mr-auto animate-slide-up">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md shadow-teal-900/30">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+            <div
+              className={`flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br ${interviewer.accent} flex items-center justify-center shadow-md shadow-teal-900/30 text-white font-extrabold text-xs`}
+            >
+              {interviewer.name.charAt(0)}
             </div>
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl px-4 py-3.5 shadow-xs">
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl px-4 py-3.5 shadow-xs flex items-center gap-3">
               <div className="flex items-center gap-1.5">
                 <div
                   className="w-2 h-2 rounded-full bg-teal-400 animate-bounce"
@@ -471,12 +595,130 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
                   style={{ animationDelay: "300ms" }}
                 />
               </div>
+              <span className="text-xs font-heading font-semibold text-slate-400">
+                {interviewer.name} is evaluating your approach...
+              </span>
             </div>
           </div>
         )}
 
         <div ref={chatEndRef} />
       </div>
+
+      {/* ── Candidate Camera Self-View (PIP) ─────────────────────────── */}
+      {cameraActive && (
+        <div className="fixed bottom-24 right-4 sm:right-6 z-40 w-36 sm:w-44 rounded-2xl overflow-hidden shadow-2xl border-2 border-teal-500/50 bg-black backdrop-blur-md">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-24 sm:h-28 object-cover transform -scale-x-100"
+          />
+          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/70 text-[9px] font-mono font-bold text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            CANDIDATE
+          </div>
+          <button
+            type="button"
+            onClick={toggleCamera}
+            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 hover:bg-black text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
+            title="Close camera"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {/* ── Technical Scratchpad Drawer ──────────────────────────────── */}
+      {showScratchpad && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] md:w-[540px] bg-[#0d1322] border-l border-slate-800 shadow-2xl flex flex-col font-body">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-[#111827]">
+            <div className="flex items-center gap-2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#14b8a6"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <h3 className="font-heading font-extrabold text-sm text-white">
+                Technical Scratchpad &amp; Code Editor
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowScratchpad(false)}
+              className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-sm transition-colors cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          <div className="px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-heading font-bold text-slate-400">Language:</span>
+              <select
+                value={scratchpadLang}
+                onChange={(e) => setScratchpadLang(e.target.value)}
+                className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
+              >
+                <option value="typescript">TypeScript</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="sql">SQL</option>
+                <option value="pseudocode">Pseudocode</option>
+              </select>
+            </div>
+            <span className="text-[10px] font-mono text-slate-500">Auto-saved</span>
+          </div>
+
+          <div className="flex-1 p-3">
+            <textarea
+              value={scratchpadCode}
+              onChange={(e) => setScratchpadCode(e.target.value)}
+              className="w-full h-full p-3 font-mono text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-teal-500/60 leading-relaxed"
+              spellCheck={false}
+            />
+          </div>
+
+          <div className="p-3 border-t border-slate-800 bg-[#111827] flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setScratchpadCode("")}
+              className="px-3 py-2 rounded-xl text-xs font-heading font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors cursor-pointer"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={insertScratchpadIntoInput}
+              className="px-4 py-2 rounded-xl text-xs font-heading font-bold bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white transition-all shadow-md shadow-teal-900/30 flex items-center gap-1.5 cursor-pointer"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 11 12 14 22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              <span>Insert into Answer</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Evaluating Overlay ────────────────────────────────────────── */}
       {isEvaluating && (
@@ -518,7 +760,9 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
               <div className="w-1 bg-teal-400 rounded-full animate-soundwave-2" />
               <div className="w-1 bg-teal-400 rounded-full animate-soundwave-3" />
             </div>
-            <span className="text-xs text-teal-400 font-medium">Interviewer speaking...</span>
+            <span className="text-xs text-teal-400 font-medium">
+              {interviewer.name} is speaking...
+            </span>
             <button
               onClick={stopSpeaking}
               className="ml-auto text-xs text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
@@ -527,6 +771,49 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
             </button>
           </div>
         )}
+
+        {/* Quick Clarification & Architectural Signal Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 max-w-3xl mx-auto scrollbar-none">
+          <span className="text-[10px] uppercase font-heading font-black tracking-wider text-slate-500 whitespace-nowrap">
+            Pro Tips:
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setInputText(
+                "Before diving into the solution, could you clarify the expected scale (RPS / data volume), edge cases, and latency constraints?"
+              );
+              inputRef.current?.focus();
+            }}
+            className="px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-teal-300 border border-teal-500/25 whitespace-nowrap transition-colors cursor-pointer"
+          >
+            Clarify Scope
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setInputText(
+                "I see two primary approaches here:\n1. Approach A (optimizes for lower latency)\n2. Approach B (optimizes for storage and fault tolerance)\nHere is my analysis of the trade-offs:"
+              );
+              inputRef.current?.focus();
+            }}
+            className="px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-emerald-300 border border-emerald-500/25 whitespace-nowrap transition-colors cursor-pointer"
+          >
+            Discuss Trade-offs
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setInputText(
+                "I have structured the high-level architecture. Could you give me a small hint on how to optimize the data structure or concurrency model for this step?"
+              );
+              inputRef.current?.focus();
+            }}
+            className="px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-amber-300 border border-amber-500/25 whitespace-nowrap transition-colors cursor-pointer"
+          >
+            Request Hint (-5 pts)
+          </button>
+        </div>
 
         <div className="flex items-end gap-2.5 max-w-3xl mx-auto">
           {/* Voice Toggle */}
@@ -617,7 +904,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
               onKeyDown={handleKeyDown}
               placeholder={
                 isLoading
-                  ? "Waiting for interviewer..."
+                  ? `${interviewer.name} is speaking...`
                   : "Type your response... (Shift+Enter for new line)"
               }
               disabled={isLoading || isEvaluating}
@@ -655,7 +942,8 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
         </div>
 
         <p className="text-[11px] text-slate-500 text-center mt-2 select-none font-body">
-          Powered by VeySkill AI — Evaluated in real-time
+          Powered by VeySkill AI &bull; {interviewer.name} ({interviewer.company}) &bull; Real-time
+          Evaluation
         </p>
       </div>
 
@@ -665,7 +953,7 @@ export function InterviewStudio({ config, onComplete, onExit }: InterviewStudioP
           <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <h3 className="text-lg font-heading font-extrabold text-white mb-2">End Interview?</h3>
             <p className="text-sm font-body text-slate-400 mb-6 leading-relaxed">
-              Your interview will be evaluated based on the{" "}
+              Your interview with {interviewer.name} will be evaluated based on the{" "}
               {messages.filter((m) => m.role === "candidate").length} responses you have provided so
               far. This action cannot be undone.
             </p>

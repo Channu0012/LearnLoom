@@ -87,6 +87,66 @@ export const LEVEL_LABELS: Record<InterviewLevel, string> = {
   staff: "Staff / Principal (8+ years)",
 };
 
+export interface InterviewerProfile {
+  name: string;
+  title: string;
+  company: string;
+  accent: string;
+  bio: string;
+}
+
+export const INTERVIEWER_PROFILES: Record<InterviewRole, InterviewerProfile> = {
+  frontend: {
+    name: "Alex Vance",
+    title: "Staff Frontend Architect",
+    company: "Google / ex-Meta",
+    accent: "from-teal-500 to-emerald-600",
+    bio: "12+ yrs scaling web runtimes, browser rendering engines & micro-frontends.",
+  },
+  backend: {
+    name: "Marcus Chen",
+    title: "Principal Distributed Systems Architect",
+    company: "Amazon AWS / ex-Stripe",
+    accent: "from-blue-500 to-indigo-600",
+    bio: "Architect of multi-region fault-tolerant backends handling 500k RPS.",
+  },
+  fullstack: {
+    name: "Elena Rostova",
+    title: "Staff Systems Engineer",
+    company: "Netflix / ex-Google",
+    accent: "from-emerald-500 to-teal-600",
+    bio: "Full-stack cloud architectures, Edge rendering & GraphQL federations.",
+  },
+  "data-science": {
+    name: "Dr. Sanjay Nair",
+    title: "Principal ML Scientist",
+    company: "DeepMind / ex-OpenAI",
+    accent: "from-purple-500 to-indigo-600",
+    bio: "Large language models, distributed training & production recommender systems.",
+  },
+  devops: {
+    name: "Kai Lindqvist",
+    title: "Staff SRE & Infrastructure Architect",
+    company: "Spotify / ex-Uber",
+    accent: "from-cyan-500 to-teal-600",
+    bio: "Kubernetes clusters, multi-cloud Terraform, zero-downtime CI/CD pipelines.",
+  },
+  mobile: {
+    name: "Chloe Dupont",
+    title: "Lead Mobile Architect",
+    company: "Apple / ex-Snapchat",
+    accent: "from-rose-500 to-pink-600",
+    bio: "High-performance iOS & Android runtimes, 60fps rendering, offline-first sync.",
+  },
+  "system-design": {
+    name: "Vikram Mehta",
+    title: "VP of Core Infrastructure",
+    company: "Stripe / ex-LinkedIn",
+    accent: "from-amber-500 to-orange-600",
+    bio: "Global payments routing, Raft consensus & distributed key-value stores.",
+  },
+};
+
 export const ROLE_TOPICS: Record<InterviewRole, string[]> = {
   frontend: [
     "React",
@@ -218,7 +278,8 @@ export function calculateFaangReadiness(
 // ── System Prompt Builder ──────────────────────────────────────────────────
 
 export function buildInterviewerSystemPrompt(config: InterviewConfig): string {
-  return `You are a Senior Staff Engineer at a top-tier technology company (Google/Meta/Apple caliber) conducting a live technical interview.
+  const interviewer = INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
+  return `You are ${interviewer.name}, ${interviewer.title} at ${interviewer.company}, conducting a high-stakes, live technical interview.
 
 ROLE: ${ROLE_LABELS[config.role]}
 CANDIDATE EXPERIENCE LEVEL: ${LEVEL_LABELS[config.level]}
