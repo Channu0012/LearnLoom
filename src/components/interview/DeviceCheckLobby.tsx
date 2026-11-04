@@ -9,7 +9,9 @@ import {
   type InterviewConfig,
   ROLE_LABELS,
   LEVEL_LABELS,
+  COMPANY_TRACKS,
   INTERVIEWER_PROFILES,
+  getChallengeForConfig,
 } from "@/lib/interview";
 import { useAuth } from "@/context/AuthContext";
 
@@ -21,7 +23,17 @@ interface DeviceCheckLobbyProps {
 
 export function DeviceCheckLobby({ config, onReady, onBack }: DeviceCheckLobbyProps) {
   const { user } = useAuth();
-  const interviewer = INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
+  const companyTrack = config.companyTrack ? COMPANY_TRACKS[config.companyTrack] : null;
+  const challenge = getChallengeForConfig(config);
+  const interviewer = companyTrack
+    ? {
+        name: companyTrack.interviewerName,
+        title: companyTrack.interviewerTitle,
+        company: companyTrack.name,
+        accent: companyTrack.accent,
+        bio: companyTrack.companyBar,
+      }
+    : INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
 
   // ── Hardware States ────────────────────────────────────────────────────────
   const [cameraActive, setCameraActive] = useState(true);
@@ -428,6 +440,14 @@ export function DeviceCheckLobby({ config, onReady, onBack }: DeviceCheckLobbyPr
                 </span>
                 <span className="font-heading font-bold text-slate-200">
                   {LEVEL_LABELS[config.level].split(" ")[0]}
+                </span>
+              </div>
+              <div className="col-span-2 pt-1 border-t border-slate-800/50">
+                <span className="text-[10px] text-teal-400 uppercase font-heading font-bold block">
+                  Assigned Challenge
+                </span>
+                <span className="font-heading font-bold text-white text-xs block truncate">
+                  {challenge.title}
                 </span>
               </div>
             </div>

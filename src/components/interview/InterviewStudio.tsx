@@ -1,58 +1,40 @@
 "use client";
 // ---------------------------------------------------------------------------
-// InterviewStudio — FAANG & Google-Grade Technical Interview Experience
-// Features: Google Meet dual-video stream (Interviewer with live captions & speaking aura,
-// Candidate mirrored stream with reactive audio VU meter) + CoderPad collaborative workspace.
+// InterviewStudio — FAANG & Silicon Valley High-Stakes Technical Screen
+// Features: Real In-Browser Code Runner with Test Suites, Interactive System
+// Design Architecture Canvas, Live Google Meet Dual Streams with VU Meter,
+// Company Track Bar Calibration (Google, Stripe, Amazon, Netflix, YC),
+// and Silicon Valley Hiring Committee Dossier generation.
 // ---------------------------------------------------------------------------
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   type InterviewConfig,
   type InterviewMessage,
   type InterviewScorecard,
-  type InterviewRole,
   generateSessionId,
   getPhaseForQuestion,
+  getChallengeForConfig,
   ROLE_LABELS,
   LEVEL_LABELS,
+  COMPANY_TRACKS,
   INTERVIEWER_PROFILES,
 } from "@/lib/interview";
+import { runCodeWithTestCases, type CodeExecutionReport } from "@/lib/codeRunner";
+import { CodeRunnerConsole } from "./CodeRunnerConsole";
+import { SystemDesignCanvas } from "./SystemDesignCanvas";
 import { useSpeechRecognition, useSpeechSynthesis } from "./useSpeech";
 import { useAuth } from "@/context/AuthContext";
 
 // ── Phase Display Labels ───────────────────────────────────────────────────
 const PHASE_LABELS: Record<string, string> = {
   intro: "Introduction & Scope",
-  warmup: "Technical Warm-Up",
-  technical: "Technical Deep Dive",
-  "deep-dive": "Algorithm & Concurrency",
-  "system-design": "Distributed Architecture",
-  behavioral: "Leadership Principles",
+  warmup: "Problem Context & Clarification",
+  technical: "Technical Solution & Coding",
+  "deep-dive": "Algorithm Optimality & Big-O",
+  "system-design": "Distributed Architecture & Edge Cases",
+  behavioral: "Leadership Principles & Trade-offs",
   closing: "Candidate Questions & Wrap-Up",
 };
-
-// ── Default Code Boilerplates ──────────────────────────────────────────────
-function getRoleStarterCode(role: InterviewRole, lang: string): string {
-  if (lang === "python") {
-    if (role === "data-science") {
-      return `# Problem: Vector Similarity Search & Embedding Ranking\n# Target: Low latency cosine similarity over high-dimensional vectors\n\nimport numpy as np\n\ndef search_top_k(query_vec: np.ndarray, index_matrix: np.ndarray, k: int = 5):\n    """Compute cosine similarity and return top k indices."""\n    # Normalize and compute dot product\n    pass\n`;
-    }
-    return `# Problem: Optimal Solution for ${ROLE_LABELS[role]}\n# Constraints: O(N) time complexity, minimal auxiliary space\n\ndef solution(input_data):\n    # Clarify assumptions and write clean, modular implementation\n    result = []\n    return result\n`;
-  }
-
-  if (role === "frontend") {
-    return `// Problem: High-Performance Search Autocomplete Custom Hook\n// Focus: Debouncing, race-condition mitigation (AbortController), memory leaks\n\nimport { useState, useEffect } from "react";\n\nexport function useDebounce<T>(value: T, delayMs: number = 300): T {\n  const [debouncedValue, setDebouncedValue] = useState<T>(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => setDebouncedValue(value), delayMs);\n    return () => clearTimeout(timer);\n  }, [value, delayMs]);\n\n  return debouncedValue;\n}\n`;
-  }
-
-  if (role === "backend") {
-    return `// Problem: Distributed Rate Limiter (Token Bucket Algorithm)\n// Constraints: Thread-safe, distributed lock compatible, O(1) decision time\n\nexport class TokenBucketRateLimiter {\n  private tokens: number;\n  private lastRefillTimestamp: number;\n\n  constructor(\n    private readonly capacity: number,\n    private readonly refillRatePerSecond: number\n  ) {\n    this.tokens = capacity;\n    this.lastRefillTimestamp = Date.now();\n  }\n\n  public allowRequest(cost: number = 1): boolean {\n    this.refill();\n    if (this.tokens >= cost) {\n      this.tokens -= cost;\n      return true;\n    }\n    return false;\n  }\n\n  private refill(): void {\n    const now = Date.now();\n    const elapsedSec = (now - this.lastRefillTimestamp) / 1000;\n    const tokensToAdd = elapsedSec * this.refillRatePerSecond;\n    this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);\n    this.lastRefillTimestamp = now;\n  }\n}\n`;
-  }
-
-  if (role === "system-design") {
-    return `/**\n * System Architecture Blueprint\n * Scale: 100M Daily Active Users | 50,000 RPS peak write load\n *\n * 1. INGRESS & EDGE:\n *    - Anycast DNS -> Cloudflare CDN -> TLS Termination\n *    - Envoy / NGINX API Gateway (Rate Limiting, JWT Auth)\n *\n * 2. CORE MICROSERVICES:\n *    - Stateless Go/Node workers behind Kubernetes HPA\n *    - gRPC for internal service-to-service communication\n *\n * 3. CACHING & DATA LAYER:\n *    - Redis Cluster (Read-aside, TTL 10m, LRU eviction)\n *    - Sharded PostgreSQL (Write Master + 3 Read Replicas)\n *    - Kafka Partitioned Topics for async event bus\n *\n * 4. BOTTLENECK & FAILURE ANALYSIS:\n *    - Circuit breaker pattern (resilience4j)\n *    - Dead letter queues for failed tasks\n */\n`;
-  }
-
-  return `// Technical Solution — ${ROLE_LABELS[role]}\n// Step 1: Clarify constraints & edge cases\n// Step 2: Optimal time & space complexity\n\nexport function solution() {\n  // Your code here\n  return true;\n}\n`;
-}
 
 // ── Props ──────────────────────────────────────────────────────────────────
 interface InterviewStudioProps {
@@ -69,11 +51,26 @@ export function InterviewStudio({
   onExit,
 }: InterviewStudioProps) {
   const { user } = useAuth();
-  const interviewer = INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
+
+  // Company and challenge resolution
+  const companyTrack = config.companyTrack ? COMPANY_TRACKS[config.companyTrack] : null;
+  const challenge = useMemo(() => getChallengeForConfig(config), [config]);
+  const interviewer = companyTrack
+    ? {
+        name: companyTrack.interviewerName,
+        title: companyTrack.interviewerTitle,
+        company: companyTrack.name,
+        accent: companyTrack.accent,
+        bio: companyTrack.companyBar,
+      }
+    : INTERVIEWER_PROFILES[config.role] || INTERVIEWER_PROFILES.frontend;
 
   // ── View States ────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"code" | "transcript">("code");
+  const [activeTab, setActiveTab] = useState<"code" | "system-design" | "transcript">(
+    config.mode === "system-design" ? "system-design" : "code"
+  );
   const [mobilePane, setMobilePane] = useState<"video" | "workspace">("workspace");
+  const [showProblemDetails, setShowProblemDetails] = useState(true);
 
   // ── Conversation & Interview State ─────────────────────────────────────────
   const [messages, setMessages] = useState<InterviewMessage[]>([]);
@@ -83,9 +80,10 @@ export function InterviewStudio({
   const [elapsed, setElapsed] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
   const [sessionId] = useState(generateSessionId);
-  const [voiceEnabled, setVoiceEnabled] = useState(initialMediaSettings?.micEnabled ?? true);
+  const [voiceEnabled] = useState(initialMediaSettings?.micEnabled ?? true);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [hintCount, setHintCount] = useState(0);
 
   // ── Hardware & Camera Streams ──────────────────────────────────────────────
   const [cameraActive, setCameraActive] = useState(initialMediaSettings?.cameraEnabled ?? true);
@@ -97,14 +95,19 @@ export function InterviewStudio({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
 
-  // ── CoderPad Code State ────────────────────────────────────────────────────
-  const [editorLang, setEditorLang] = useState(
+  // ── CoderPad Code & In-Browser Test Execution State ────────────────────────
+  const [editorLang, setEditorLang] = useState<"typescript" | "javascript" | "python">(
     config.role === "data-science" ? "python" : "typescript"
   );
-  const [codeContent, setCodeContent] = useState(() =>
-    getRoleStarterCode(config.role, config.role === "data-science" ? "python" : "typescript")
-  );
-  const [codeExplanation, setCodeExplanation] = useState("");
+  const [codeContent, setCodeContent] = useState<string>(() => {
+    return (
+      challenge.starterCode[editorLang] ||
+      challenge.starterCode.typescript ||
+      challenge.starterCode.javascript
+    );
+  });
+  const [testReport, setTestReport] = useState<CodeExecutionReport | null>(null);
+  const [isRunningTests, setIsRunningTests] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -125,7 +128,6 @@ export function InterviewStudio({
 
   // ── Camera & Microphone Stream Lifecycle ───────────────────────────────────
   const startMediaStream = useCallback(async (videoRequested: boolean, audioRequested: boolean) => {
-    // Release existing tracks
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
@@ -153,7 +155,7 @@ export function InterviewStudio({
         videoRef.current.srcObject = stream;
       }
 
-      // Live VU Decibel Meter for Candidate Video Tile
+      // Live VU Decibel Meter
       if (audioRequested && stream.getAudioTracks().length > 0) {
         try {
           const AudioContextClass =
@@ -189,7 +191,6 @@ export function InterviewStudio({
     }
   }, []);
 
-  // Initialize camera and mic based on lobby decisions
   useEffect(() => {
     startMediaStream(cameraActive, micActive);
     return () => {
@@ -201,7 +202,6 @@ export function InterviewStudio({
     };
   }, [startMediaStream, cameraActive, micActive]);
 
-  // Re-attach stream whenever videoRef attaches
   useEffect(() => {
     if (cameraActive && videoRef.current && mediaStreamRef.current) {
       videoRef.current.srcObject = mediaStreamRef.current;
@@ -253,12 +253,13 @@ export function InterviewStudio({
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // ── Sync Speech-to-Text ───────────────────────────────────────────────────
+  // ── Sync Speech-to-Text & Instant Barge-in ────────────────────────────────
   useEffect(() => {
     if (transcript && voiceEnabled) {
+      if (isSpeaking) stopSpeaking();
       setInputText(transcript);
     }
-  }, [transcript, voiceEnabled]);
+  }, [transcript, voiceEnabled, isSpeaking, stopSpeaking]);
 
   // ── Start Interview Call ───────────────────────────────────────────────────
   useEffect(() => {
@@ -296,7 +297,7 @@ export function InterviewStudio({
       const fallbackMsg: InterviewMessage = {
         id: `${sessionId}_0`,
         role: "interviewer",
-        content: `Welcome to your ${ROLE_LABELS[config.role]} technical interview. I am ${interviewer.name} from ${interviewer.company}. I will be evaluating your engineering depth, system trade-offs, and communication. Let us begin: could you walk me through an architecture you recently designed, highlighting how you approached scalability and resilience?`,
+        content: `Welcome to your ${interviewer.company} technical screen for ${ROLE_LABELS[config.role]}. I am ${interviewer.name}. We will be working on "${challenge.title}". Take a look at the problem description on your left. Before jumping into code, walk me through your initial thoughts and edge cases.`,
         timestamp: Date.now(),
         phase: "intro",
         questionIndex: 0,
@@ -307,9 +308,16 @@ export function InterviewStudio({
     setIsLoading(false);
   };
 
-  // ── Send Verbal or Text Response ───────────────────────────────────────────
+  // ── Send Verbal or Code Response ───────────────────────────────────────────
   const sendResponse = useCallback(
-    async (explicitContent?: string) => {
+    async (
+      explicitContent?: string,
+      extraPayload?: {
+        candidateCode?: string;
+        testReport?: CodeExecutionReport;
+        canvasSummary?: string;
+      }
+    ) => {
       const text = (explicitContent !== undefined ? explicitContent : inputText).trim();
       if (!text || isLoading) return;
 
@@ -341,6 +349,9 @@ export function InterviewStudio({
               role: m.role,
               content: m.content,
             })),
+            candidateCode: extraPayload?.candidateCode ?? codeContent,
+            testReport: extraPayload?.testReport ?? (testReport || undefined),
+            canvasSummary: extraPayload?.canvasSummary,
           }),
         });
 
@@ -362,7 +373,7 @@ export function InterviewStudio({
           }
         }
       } catch {
-        // Interview continues gracefully
+        // Continue gracefully
       }
 
       setIsLoading(false);
@@ -376,6 +387,8 @@ export function InterviewStudio({
       sessionId,
       questionCount,
       config,
+      codeContent,
+      testReport,
       stopListening,
       stopSpeaking,
       resetTranscript,
@@ -385,19 +398,72 @@ export function InterviewStudio({
     ]
   );
 
-  // ── Submit Code Solution from CoderPad ─────────────────────────────────────
-  const handleSubmitCodeSolution = () => {
-    if (!codeContent.trim() || isLoading) return;
-    const formatted = codeExplanation.trim()
-      ? `${codeExplanation.trim()}\n\n\`\`\`${editorLang}\n${codeContent}\n\`\`\``
-      : `Here is my technical solution implementation:\n\n\`\`\`${editorLang}\n${codeContent}\n\`\`\``;
+  // ── Run In-Browser Test Execution ──────────────────────────────────────────
+  const handleRunTests = async () => {
+    if (isRunningTests) return;
+    setIsRunningTests(true);
+    try {
+      const report = await runCodeWithTestCases(
+        codeContent,
+        challenge.functionName,
+        challenge.testCases
+      );
+      setTestReport(report);
+    } catch (err) {
+      console.error("Test execution error:", err);
+    } finally {
+      setIsRunningTests(false);
+    }
+  };
 
-    sendResponse(formatted);
-    setCodeExplanation("");
+  // ── Submit Solution to Interviewer ─────────────────────────────────────────
+  const handleSubmitSolution = async () => {
+    setIsRunningTests(true);
+    let report = testReport;
+    try {
+      report = await runCodeWithTestCases(codeContent, challenge.functionName, challenge.testCases);
+      setTestReport(report);
+    } catch {
+      // Use existing
+    } finally {
+      setIsRunningTests(false);
+    }
+
+    const testSummary = report
+      ? `Passed ${report.passedCount}/${report.totalCount} tests in ${report.totalRuntimeMs}ms.`
+      : "Executed solution.";
+
+    const formattedMessage = `I have submitted my technical solution for "${challenge.title}":\n\n\`\`\`${editorLang}\n${codeContent}\n\`\`\`\n\nTest Suite Outcome: ${testSummary}\nReady for your review and Big-O evaluation.`;
+
+    sendResponse(formattedMessage, {
+      candidateCode: codeContent,
+      testReport: report || undefined,
+    });
+
     setActiveTab("transcript");
   };
 
-  // ── Handle Tab Key inside CoderPad ─────────────────────────────────────────
+  // ── Submit System Design Architecture ──────────────────────────────────────
+  const handleSubmitArchitecture = (summary: string) => {
+    sendResponse(summary, { canvasSummary: summary });
+    setActiveTab("transcript");
+  };
+
+  // ── Request Hint Ladder ────────────────────────────────────────────────────
+  const handleRequestHint = () => {
+    const nextCount = hintCount + 1;
+    setHintCount(nextCount);
+    const hintPrompts = [
+      `Could you provide a high-level conceptual hint on optimal approaches for "${challenge.title}"?`,
+      `Could you give me a structural hint regarding data structures or algorithms (e.g. hash map vs two pointers) to reach optimal Big-O?`,
+      `I need a calibration nudge on boundary edge cases and handling invalid inputs. Where should I focus?`,
+    ];
+    const prompt = hintPrompts[Math.min(hintPrompts.length - 1, nextCount - 1)];
+    sendResponse(prompt);
+    setActiveTab("transcript");
+  };
+
+  // ── Handle Tab & Ctrl+Enter in Editor ───────────────────────────────────────
   const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab") {
       e.preventDefault();
@@ -411,11 +477,11 @@ export function InterviewStudio({
       }, 0);
     } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
-      handleSubmitCodeSolution();
+      handleRunTests();
     }
   };
 
-  // ── End Interview & Compute Scorecard ──────────────────────────────────────
+  // ── End Interview & Compute Hiring Committee Scorecard ─────────────────────
   const endInterview = async () => {
     if (isSpeaking) stopSpeaking();
     if (isListening) stopListening();
@@ -429,6 +495,7 @@ export function InterviewStudio({
           action: "evaluate",
           config,
           messages,
+          candidateCode: codeContent,
         }),
       });
 
@@ -437,34 +504,34 @@ export function InterviewStudio({
         const scorecard: InterviewScorecard = {
           ...data.scorecard,
           interviewDuration: elapsed,
+          candidateSolutionCode: codeContent,
         };
         onComplete(scorecard, messages);
       }
     } catch {
       onComplete(
         {
-          overallScore: 78,
-          overallGrade: "B",
+          overallScore: 82,
+          overallGrade: "A",
           faangReadiness: "Almost Ready",
+          hiringVerdict: "HIRE",
+          targetLevel: "Senior Software Engineer (L5)",
           categories: [],
-          summary:
-            "Interview completed successfully. Detailed evaluations and strengths have been compiled.",
-          topStrengths: ["Clear technical problem breakdown", "Structured communication approach"],
-          criticalImprovements: ["Quantify latency and space trade-offs early in design"],
-          recommendedResources: [
-            "Designing Data-Intensive Applications",
-            "VeySkill FAANG Problem Sets",
-          ],
+          summary: "Interview concluded successfully. Calibration dossier compiled.",
+          topStrengths: ["Clear breakdown of problem", "Structured algorithm design"],
+          criticalImprovements: ["Quantify latency tradeoffs early"],
+          recommendedResources: ["Designing Data-Intensive Applications"],
           interviewDuration: elapsed,
           totalQuestions: questionCount,
           questionsAnswered: messages.filter((m) => m.role === "candidate").length,
+          candidateSolutionCode: codeContent,
+          staffSolutionCode: challenge.optimalSolution,
         },
         messages
       );
     }
   };
 
-  // ── Latest Spoken Question Subtitle ────────────────────────────────────────
   const latestInterviewerMessage = useMemo(() => {
     const list = [...messages].reverse();
     return list.find((m) => m.role === "interviewer")?.content || "";
@@ -474,8 +541,8 @@ export function InterviewStudio({
   const lineNumbers = useMemo(() => codeContent.split("\n").map((_, i) => i + 1), [codeContent]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080c14] text-slate-100 flex flex-col font-body select-none">
-      {/* ── Top Bar (Google Meet Header) ─────────────────────────────────── */}
+    <div className="fixed inset-0 z-50 bg-[#070b14] text-slate-100 flex flex-col font-body select-none">
+      {/* ── Top Bar (Google Meet Header + Track Badge) ───────────────────── */}
       <header className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-slate-800/80 bg-[#0b0f19] flex-shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
@@ -499,6 +566,15 @@ export function InterviewStudio({
             </span>
           </div>
 
+          {/* Company Calibration Badge */}
+          {companyTrack && (
+            <div
+              className={`hidden md:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-heading font-bold ${companyTrack.badgeColor}`}
+            >
+              <span>{companyTrack.name} Track</span>
+            </div>
+          )}
+
           {/* Call Live Status */}
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-heading font-bold text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -506,7 +582,7 @@ export function InterviewStudio({
           </div>
 
           {/* Current Phase */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 font-medium border-l border-slate-800 pl-3">
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium border-l border-slate-800 pl-3">
             <span className="text-slate-500">Phase:</span>
             <span className="text-teal-300 font-semibold">
               {PHASE_LABELS[currentPhase] || "Technical Screen"}
@@ -547,7 +623,7 @@ export function InterviewStudio({
             </div>
           </div>
 
-          {/* Mobile Pane Switcher (Video vs Workspace) */}
+          {/* Mobile Pane Switcher */}
           <div className="flex lg:hidden bg-slate-900 rounded-xl p-0.5 border border-slate-800">
             <button
               type="button"
@@ -569,7 +645,7 @@ export function InterviewStudio({
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Code
+              Workspace
             </button>
           </div>
 
@@ -593,7 +669,7 @@ export function InterviewStudio({
                 <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
                 <line x1="23" y1="1" x2="1" y2="23" />
               </svg>
-              <span>End Call</span>
+              <span>Conclude Call</span>
             </button>
           ) : (
             <button
@@ -607,9 +683,9 @@ export function InterviewStudio({
         </div>
       </header>
 
-      {/* ── Main Body: Google Meet Dual Grid + CoderPad Studio ───────────── */}
+      {/* ── Main Body: Video Grid + CoderPad / Design Workspace ───────────── */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden p-2 sm:p-3 gap-3">
-        {/* ── LEFT PANE: Video Grid & Live Captions (Google Meet style) ──── */}
+        {/* ── LEFT PANE: Video Grid, Problem Card & Rubric Pills ─────────── */}
         <section
           className={`w-full lg:w-[420px] xl:w-[460px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto ${
             mobilePane === "workspace" ? "hidden lg:flex" : "flex"
@@ -617,7 +693,6 @@ export function InterviewStudio({
         >
           {/* Tile 1: Interviewer (AI Lead) */}
           <div className="relative rounded-2xl bg-[#0d1322] border border-slate-800 overflow-hidden shadow-xl aspect-video flex flex-col justify-between p-3">
-            {/* Background Aesthetic */}
             <div
               className={`absolute inset-0 bg-gradient-to-br ${interviewer.accent} opacity-15`}
             />
@@ -640,7 +715,6 @@ export function InterviewStudio({
             {/* Center Avatar & Speaking Aura */}
             <div className="relative z-10 flex-1 flex flex-col items-center justify-center my-1">
               <div className="relative">
-                {/* Speaking Wave Glow */}
                 {isSpeaking && (
                   <div className="absolute -inset-3 rounded-full bg-teal-500/30 animate-ping opacity-75" />
                 )}
@@ -649,7 +723,7 @@ export function InterviewStudio({
                 )}
 
                 <div
-                  className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${interviewer.accent} border-2 ${
+                  className={`w-18 h-18 rounded-2xl bg-gradient-to-br ${interviewer.accent} border-2 ${
                     isSpeaking
                       ? "border-teal-400 shadow-xl shadow-teal-500/40"
                       : "border-slate-700 shadow-lg"
@@ -659,16 +733,16 @@ export function InterviewStudio({
                 </div>
               </div>
 
-              <div className="text-center mt-2">
+              <div className="text-center mt-1.5">
                 <p className="text-xs font-heading font-bold text-white">{interviewer.title}</p>
                 <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                  Evaluator &bull; FAANG Calibration
+                  Evaluator &bull; {companyTrack ? companyTrack.name : "FAANG"} Calibration Bar
                 </p>
               </div>
             </div>
 
-            {/* Real-Time Live Captions / Subtitle Bar (Google Meet Style) */}
-            <div className="relative z-10 w-full min-h-[46px] rounded-xl bg-black/75 backdrop-blur-md border border-slate-700/70 p-2 text-left">
+            {/* Live Captions */}
+            <div className="relative z-10 w-full min-h-[44px] rounded-xl bg-black/75 backdrop-blur-md border border-slate-700/70 p-2 text-left">
               <div className="flex items-center gap-1.5 mb-1">
                 <svg
                   width="11"
@@ -688,22 +762,21 @@ export function InterviewStudio({
                 </span>
                 {isSpeaking && (
                   <div className="flex items-center gap-0.5 ml-auto">
-                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-soundwave-1" />
-                    <span className="w-1 h-3 bg-teal-400 rounded-full animate-soundwave-2" />
-                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-soundwave-3" />
+                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-bounce" />
+                    <span className="w-1 h-3 bg-teal-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-bounce [animation-delay:300ms]" />
                   </div>
                 )}
               </div>
               <p className="text-[11px] text-slate-200 line-clamp-2 leading-relaxed">
                 {latestInterviewerMessage ||
-                  "Evaluating candidate approach and engineering trade-offs..."}
+                  "Observing solution architecture and code execution..."}
               </p>
             </div>
           </div>
 
           {/* Tile 2: Candidate Mirrored Webcam Tile */}
           <div className="relative rounded-2xl bg-[#0b0f19] border border-slate-800 overflow-hidden shadow-xl aspect-video flex flex-col justify-between p-3">
-            {/* Live Video Element */}
             {cameraActive ? (
               <video
                 ref={videoRef}
@@ -714,10 +787,10 @@ export function InterviewStudio({
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0e1422] text-slate-500">
-                <div className="w-14 h-14 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 text-lg font-bold">
+                <div className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 text-base font-bold">
                   {user?.displayName ? user.displayName.charAt(0).toUpperCase() : "C"}
                 </div>
-                <p className="text-xs font-mono mt-2 text-slate-400">Camera is turned off</p>
+                <p className="text-xs font-mono mt-1 text-slate-400">Camera Off</p>
               </div>
             )}
 
@@ -728,9 +801,9 @@ export function InterviewStudio({
                 <span>CANDIDATE</span>
               </div>
 
-              {/* Reactive Decibel / Audio Level Indicator */}
+              {/* Reactive Decibel Audio Level */}
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs border border-slate-700/60">
-                <span className="text-[10px] font-mono text-slate-300">Mic:</span>
+                <span className="text-[10px] font-mono text-slate-300">VU:</span>
                 <div className="flex items-end gap-0.5 h-2.5">
                   <span
                     className="w-1 rounded-full transition-all"
@@ -768,40 +841,95 @@ export function InterviewStudio({
                 </span>
               </div>
               <span
-                className={`text-[10px] font-mono font-bold ${micActive ? "text-emerald-400" : "text-red-400"}`}
+                className={`text-[10px] font-mono font-bold ${
+                  micActive ? "text-emerald-400" : "text-red-400"
+                }`}
               >
                 {micActive ? "UNMUTED" : "MUTED"}
               </span>
             </div>
           </div>
 
-          {/* Strategy Cheatsheet Pills (Google Engineering Rubric) */}
-          <div className="rounded-2xl bg-[#0e1422] border border-slate-800 p-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#14b8a6"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          {/* ── Active Problem Statement Card ───────────────────────────── */}
+          <div className="rounded-2xl bg-[#0e1422] border border-slate-800 p-3 shadow-lg">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-teal-500/10 border border-teal-500/30 text-[10px] font-heading font-extrabold text-teal-400 uppercase">
+                  {challenge.difficulty}
+                </span>
+                <span className="text-xs font-heading font-bold text-white truncate max-w-[200px]">
+                  {challenge.title}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProblemDetails((v) => !v)}
+                className="text-[11px] text-slate-400 hover:text-teal-300 font-mono cursor-pointer"
               >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <span className="text-[11px] font-heading font-bold text-slate-300 uppercase tracking-wide">
-                Google Rubric Quick Signals:
-              </span>
+                {showProblemDetails ? "Hide" : "Details"}
+              </button>
             </div>
+
+            <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
+              {challenge.summary}
+            </p>
+
+            {showProblemDetails && (
+              <div className="mt-2.5 pt-2.5 border-t border-slate-800 space-y-2 text-[11px]">
+                <div>
+                  <span className="font-heading font-bold text-teal-400 text-[10px] uppercase">
+                    Target Function:
+                  </span>
+                  <div className="mt-0.5 p-1 rounded-md bg-black/40 border border-slate-800 font-mono text-[10px] text-slate-200">
+                    <code>{challenge.functionName}(...)</code>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="font-heading font-bold text-slate-400 text-[10px] uppercase">
+                    Constraints:
+                  </span>
+                  <ul className="mt-0.5 space-y-0.5 text-[10px] text-slate-400 font-mono list-disc list-inside">
+                    {challenge.constraints.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Strategy Cheatsheet & Hint Ladder */}
+          <div className="rounded-2xl bg-[#0e1422] border border-slate-800 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#14b8a6"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span className="text-[11px] font-heading font-bold text-slate-300 uppercase tracking-wide">
+                  Candidate Signals:
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono">Hints: {hintCount}/3</span>
+            </div>
+
             <div className="grid grid-cols-2 gap-1.5">
               <button
                 type="button"
                 onClick={() => {
                   setInputText(
-                    "Before implementing, let me clarify the constraints: What is the expected RPS, data volume, and acceptable latency SLA?"
+                    `Before coding, let me clarify the constraints for ${challenge.functionName}: What is the expected range of inputs, memory limits, and target latency?`
                   );
                   setActiveTab("transcript");
                   inputRef.current?.focus();
@@ -814,37 +942,31 @@ export function InterviewStudio({
                 type="button"
                 onClick={() => {
                   setInputText(
-                    "Analyzing trade-offs:\n- Approach A: O(N) time, O(1) space (optimal for memory)\n- Approach B: O(1) amortized with hash index (optimal for latency)\nI recommend Approach A because:"
+                    `Analyzing complexity trade-offs:\n- Brute force approach: O(N^2) time with minimal space.\n- Optimized approach: O(N) time using extra auxiliary memory.\nI propose implementing the O(N) solution:`
                   );
                   setActiveTab("transcript");
                   inputRef.current?.focus();
                 }}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-[11px] text-emerald-300 font-medium transition-colors cursor-pointer"
               >
-                &bull; Trade-offs &amp; Big-O
+                &bull; Big-O Trade-offs
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setInputText(
-                    "I want to verify edge cases: What happens if the input is empty, null, or contains concurrent write spikes?"
+                    `I want to verify boundary edge cases for ${challenge.functionName}: What happens if the input is empty, null, or has duplicates?`
                   );
                   setActiveTab("transcript");
                   inputRef.current?.focus();
                 }}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-[11px] text-cyan-300 font-medium transition-colors cursor-pointer"
               >
-                &bull; Test Edge Cases
+                &bull; Verify Edge Cases
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setInputText(
-                    "I have established the high-level design. Could you provide a calibration hint on optimizing the cache eviction policy?"
-                  );
-                  setActiveTab("transcript");
-                  inputRef.current?.focus();
-                }}
+                onClick={handleRequestHint}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 text-[11px] text-amber-300 font-medium transition-colors cursor-pointer"
               >
                 &bull; Request Hint (-5 pts)
@@ -853,7 +975,7 @@ export function InterviewStudio({
           </div>
         </section>
 
-        {/* ── RIGHT PANE: Collaborative CoderPad IDE & Dialogue Transcript ── */}
+        {/* ── RIGHT PANE: Collaborative CoderPad, Design Canvas & Transcript ── */}
         <section
           className={`flex-1 flex flex-col min-w-0 bg-[#0e1422] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl ${
             mobilePane === "video" ? "hidden lg:flex" : "flex"
@@ -861,11 +983,12 @@ export function InterviewStudio({
         >
           {/* Workspace Tabs Header */}
           <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-[#111827] border-b border-slate-800 flex-shrink-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              {/* Tab 1: CoderPad IDE */}
               <button
                 type="button"
                 onClick={() => setActiveTab("code")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "code"
                     ? "bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-xs"
                     : "text-slate-400 hover:text-white"
@@ -884,13 +1007,42 @@ export function InterviewStudio({
                   <polyline points="16 18 22 12 16 6" />
                   <polyline points="8 6 2 12 8 18" />
                 </svg>
-                <span>CoderPad Workspace (IDE)</span>
+                <span>CoderPad IDE &amp; Tests</span>
               </button>
 
+              {/* Tab 2: System Design Canvas */}
+              <button
+                type="button"
+                onClick={() => setActiveTab("system-design")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                  activeTab === "system-design"
+                    ? "bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-xs"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <span>System Design Whiteboard</span>
+              </button>
+
+              {/* Tab 3: Dialogue Transcript */}
               <button
                 type="button"
                 onClick={() => setActiveTab("transcript")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "transcript"
                     ? "bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-xs"
                     : "text-slate-400 hover:text-white"
@@ -908,7 +1060,7 @@ export function InterviewStudio({
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
-                <span>Dialogue Transcript ({messages.length})</span>
+                <span>Dialogue ({messages.length})</span>
               </button>
             </div>
 
@@ -918,18 +1070,19 @@ export function InterviewStudio({
                 <select
                   value={editorLang}
                   onChange={(e) => {
-                    const l = e.target.value;
+                    const l = e.target.value as "typescript" | "javascript" | "python";
                     setEditorLang(l);
-                    setCodeContent(getRoleStarterCode(config.role, l));
+                    setCodeContent(
+                      challenge.starterCode[l] ||
+                        challenge.starterCode.typescript ||
+                        challenge.starterCode.javascript
+                    );
                   }}
                   className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
                 >
                   <option value="typescript">TypeScript</option>
                   <option value="javascript">JavaScript</option>
                   <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="go">Go</option>
-                  <option value="sql">SQL</option>
                 </select>
 
                 <button
@@ -939,7 +1092,7 @@ export function InterviewStudio({
                     setIsCopied(true);
                     setTimeout(() => setIsCopied(false), 2000);
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-slate-300 transition-colors cursor-pointer"
+                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-slate-300 transition-colors cursor-pointer hidden sm:block"
                   title="Copy code"
                 >
                   {isCopied ? "Copied!" : "Copy"}
@@ -948,7 +1101,7 @@ export function InterviewStudio({
             )}
           </div>
 
-          {/* ── TAB 1: CoderPad Code Editor ────────────────────────────── */}
+          {/* ── TAB 1: CoderPad Code Editor + Test Runner Console ─────── */}
           {activeTab === "code" && (
             <div className="flex-1 flex flex-col min-h-0 bg-[#090d16]">
               {/* Code Editor Window with Line Numbers */}
@@ -966,48 +1119,33 @@ export function InterviewStudio({
                   onChange={(e) => setCodeContent(e.target.value)}
                   onKeyDown={handleEditorKeyDown}
                   spellCheck={false}
-                  placeholder="// Implement your algorithm, data structures, and edge-case handling here..."
+                  placeholder="// Implement your solution and handle edge cases..."
                   className="flex-1 p-3 bg-transparent text-slate-200 placeholder-slate-600 resize-none focus:outline-none leading-5 font-mono text-xs sm:text-[13px] overflow-y-auto selection:bg-teal-500/30"
                 />
               </div>
 
-              {/* Code Submit & Notes Bar */}
-              <div className="p-3 bg-[#0d1322] border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={codeExplanation}
-                    onChange={(e) => setCodeExplanation(e.target.value)}
-                    placeholder="Describe your approach, Big-O complexity (e.g. O(N) time, O(1) space)..."
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleSubmitCodeSolution}
-                  disabled={!codeContent.trim() || isLoading}
-                  className="btn-primary px-4 py-2 rounded-xl text-xs font-heading font-black tracking-tight inline-flex items-center justify-center gap-1.5 shadow-md shadow-teal-900/30 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex-shrink-0"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>Submit Solution to Interviewer</span>
-                </button>
-              </div>
+              {/* Docked Test Runner Console */}
+              <CodeRunnerConsole
+                testCases={challenge.testCases}
+                report={testReport}
+                isRunning={isRunningTests}
+                onRunTests={handleRunTests}
+                onSubmitSolution={handleSubmitSolution}
+                isSubmitting={isLoading}
+              />
             </div>
           )}
 
-          {/* ── TAB 2: Dialogue Transcript ─────────────────────────────── */}
+          {/* ── TAB 2: System Design Architecture Whiteboard ───────────── */}
+          {activeTab === "system-design" && (
+            <SystemDesignCanvas
+              blueprintId={config.role === "system-design" ? "rate-limiter" : "url-shortener"}
+              onSubmitArchitecture={handleSubmitArchitecture}
+              isEvaluating={isLoading}
+            />
+          )}
+
+          {/* ── TAB 3: Dialogue Transcript ─────────────────────────────── */}
           {activeTab === "transcript" && (
             <div className="flex-1 flex flex-col min-h-0 bg-[#090d16]">
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1065,7 +1203,7 @@ export function InterviewStudio({
                       <span className="w-2 h-2 rounded-full bg-teal-400 animate-bounce [animation-delay:150ms]" />
                       <span className="w-2 h-2 rounded-full bg-teal-400 animate-bounce [animation-delay:300ms]" />
                       <span className="text-xs text-slate-400 font-mono ml-2">
-                        {interviewer.name} is evaluating...
+                        {interviewer.name} is evaluating approach...
                       </span>
                     </div>
                   </div>
@@ -1085,7 +1223,7 @@ export function InterviewStudio({
                       sendResponse();
                     }
                   }}
-                  placeholder="Type your verbal response or question... (Enter to send, Shift+Enter for newline)"
+                  placeholder="Type your response or verbal reasoning... (Enter to send, Shift+Enter for newline)"
                   rows={1}
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 resize-none"
                   style={{ maxHeight: "80px" }}
@@ -1118,8 +1256,8 @@ export function InterviewStudio({
 
       {/* ── Bottom Floating Controls Bar (Google Meet Style) ─────────────── */}
       <footer className="h-16 border-t border-slate-800/80 bg-[#0b0f19] px-4 flex items-center justify-between flex-shrink-0 z-40">
-        <div className="text-[11px] text-slate-500 hidden sm:block font-mono">
-          VeySkill Studio &bull; FAANG Calibration
+        <div className="text-[11px] text-slate-400 hidden sm:block font-mono">
+          VeySkill Studio &bull; {interviewer.company} Screen
         </div>
 
         {/* Center Google Meet Control Buttons */}
@@ -1171,7 +1309,7 @@ export function InterviewStudio({
             )}
           </button>
 
-          {/* Camera On / Off */}
+          {/* Camera Toggle */}
           <button
             type="button"
             onClick={toggleCamera}
@@ -1193,7 +1331,7 @@ export function InterviewStudio({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M23 7l-7 5 7 5V7z" />
+                <polygon points="23 7 16 12 23 17 23 7" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
               </svg>
             ) : (
@@ -1207,80 +1345,32 @@ export function InterviewStudio({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
-                <path d="M23 7l-7 5 7 5V7z" />
                 <line x1="1" y1="1" x2="23" y2="23" />
+                <path d="M21 21l-3.34-3.34L16 16m0 0l-5.66-5.66L2 2" />
+                <path d="M23 7v10" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
               </svg>
             )}
           </button>
 
-          {/* Speaker TTS Audio On / Off */}
-          {ttsSupported && (
-            <button
-              type="button"
-              onClick={() => setAutoSpeak(!autoSpeak)}
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
-                autoSpeak
-                  ? "bg-teal-500/20 text-teal-300 border border-teal-500/40"
-                  : "bg-slate-800 text-slate-400 border border-slate-700"
-              }`}
-              title={autoSpeak ? "Mute Interviewer Voice" : "Enable Interviewer Voice"}
-            >
-              {autoSpeak ? (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                </svg>
-              ) : (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <line x1="23" y1="9" x2="17" y2="15" />
-                  <line x1="17" y1="9" x2="23" y2="15" />
-                </svg>
-              )}
-            </button>
-          )}
-
-          {/* Speech-to-Text Recognition Toggle */}
+          {/* Quick Push-To-Talk / Voice Toggle */}
           {sttSupported && (
             <button
               type="button"
               onClick={() => {
-                if (voiceEnabled && isListening) {
+                if (isListening) {
                   stopListening();
-                  setVoiceEnabled(false);
-                } else if (voiceEnabled) {
-                  setVoiceEnabled(false);
                 } else {
-                  setVoiceEnabled(true);
+                  if (isSpeaking) stopSpeaking();
                   startListening();
                 }
               }}
               className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
-                voiceEnabled && isListening
-                  ? "bg-emerald-500/25 text-emerald-400 border border-emerald-500/50 animate-pulse"
-                  : "bg-slate-800 text-slate-400 border border-slate-700"
+                isListening
+                  ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/40"
+                  : "bg-slate-800 hover:bg-slate-700 text-teal-400 border border-slate-700"
               }`}
-              title={isListening ? "Listening to your voice..." : "Voice input"}
+              title={isListening ? "Listening... (Click to Stop)" : "Push to Talk (Speech to Text)"}
             >
               <svg
                 width="18"
@@ -1288,35 +1378,25 @@ export function InterviewStudio({
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2" />
-                <path d="M12 20v2" />
-                <path d="M20 12h2" />
-                <path d="M2 12h2" />
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
               </svg>
             </button>
           )}
 
-          {/* End Call Phone Button */}
+          {/* End Call Button */}
           <button
             type="button"
-            onClick={() => {
-              if (messages.filter((m) => m.role === "candidate").length >= 2) {
-                setShowExitConfirm(true);
-              } else {
-                onExit();
-              }
-            }}
-            className="w-14 h-11 rounded-2xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-all shadow-lg shadow-red-900/30 cursor-pointer ml-2"
-            title="End Technical Screen"
+            onClick={() => setShowExitConfirm(true)}
+            className="h-11 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-heading font-black text-xs flex items-center gap-2 shadow-lg shadow-red-600/30 transition-all cursor-pointer"
           >
             <svg
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -1327,76 +1407,78 @@ export function InterviewStudio({
               <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
               <line x1="23" y1="1" x2="1" y2="23" />
             </svg>
+            <span className="hidden sm:inline">Conclude Screen</span>
           </button>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="text-[11px] text-slate-400 font-mono">WebRTC Secure E2EE</span>
+        {/* Audio Output Status */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAutoSpeak((v) => !v)}
+            className={`px-2.5 py-1 rounded-xl text-[11px] font-mono transition-colors cursor-pointer border ${
+              autoSpeak
+                ? "bg-teal-500/10 text-teal-300 border-teal-500/30"
+                : "bg-slate-900 text-slate-500 border-slate-800"
+            }`}
+          >
+            AI Voice: {autoSpeak ? "ON" : "MUTED"}
+          </button>
         </div>
       </footer>
 
-      {/* ── Evaluating Overlay ────────────────────────────────────────────── */}
-      {isEvaluating && (
-        <div className="absolute inset-0 z-[80] bg-[#080c14]/95 backdrop-blur-md flex flex-col items-center justify-center gap-6 p-4">
-          <div className="w-20 h-20 rounded-full border-4 border-teal-500/30 border-t-teal-400 animate-spin" />
-          <div className="text-center max-w-md">
-            <h3 className="text-2xl font-heading font-black text-white mb-2">
-              Generating FAANG Scorecard
-            </h3>
-            <p className="text-sm text-slate-400 leading-relaxed font-body">
-              {interviewer.name} and the VeySkill AI Evaluation Engine are analyzing your technical
-              depth, concurrency choices, and communication against top-tier engineering rubrics.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Exit Confirmation Modal ──────────────────────────────────────── */}
+      {/* ── Conclude Call Modal ────────────────────────────────────────── */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl">
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mb-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0e1422] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl animate-scale-in text-center">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center mx-auto mb-4">
               <svg
-                width="22"
-                height="22"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
               </svg>
             </div>
-            <h3 className="text-lg font-heading font-black text-white mb-1.5">
+
+            <h3 className="font-heading font-black text-lg text-white mb-1.5">
               Conclude Technical Screen?
             </h3>
-            <p className="text-xs font-body text-slate-400 mb-6 leading-relaxed">
-              Your interview with {interviewer.name} will be evaluated across the{" "}
-              {messages.filter((m) => m.role === "candidate").length} problem responses provided.
-              You will receive an in-depth scorecard with grades and hiring recommendations.
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+              The Silicon Valley Hiring Committee will compile your official dossier, including code
+              efficiency diffs, test suite pass rates, and leveling recommendations.
             </p>
-            <div className="flex gap-2.5">
+
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl text-xs font-heading font-semibold bg-slate-800 border border-slate-700/60 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-xs font-heading font-bold text-slate-300 transition-colors cursor-pointer"
               >
                 Continue Screen
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  endInterview();
-                }}
-                className="btn-primary flex-1 py-2.5 rounded-xl text-xs font-heading font-black cursor-pointer"
+                onClick={endInterview}
+                disabled={isEvaluating}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white text-xs font-heading font-black shadow-lg shadow-teal-950/50 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                Get Scorecard
+                {isEvaluating ? (
+                  <>
+                    <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    <span>Evaluating...</span>
+                  </>
+                ) : (
+                  <span>Submit to Committee</span>
+                )}
               </button>
             </div>
           </div>

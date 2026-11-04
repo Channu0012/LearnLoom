@@ -1,8 +1,9 @@
 "use client";
 // ---------------------------------------------------------------------------
-// /interview — AI Mock Interview Hub
-// Premium landing page → Interview Configuration → Live Studio → Scorecard
-// Replaces the old /doubts feature entirely
+// /interview — Silicon Valley AI Technical Interview Platform
+// Features: Real in-browser code execution with test suites, interactive
+// system design whiteboard with traffic simulation, 5 company tracks
+// (Google, Stripe, Amazon, Netflix, YC), and Silicon Valley Hiring Committee Dossier.
 // ---------------------------------------------------------------------------
 import { useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -12,9 +13,12 @@ import {
   type InterviewMessage,
   type InterviewRole,
   type InterviewLevel,
+  type CompanyTrack,
+  type InterviewMode,
   ROLE_LABELS,
   LEVEL_LABELS,
   ROLE_TOPICS,
+  COMPANY_TRACKS,
 } from "@/lib/interview";
 import { saveInterviewSession } from "@/lib/firestore";
 import { InterviewStudio } from "@/components/interview/InterviewStudio";
@@ -24,7 +28,7 @@ import { DeviceCheckLobby } from "@/components/interview/DeviceCheckLobby";
 // ── View State ─────────────────────────────────────────────────────────────
 type ViewState = "hub" | "configure" | "lobby" | "studio" | "scorecard";
 
-// ── Role Card Data ─────────────────────────────────────────────────────────
+// ── Role Card Icons ────────────────────────────────────────────────────────
 const ROLE_ICONS: Record<InterviewRole, React.ReactNode> = {
   frontend: (
     <svg
@@ -131,26 +135,35 @@ const ROLE_ICONS: Record<InterviewRole, React.ReactNode> = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-      <polyline points="2 12 12 17 22 12" />
+      <rect x="2" y="2" width="8" height="8" rx="2" />
+      <rect x="14" y="2" width="8" height="8" rx="2" />
+      <rect x="8" y="14" width="8" height="8" rx="2" />
+      <line x1="6" y1="10" x2="6" y2="12" />
+      <line x1="18" y1="10" x2="18" y2="12" />
+      <line x1="6" y1="12" x2="18" y2="12" />
+      <line x1="12" y1="12" x2="12" y2="14" />
     </svg>
   ),
 };
 
 const DURATION_OPTIONS = [
-  { value: 15, label: "15 min", desc: "Quick Assessment" },
-  { value: 30, label: "30 min", desc: "Standard Interview" },
-  { value: 45, label: "45 min", desc: "Deep Evaluation" },
+  { value: 15, label: "15 min", desc: "Quick Screening" },
+  { value: 30, label: "30 min", desc: "Standard Technical Round" },
+  { value: 45, label: "45 min", desc: "Comprehensive Deep Dive" },
 ];
 
 export default function InterviewPage() {
   const { user, openAuthModal } = useAuth();
   const [view, setView] = useState<ViewState>("hub");
+
+  // Configuration States
   const [selectedRole, setSelectedRole] = useState<InterviewRole | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<InterviewLevel>("mid");
+  const [selectedCompanyTrack, setSelectedCompanyTrack] = useState<CompanyTrack>("google");
+  const [selectedMode, setSelectedMode] = useState<InterviewMode>("coding");
+  const [selectedLevel, setSelectedLevel] = useState<InterviewLevel>("senior");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [selectedDuration, setSelectedDuration] = useState(30);
+
   const [interviewConfig, setInterviewConfig] = useState<InterviewConfig | null>(null);
   const [scorecard, setScorecard] = useState<InterviewScorecard | null>(null);
   const [mediaSettings, setMediaSettings] = useState<{
@@ -165,6 +178,9 @@ export default function InterviewPage() {
   const handleRoleSelect = (role: InterviewRole) => {
     setSelectedRole(role);
     setSelectedTopics(ROLE_TOPICS[role].slice(0, 5));
+    if (role === "system-design") {
+      setSelectedMode("system-design");
+    }
     setView("configure");
   };
 
@@ -191,6 +207,8 @@ export default function InterviewPage() {
       topics: selectedTopics,
       duration: selectedDuration,
       language: "en",
+      companyTrack: selectedCompanyTrack,
+      mode: selectedMode,
     };
     setInterviewConfig(config);
     setView("lobby");
@@ -201,7 +219,6 @@ export default function InterviewPage() {
       setScorecard(sc);
       setView("scorecard");
 
-      // Automatically persist to Firestore if authenticated
       if (user && interviewConfig) {
         saveInterviewSession({
           id: `int_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -278,12 +295,12 @@ export default function InterviewPage() {
   // ── Configure View ─────────────────────────────────────────────────────
   if (view === "configure" && selectedRole) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] bg-background text-foreground py-8 sm:py-12">
-        <div className="container-page max-w-2xl mx-auto px-4 sm:px-6">
+      <div className="min-h-[calc(100vh-4rem)] bg-[#070b14] text-slate-100 py-8 sm:py-12 select-none">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
           {/* Back button */}
           <button
             onClick={() => setView("hub")}
-            className="inline-flex items-center gap-1.5 text-sm font-heading font-semibold text-muted-foreground hover:text-foreground transition-colors mb-6 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-slate-400 hover:text-white transition-colors mb-6 cursor-pointer"
           >
             <svg
               width="16"
@@ -294,7 +311,6 @@ export default function InterviewPage() {
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              aria-hidden="true"
             >
               <polyline points="15 18 9 12 15 6" />
             </svg>
@@ -302,28 +318,115 @@ export default function InterviewPage() {
           </button>
 
           {/* Main Card Container */}
-          <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-7">
+          <div className="bg-[#0e1422] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-7">
             {/* Header */}
-            <div className="flex items-center gap-3.5 pb-5 border-b border-border/60">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0">
+            <div className="flex items-center gap-4 pb-5 border-b border-slate-800">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400 shrink-0">
                 {ROLE_ICONS[selectedRole]}
               </div>
               <div>
-                <h1 className="font-heading font-black text-xl sm:text-2xl text-foreground tracking-tight">
+                <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight">
                   {ROLE_LABELS[selectedRole]}
                 </h1>
-                <p className="font-body text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  Customize your mock interview session
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                  Calibrate target company standards and interview modality
                 </p>
               </div>
             </div>
 
-            {/* Experience Level */}
+            {/* 1. Target Company Bar Track */}
             <div>
-              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-foreground mb-3">
-                Experience Level
+              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-slate-300 mb-2.5">
+                Target Company Calibration Bar
               </label>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                {(
+                  Object.entries(COMPANY_TRACKS) as [
+                    CompanyTrack,
+                    (typeof COMPANY_TRACKS)[CompanyTrack],
+                  ][]
+                ).map(([key, track]) => {
+                  const isSelected = selectedCompanyTrack === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedCompanyTrack(key)}
+                      className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? "bg-teal-500/15 border-teal-500 text-white shadow-md ring-1 ring-teal-500/50"
+                          : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      <div>
+                        <span className="font-heading font-black text-sm block text-white">
+                          {track.name}
+                        </span>
+                        <span className="text-[10px] text-teal-400 font-mono block mt-0.5 line-clamp-1">
+                          {track.tagline}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Modality Mode */}
+            <div>
+              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-slate-300 mb-2.5">
+                Interview Modality
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {[
+                  {
+                    id: "coding" as InterviewMode,
+                    title: "CoderPad Gauntlet",
+                    desc: "In-Browser Code Execution & Automated Test Suites",
+                    icon: "💻",
+                  },
+                  {
+                    id: "system-design" as InterviewMode,
+                    title: "System Design Canvas",
+                    desc: "Interactive Visual Whiteboard & Chaos Simulator",
+                    icon: "📐",
+                  },
+                  {
+                    id: "full-loop" as InterviewMode,
+                    title: "Full Loop Screen",
+                    desc: "Algorithmic Code + Architecture Scalability",
+                    icon: "⚡",
+                  },
+                ].map((m) => {
+                  const isSelected = selectedMode === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setSelectedMode(m.id)}
+                      className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-teal-500/15 border-teal-500 text-white shadow-md ring-1 ring-teal-500/50"
+                          : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-base mb-1">
+                        <span>{m.icon}</span>
+                        <span className="font-heading font-bold text-xs text-white">{m.title}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-snug">{m.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Experience Level */}
+            <div>
+              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-slate-300 mb-2.5">
+                Candidate Seniority Level
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(Object.entries(LEVEL_LABELS) as [InterviewLevel, string][]).map(
                   ([key, label]) => {
                     const isSelected = selectedLevel === key;
@@ -332,13 +435,13 @@ export default function InterviewPage() {
                         key={key}
                         type="button"
                         onClick={() => setSelectedLevel(key)}
-                        className={`px-4 py-3 rounded-2xl text-xs sm:text-sm font-heading font-bold border transition-all text-left cursor-pointer ${
+                        className={`px-3 py-2.5 rounded-2xl text-xs font-heading font-bold border transition-all text-center cursor-pointer ${
                           isSelected
-                            ? "bg-teal-500/15 border-teal-500 text-teal-700 dark:text-teal-300 shadow-xs ring-1 ring-teal-500"
-                            : "bg-muted/40 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                            ? "bg-teal-500/15 border-teal-500 text-teal-300 shadow-xs ring-1 ring-teal-500"
+                            : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800"
                         }`}
                       >
-                        {label}
+                        {label.split(" ")[0]}
                       </button>
                     );
                   }
@@ -346,9 +449,9 @@ export default function InterviewPage() {
               </div>
             </div>
 
-            {/* Duration */}
+            {/* 4. Duration */}
             <div>
-              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-foreground mb-3">
+              <label className="block font-heading font-bold text-xs uppercase tracking-wider text-slate-300 mb-2.5">
                 Duration
               </label>
               <div className="grid grid-cols-3 gap-2.5">
@@ -359,20 +462,16 @@ export default function InterviewPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setSelectedDuration(opt.value)}
-                      className={`px-3 py-3 rounded-2xl text-center border transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl text-center border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-teal-500/15 border-teal-500 text-teal-700 dark:text-teal-300 shadow-xs ring-1 ring-teal-500"
-                          : "bg-muted/40 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-teal-500/15 border-teal-500 text-teal-300 shadow-xs ring-1 ring-teal-500"
+                          : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800"
                       }`}
                     >
-                      <span
-                        className={`block font-heading font-black text-base sm:text-lg ${
-                          isSelected ? "text-teal-700 dark:text-teal-300" : "text-foreground"
-                        }`}
-                      >
+                      <span className="block font-heading font-black text-sm text-white">
                         {opt.label}
                       </span>
-                      <span className="block text-[10px] font-body text-muted-foreground mt-0.5">
+                      <span className="block text-[10px] text-slate-500 mt-0.5 font-mono">
                         {opt.desc}
                       </span>
                     </button>
@@ -381,20 +480,17 @@ export default function InterviewPage() {
               </div>
             </div>
 
-            {/* Topics */}
+            {/* 5. Focus Topics */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="font-heading font-bold text-xs uppercase tracking-wider text-foreground">
-                  Focus Topics
+                <label className="font-heading font-bold text-xs uppercase tracking-wider text-slate-300">
+                  Focus Topics &amp; Competencies
                 </label>
-                <span className="text-xs font-body text-muted-foreground">
+                <span className="text-xs text-slate-500 font-mono">
                   {selectedTopics.length}/8 selected
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mb-3 font-body">
-                Select specific competencies you want the AI interviewer to grill you on.
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {ROLE_TOPICS[selectedRole].map((topic) => {
                   const isSelected = selectedTopics.includes(topic);
                   return (
@@ -404,8 +500,8 @@ export default function InterviewPage() {
                       onClick={() => handleTopicToggle(topic)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-body font-semibold border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-teal-500/15 border-teal-500 text-teal-700 dark:text-teal-300 shadow-xs"
-                          : "bg-muted/50 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-teal-500/20 border-teal-500 text-teal-300 shadow-xs"
+                          : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white"
                       }`}
                     >
                       {topic}
@@ -421,7 +517,7 @@ export default function InterviewPage() {
                 type="button"
                 onClick={handleStartInterview}
                 disabled={selectedTopics.length === 0}
-                className="btn-primary w-full py-4 rounded-2xl text-base font-heading font-black tracking-tight inline-flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-2xl text-base font-heading font-black tracking-tight inline-flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white shadow-xl shadow-teal-950/60 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <svg
                   width="18"
@@ -432,17 +528,14 @@ export default function InterviewPage() {
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
                 >
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="22" />
+                  <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                <span>{user ? "Enter Interview Studio" : "Sign In to Begin Interview"}</span>
+                <span>{user ? "Enter Live Technical Screen" : "Sign In to Begin Interview"}</span>
               </button>
-              <p className="text-center text-[11px] text-muted-foreground mt-3 font-body">
-                Free &amp; Unlimited — Adaptive questions &middot; Real-time voice &middot; FAANG
-                scorecards
+              <p className="text-center text-[11px] text-slate-500 mt-3 font-mono">
+                Real In-Browser Sandbox &middot; Live Test Execution &middot; Official Hiring
+                Committee Report
               </p>
             </div>
           </div>
@@ -453,159 +546,125 @@ export default function InterviewPage() {
 
   // ── Hub View (Landing) ─────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 pb-20 select-none">
       {/* ── Hero Section ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-12 sm:pt-16 pb-10 sm:pb-14 border-b border-border/60">
-        {/* Subtle Background Glow — Matches site palette */}
+      <section className="relative overflow-hidden pt-12 sm:pt-16 pb-12 sm:pb-16 border-b border-slate-800/80">
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-teal-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl opacity-70" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[750px] h-[350px] bg-gradient-to-b from-teal-500/15 via-emerald-500/5 to-transparent rounded-full blur-3xl opacity-70" />
         </div>
 
-        <div className="container-page max-w-5xl mx-auto px-4 sm:px-6 text-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/25 mb-5 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-            <span className="font-heading font-black text-xs text-teal-700 dark:text-teal-300 tracking-wide uppercase">
-              AI Technical Interviewer
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 mb-5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+            <span className="font-heading font-extrabold text-xs text-teal-400 tracking-wide uppercase">
+              Silicon Valley AI Interview Simulator
             </span>
           </div>
 
-          <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-foreground tracking-tight mb-4">
-            <span>Ace Your Next</span>{" "}
-            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
-              Technical Interview
+          <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-white tracking-tight mb-4">
+            <span>Real Code. Real Architecture.</span>
+            <br />
+            <span className="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              Zero Generic Chatbots.
             </span>
           </h1>
 
-          <p className="font-body text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-            Practice live with an AI interviewer calibrated to FAANG hiring bars. Real technical
-            questions, speech-to-text dictation, and an actionable performance scorecard.
+          <p className="text-sm sm:text-lg text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Practice live technical interviews with active pairing AI calibrated to Google, Stripe,
+            Amazon, and Netflix hiring bars. Featuring real in-browser test runners and an
+            interactive system design whiteboard.
           </p>
 
-          {/* Quick Metrics Bar */}
-          <div className="inline-flex items-center justify-center gap-6 sm:gap-10 p-3 sm:px-8 rounded-2xl bg-card border border-border/80 shadow-xs mb-10">
-            <div className="text-center">
-              <span className="block font-heading font-black text-2xl sm:text-3xl text-teal-600 dark:text-teal-400">
-                7
-              </span>
-              <span className="text-[10px] sm:text-xs font-heading font-bold text-muted-foreground uppercase tracking-wider">
-                Tracks
-              </span>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <span className="block font-heading font-black text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400">
-                4
-              </span>
-              <span className="text-[10px] sm:text-xs font-heading font-bold text-muted-foreground uppercase tracking-wider">
-                Levels
-              </span>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <span className="block font-heading font-black text-2xl sm:text-3xl text-accent-500">
-                FAANG
-              </span>
-              <span className="text-[10px] sm:text-xs font-heading font-bold text-muted-foreground uppercase tracking-wider">
-                Calibrated
-              </span>
-            </div>
-          </div>
-
-          {/* Features Row */}
+          {/* 3 Core Pillars */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 max-w-3xl mx-auto">
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border/80 shadow-xs text-left">
-              <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0">
+            <div className="p-4 rounded-2xl bg-[#0d1322] border border-slate-800 shadow-lg text-left">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400 mb-2.5">
                 <svg
-                  width="18"
-                  height="18"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
                 >
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
                 </svg>
               </div>
-              <div>
-                <span className="block font-heading font-bold text-xs sm:text-sm text-foreground">
-                  Voice &amp; Audio I/O
-                </span>
-                <span className="block text-[11px] font-body text-muted-foreground">
-                  Speak answers naturally
-                </span>
-              </div>
+              <h3 className="font-heading font-bold text-sm text-white">
+                Live Test-Driven Code Runner
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Run code against visible and hidden stress test cases in a sandboxed Web Worker.
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border/80 shadow-xs text-left">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <div className="p-4 rounded-2xl bg-[#0d1322] border border-slate-800 shadow-lg text-left">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-400 mb-2.5">
                 <svg
-                  width="18"
-                  height="18"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
                 >
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
                 </svg>
               </div>
-              <div>
-                <span className="block font-heading font-bold text-xs sm:text-sm text-foreground">
-                  Dynamic Grilling
-                </span>
-                <span className="block text-[11px] font-body text-muted-foreground">
-                  Probes your exact logic
-                </span>
-              </div>
+              <h3 className="font-heading font-bold text-sm text-white">
+                Visual System Design Canvas
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Drag-and-drop CDN, gateways, Redis caches, and queues with real-time QPS
+                calculators.
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border/80 shadow-xs text-left">
-              <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
+            <div className="p-4 rounded-2xl bg-[#0d1322] border border-slate-800 shadow-lg text-left">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 mb-2.5">
                 <svg
-                  width="18"
-                  height="18"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
                 >
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
               </div>
-              <div>
-                <span className="block font-heading font-bold text-xs sm:text-sm text-foreground">
-                  FAANG Scorecard
-                </span>
-                <span className="block text-[11px] font-body text-muted-foreground">
-                  Calibrated feedback &amp; XP
-                </span>
-              </div>
+              <h3 className="font-heading font-bold text-sm text-white">
+                Hiring Committee Dossier
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Official Strong Hire/No Hire leveling verdict, radar competencies, and side-by-side
+                code diff.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Role Selection Grid ────────────────────────────────────────── */}
-      <section className="container-page max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">
-          <h2 className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight mb-2">
-            Choose Your Interview Track
+          <h2 className="font-heading font-black text-2xl sm:text-3xl text-white tracking-tight mb-2">
+            Select Your Technical Engineering Track
           </h2>
-          <p className="font-body text-xs sm:text-sm text-muted-foreground">
-            Select an engineering domain to start your targeted interview practice.
+          <p className="text-xs sm:text-sm text-slate-400">
+            Choose a specialization to begin your live technical evaluation.
           </p>
         </div>
 
@@ -615,28 +674,28 @@ export default function InterviewPage() {
               key={role}
               type="button"
               onClick={() => handleRoleSelect(role)}
-              className="group relative rounded-2xl border border-border/80 bg-card hover:border-teal-500/60 hover:shadow-md p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between"
+              className="group relative rounded-2xl border border-slate-800 bg-[#0d1322] hover:border-teal-500/60 hover:shadow-xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between"
             >
               <div>
                 {/* Icon */}
-                <div className="w-11 h-11 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-3.5 group-hover:scale-105 group-hover:bg-teal-500/15 transition-all">
+                <div className="w-11 h-11 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-3.5 group-hover:scale-105 group-hover:bg-teal-500/15 transition-all">
                   {ROLE_ICONS[role]}
                 </div>
 
                 {/* Label */}
-                <h3 className="font-heading font-bold text-base text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors mb-1.5">
+                <h3 className="font-heading font-bold text-base text-white group-hover:text-teal-400 transition-colors mb-1.5">
                   {label}
                 </h3>
 
                 {/* Topic Preview */}
-                <p className="text-xs font-body text-muted-foreground line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed font-body">
                   {ROLE_TOPICS[role].slice(0, 5).join(" · ")}
                 </p>
               </div>
 
               {/* Arrow */}
-              <div className="flex items-center justify-between pt-4 mt-3 border-t border-border/40 text-xs font-heading font-semibold text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform">
-                <span>Start Practice</span>
+              <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-800 text-xs font-heading font-semibold text-teal-400 group-hover:translate-x-0.5 transition-transform">
+                <span>Start Calibration</span>
                 <svg
                   width="14"
                   height="14"
@@ -646,7 +705,6 @@ export default function InterviewPage() {
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
                 >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>

@@ -1,12 +1,17 @@
 "use client";
 // ---------------------------------------------------------------------------
-// InterviewScorecard — FAANG-grade performance report with radial gauges,
-// category breakdowns, strengths/improvements, and shareable results
+// ScorecardView — Official Silicon Valley Hiring Committee Dossier
+// Features: Committee Verdict (Strong Hire/Hire/No Hire), 5-Pillar Competency
+// Radar Metrics, Side-by-Side Code Diff against Staff Engineer Benchmark,
+// and 7-Day Precision Action Plan.
 // ---------------------------------------------------------------------------
+import { useState } from "react";
 import {
   type InterviewScorecard as ScorecardType,
+  type HiringVerdict,
   ROLE_LABELS,
   LEVEL_LABELS,
+  COMPANY_TRACKS,
   type InterviewConfig,
 } from "@/lib/interview";
 
@@ -17,30 +22,64 @@ interface ScorecardProps {
   onBack: () => void;
 }
 
-// ── Grade Colors ───────────────────────────────────────────────────────────
-const GRADE_COLORS: Record<string, { bg: string; text: string; glow: string }> = {
-  S: { bg: "from-amber-400 to-yellow-500", text: "text-amber-400", glow: "shadow-amber-500/40" },
-  A: {
-    bg: "from-emerald-400 to-teal-500",
+// ── Verdict Styles ─────────────────────────────────────────────────────────
+const VERDICT_CONFIG: Record<
+  HiringVerdict,
+  { label: string; bg: string; border: string; text: string; glow: string }
+> = {
+  STRONG_HIRE: {
+    label: "STRONG HIRE (L5/L6 BAR)",
+    bg: "bg-emerald-500/15",
+    border: "border-emerald-500/40",
     text: "text-emerald-400",
-    glow: "shadow-emerald-500/40",
+    glow: "shadow-emerald-500/30",
   },
-  B: { bg: "from-blue-400 to-indigo-500", text: "text-blue-400", glow: "shadow-blue-500/40" },
-  C: { bg: "from-orange-400 to-amber-500", text: "text-orange-400", glow: "shadow-orange-500/40" },
-  D: { bg: "from-red-400 to-rose-500", text: "text-red-400", glow: "shadow-red-500/40" },
-  F: { bg: "from-red-600 to-red-800", text: "text-red-500", glow: "shadow-red-600/40" },
+  HIRE: {
+    label: "HIRE (TARGET LEVEL MET)",
+    bg: "bg-teal-500/15",
+    border: "border-teal-500/40",
+    text: "text-teal-400",
+    glow: "shadow-teal-500/30",
+  },
+  LEAN_HIRE: {
+    label: "LEAN HIRE (MINOR DEFICITS)",
+    bg: "bg-blue-500/15",
+    border: "border-blue-500/40",
+    text: "text-blue-400",
+    glow: "shadow-blue-500/30",
+  },
+  LEAN_NO: {
+    label: "LEAN NO HIRE (GAPS OBSERVED)",
+    bg: "bg-amber-500/15",
+    border: "border-amber-500/40",
+    text: "text-amber-400",
+    glow: "shadow-amber-500/30",
+  },
+  STRONG_NO: {
+    label: "NOT INCLINED (BELOW BAR)",
+    bg: "bg-red-500/15",
+    border: "border-red-500/40",
+    text: "text-red-400",
+    glow: "shadow-red-500/30",
+  },
 };
 
-// ── Readiness Colors ───────────────────────────────────────────────────────
-const READINESS_COLORS: Record<string, string> = {
-  Ready: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  "Almost Ready": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  "Needs Work": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  "Not Ready": "bg-red-500/20 text-red-400 border-red-500/30",
+const GRADE_COLORS: Record<string, { bg: string; text: string }> = {
+  S: { bg: "from-amber-400 to-yellow-500", text: "text-amber-400" },
+  A: { bg: "from-emerald-400 to-teal-500", text: "text-emerald-400" },
+  B: { bg: "from-blue-400 to-indigo-500", text: "text-blue-400" },
+  C: { bg: "from-orange-400 to-amber-500", text: "text-orange-400" },
+  D: { bg: "from-red-400 to-rose-500", text: "text-red-400" },
+  F: { bg: "from-red-600 to-red-800", text: "text-red-500" },
 };
 
 export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardProps) {
-  const grade = GRADE_COLORS[scorecard.overallGrade] || GRADE_COLORS.C;
+  const [codeTab, setCodeTab] = useState<"candidate" | "staff">("candidate");
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const verdict = VERDICT_CONFIG[scorecard.hiringVerdict || "HIRE"] || VERDICT_CONFIG.HIRE;
+  const grade = GRADE_COLORS[scorecard.overallGrade] || GRADE_COLORS.B;
+  const companyTrack = config.companyTrack ? COMPANY_TRACKS[config.companyTrack] : null;
 
   const formatDuration = (seconds: number): string => {
     const m = Math.floor(seconds / 60);
@@ -49,334 +88,329 @@ export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardP
     return `${m}m ${s}s`;
   };
 
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
+
+  const radar = scorecard.radarMetrics || {
+    codingProwess: scorecard.overallScore,
+    systemArchitecture: Math.max(40, scorecard.overallScore - 5),
+    communication: Math.min(95, scorecard.overallScore + 3),
+    edgeCaseCoverage: Math.max(35, scorecard.overallScore - 8),
+    composure: Math.min(98, scorecard.overallScore + 4),
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground pb-16">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 font-body pb-20 select-none">
       {/* ── Sub Header ────────────────────────────────────────────────── */}
-      <div className="border-b border-border/80 bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="container-page max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+      <div className="border-b border-slate-800 bg-[#0b0f1a]/90 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icon.png"
-              alt="VeySkill Logo"
+              alt="VeySkill"
               width={26}
               height={26}
-              className="w-6 h-6 object-contain rounded-lg"
+              className="w-6 h-6 object-contain rounded-md"
             />
-            <span className="font-heading font-extrabold text-sm tracking-tight select-none">
-              <span className="text-foreground">Vey</span>
-              <span className="text-[#14b8a6]">skill</span>
-              <span className="text-muted-foreground ml-1.5 font-bold text-xs uppercase tracking-wider">
-                Scorecard
+            <div className="flex items-center gap-2">
+              <span className="font-heading font-black text-sm tracking-tight">
+                <span className="text-white">Vey</span>
+                <span className="text-[#14b8a6]">skill</span>
+                <span className="text-slate-400 font-bold ml-1.5 text-xs uppercase tracking-wider hidden sm:inline">
+                  Hiring Committee Dossier
+                </span>
               </span>
-            </span>
+              {companyTrack && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-heading font-bold border ${companyTrack.badgeColor}`}
+                >
+                  {companyTrack.name} Calibration
+                </span>
+              )}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-3 py-1.5 rounded-xl text-xs font-heading font-bold bg-muted/60 hover:bg-muted text-foreground border border-border/80 transition-colors cursor-pointer"
-          >
-            Back to Interview Hub
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="px-3 py-1.5 rounded-xl text-xs font-heading font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+            >
+              {copiedLink ? "Link Copied!" : "Share Dossier"}
+            </button>
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/40 transition-colors cursor-pointer"
+            >
+              Back to Hub
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="container-page max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
-        {/* ── Hero Grade Card ──────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm">
-          {/* Subtle Glow */}
-          <div
-            className={`absolute -top-24 -right-24 w-64 h-64 rounded-full bg-gradient-to-br ${grade.bg} opacity-10 blur-3xl pointer-events-none`}
-          />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+        {/* ── Hero Dossier Card ────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1322] p-6 sm:p-8 shadow-2xl">
+          <div className="relative flex flex-col md:flex-row items-center gap-6 sm:gap-8 justify-between">
+            {/* Left: Overall Score Dial */}
+            <div className="flex items-center gap-6">
+              <div className="relative flex-shrink-0">
+                <svg
+                  width="150"
+                  height="150"
+                  viewBox="0 0 160 160"
+                  className="transform -rotate-90"
+                >
+                  <circle cx="80" cy="80" r="68" fill="none" stroke="#1e293b" strokeWidth="10" />
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="68"
+                    fill="none"
+                    stroke="url(#scoreGradient)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(scorecard.overallScore / 100) * 427} 427`}
+                    className="transition-all duration-1000"
+                  />
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#0d9488" />
+                      <stop offset="100%" stopColor="#10b981" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
+                  <span className="font-heading font-black text-4xl text-white">
+                    {scorecard.overallScore}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">
+                    Score / 100
+                  </span>
+                </div>
+              </div>
 
-          <div className="relative flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-            {/* Score Circle */}
-            <div className="relative flex-shrink-0">
-              <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  fill="none"
-                  stroke="currentColor"
-                  className="text-muted/60 dark:text-muted/30"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  fill="none"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(scorecard.overallScore / 100) * 440} 440`}
-                  className="transition-all duration-1000"
-                />
-                <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#0d9488" />
-                    <stop offset="100%" stopColor="#10b981" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
-                <span className="font-heading font-black text-4xl text-foreground">
-                  {scorecard.overallScore}
-                </span>
-                <span className="text-[11px] font-body text-muted-foreground font-semibold">
-                  out of 100
-                </span>
+              <div>
+                {/* Official Verdict Stamp */}
+                <div
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-heading font-extrabold tracking-wide mb-2 shadow-sm ${verdict.bg} ${verdict.border} ${verdict.text}`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                  <span>{verdict.label}</span>
+                </div>
+
+                <h1 className="font-heading font-black text-xl sm:text-2xl text-white">
+                  {ROLE_LABELS[config.role]} Technical Calibration
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 font-mono mt-0.5">
+                  Target: {scorecard.targetLevel || LEVEL_LABELS[config.level]} &bull;{" "}
+                  {config.duration} min session
+                </p>
+
+                {/* Quick Meta */}
+                <div className="flex items-center gap-4 mt-3 text-xs text-slate-400 font-mono">
+                  <span>Time: {formatDuration(scorecard.interviewDuration)}</span>
+                  <span>&bull;</span>
+                  <span>Questions Answered: {scorecard.questionsAnswered}</span>
+                  <span>&bull;</span>
+                  <span>
+                    Overall Grade: <strong className={grade.text}>{scorecard.overallGrade}</strong>
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Score Info */}
-            <div className="text-center sm:text-left flex-1">
-              <div className="flex items-center justify-center sm:justify-start gap-3 mb-2.5">
-                <span
-                  className={`font-heading font-black text-5xl bg-gradient-to-br ${grade.bg} bg-clip-text text-transparent`}
-                >
-                  {scorecard.overallGrade}
-                </span>
-                <div
-                  className={`px-3 py-1 rounded-full border text-xs font-heading font-bold ${READINESS_COLORS[scorecard.faangReadiness] || ""}`}
-                >
-                  {scorecard.faangReadiness}
-                </div>
-              </div>
-
-              <h1 className="font-heading font-black text-xl sm:text-2xl text-foreground mb-1">
-                {ROLE_LABELS[config.role]} Mock Interview
-              </h1>
-              <p className="font-body text-xs sm:text-sm text-muted-foreground">
-                {LEVEL_LABELS[config.level]} &middot; {config.topics.slice(0, 4).join(", ")}
-              </p>
-
-              {/* Stats Row */}
-              <div className="flex items-center justify-center sm:justify-start gap-4 mt-4 text-xs font-body text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span>{formatDuration(scorecard.interviewDuration)}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <span>{scorecard.totalQuestions} questions</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>{scorecard.questionsAnswered} answered</span>
-                </div>
-              </div>
+            {/* Right: Retake Action */}
+            <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-heading font-black text-xs shadow-lg shadow-teal-950/50 transition-all cursor-pointer text-center"
+              >
+                Re-take Calibration Screen
+              </button>
             </div>
           </div>
         </div>
 
-        {/* ── Summary ──────────────────────────────────────────────────── */}
-        {scorecard.summary && (
-          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs">
-            <h2 className="font-heading font-bold text-sm text-foreground mb-2 flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-teal-600 dark:text-teal-400"
-                aria-hidden="true"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-              <span>Executive Assessment</span>
+        {/* ── 5-Pillar Competency Radar Meters ─────────────────────────── */}
+        <div className="rounded-3xl border border-slate-800 bg-[#0d1322] p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
+              <span className="text-teal-400">⚡</span>
+              <span>Hiring Committee Competency Signals</span>
             </h2>
-            <p className="font-body text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              {scorecard.summary}
-            </p>
+            <span className="text-[11px] text-slate-400 font-mono">
+              Evaluated on FAANG Rubric (0-100)
+            </span>
           </div>
-        )}
 
-        {/* ── Category Breakdown ───────────────────────────────────────── */}
-        {scorecard.categories.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="font-heading font-black text-base text-foreground flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-teal-600 dark:text-teal-400"
-                aria-hidden="true"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {[
+              {
+                label: "Coding Prowess",
+                score: radar.codingProwess,
+                color: "from-teal-500 to-emerald-500",
+              },
+              {
+                label: "System Architecture",
+                score: radar.systemArchitecture,
+                color: "from-blue-500 to-indigo-500",
+              },
+              {
+                label: "Communication",
+                score: radar.communication,
+                color: "from-purple-500 to-pink-500",
+              },
+              {
+                label: "Edge Case Coverage",
+                score: radar.edgeCaseCoverage,
+                color: "from-amber-500 to-orange-500",
+              },
+              {
+                label: "Composure & Pacing",
+                score: radar.composure,
+                color: "from-cyan-500 to-teal-500",
+              },
+            ].map((pillar, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between"
               >
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-              <span>Competency Breakdown</span>
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-heading font-bold text-slate-300 text-[11px]">
+                      {pillar.label}
+                    </span>
+                    <span className="font-mono font-extrabold text-teal-400">{pillar.score}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1.5">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r ${pillar.color}`}
+                      style={{ width: `${pillar.score}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Interactive Code Diff: Candidate vs Staff Engineer ───────── */}
+        <div className="rounded-3xl border border-slate-800 bg-[#0d1322] overflow-hidden shadow-xl">
+          <div className="flex items-center justify-between px-5 py-3 bg-[#111827] border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="text-teal-400">💻</span>
+              <span className="font-heading font-black text-sm text-white">
+                Technical Implementation Review
+              </span>
+            </div>
+
+            {/* Toggle Tabs */}
+            <div className="flex items-center gap-1 bg-slate-900 rounded-xl p-0.5 border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setCodeTab("candidate")}
+                className={`px-3 py-1 rounded-lg text-xs font-heading font-bold cursor-pointer transition-colors ${
+                  codeTab === "candidate"
+                    ? "bg-teal-500 text-white shadow-xs"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Your Code Solution
+              </button>
+              <button
+                type="button"
+                onClick={() => setCodeTab("staff")}
+                className={`px-3 py-1 rounded-lg text-xs font-heading font-bold cursor-pointer transition-colors ${
+                  codeTab === "staff"
+                    ? "bg-teal-500 text-white shadow-xs"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Staff Engineer Optimal Benchmark
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 bg-[#090d16] font-mono text-xs overflow-x-auto max-h-[380px]">
+            {codeTab === "candidate" ? (
+              scorecard.candidateSolutionCode ? (
+                <pre className="text-slate-200 leading-relaxed whitespace-pre-wrap">
+                  {scorecard.candidateSolutionCode}
+                </pre>
+              ) : (
+                <div className="py-8 text-center text-slate-500">
+                  <p>No explicit code solution was submitted during this session.</p>
+                </div>
+              )
+            ) : (
+              <pre className="text-emerald-300 leading-relaxed whitespace-pre-wrap">
+                {scorecard.staffSolutionCode || "// Benchmark solution unavailable"}
+              </pre>
+            )}
+          </div>
+        </div>
+
+        {/* ── Actionable 7-Day Precision Drill Plan ─────────────────────── */}
+        {scorecard.actionableSevenDayPlan && scorecard.actionableSevenDayPlan.length > 0 && (
+          <div className="rounded-3xl border border-slate-800 bg-[#0d1322] p-6 shadow-xl space-y-4">
+            <h2 className="font-heading font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
+              <span className="text-amber-400">🎯</span>
+              <span>Personalized 7-Day Precision Action Plan</span>
             </h2>
 
-            <div className="grid gap-3">
-              {scorecard.categories.map((cat, i) => {
-                const barColor =
-                  cat.score >= 80
-                    ? "from-emerald-500 to-teal-500"
-                    : cat.score >= 60
-                      ? "from-blue-500 to-indigo-500"
-                      : cat.score >= 40
-                        ? "from-amber-500 to-orange-500"
-                        : "from-red-500 to-rose-500";
-
-                return (
-                  <div
-                    key={i}
-                    className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-heading font-bold text-sm text-foreground">
-                        {cat.name}
-                      </span>
-                      <span className="font-heading font-bold text-sm text-foreground">
-                        {cat.score}
-                        <span className="text-muted-foreground font-normal text-xs ml-0.5">
-                          /{cat.maxScore}
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-3">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700`}
-                        style={{ width: `${cat.score}%` }}
-                      />
-                    </div>
-
-                    <p className="font-body text-xs text-muted-foreground mb-3 leading-relaxed">
-                      {cat.feedback}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {scorecard.actionableSevenDayPlan.map((plan, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl bg-slate-900/80 border border-slate-800 p-4 flex flex-col justify-between"
+                >
+                  <div>
+                    <span className="px-2 py-0.5 rounded-md bg-teal-500/10 border border-teal-500/30 text-[10px] font-mono font-bold text-teal-400">
+                      {plan.day}
+                    </span>
+                    <h3 className="font-heading font-bold text-xs text-white mt-2">{plan.task}</h3>
+                    <p className="text-[11px] text-slate-400 font-body mt-1 leading-relaxed">
+                      {plan.drill}
                     </p>
-
-                    <div className="grid sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
-                      {cat.strengths.length > 0 && (
-                        <div>
-                          <span className="text-[10px] font-heading font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                            Strengths
-                          </span>
-                          <ul className="mt-1 space-y-1">
-                            {cat.strengths.map((s, j) => (
-                              <li
-                                key={j}
-                                className="text-xs font-body text-foreground/80 flex items-start gap-1.5"
-                              >
-                                <span className="text-emerald-500 font-bold mt-0.5 shrink-0">
-                                  +
-                                </span>
-                                <span>{s}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {cat.improvements.length > 0 && (
-                        <div>
-                          <span className="text-[10px] font-heading font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                            Areas to Polish
-                          </span>
-                          <ul className="mt-1 space-y-1">
-                            {cat.improvements.map((s, j) => (
-                              <li
-                                key={j}
-                                className="text-xs font-body text-foreground/80 flex items-start gap-1.5"
-                              >
-                                <span className="text-amber-500 font-bold mt-0.5 shrink-0">-</span>
-                                <span>{s}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* ── Strengths & Improvements Columns ────────────────────────── */}
+        {/* ── Executive Summary ────────────────────────────────────────── */}
+        {scorecard.summary && (
+          <div className="rounded-3xl border border-slate-800 bg-[#0d1322] p-6 shadow-xl">
+            <h2 className="font-heading font-black text-sm text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span className="text-teal-400">📝</span>
+              <span>Executive Committee Assessment</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{scorecard.summary}</p>
+          </div>
+        )}
+
+        {/* ── Strengths & Critical Gaps ────────────────────────────────── */}
         <div className="grid sm:grid-cols-2 gap-4">
           {scorecard.topStrengths.length > 0 && (
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/10 p-5 shadow-xs">
-              <h3 className="font-heading font-bold text-sm text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                <span>Key Strengths</span>
+            <div className="rounded-3xl border border-emerald-500/30 bg-emerald-950/20 p-5 shadow-xl">
+              <h3 className="font-heading font-black text-xs uppercase tracking-wider text-emerald-400 mb-3 flex items-center gap-2">
+                <span>+</span>
+                <span>Demonstrated Strengths</span>
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2 text-xs text-slate-200">
                 {scorecard.topStrengths.map((s, i) => (
-                  <li
-                    key={i}
-                    className="text-xs sm:text-sm font-body text-foreground/80 flex items-start gap-2"
-                  >
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">
-                      {i + 1}.
-                    </span>
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">{i + 1}.</span>
                     <span>{s}</span>
                   </li>
                 ))}
@@ -385,92 +419,21 @@ export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardP
           )}
 
           {scorecard.criticalImprovements.length > 0 && (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 p-5 shadow-xs">
-              <h3 className="font-heading font-bold text-sm text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <span>Priority Action Items</span>
+            <div className="rounded-3xl border border-amber-500/30 bg-amber-950/20 p-5 shadow-xl">
+              <h3 className="font-heading font-black text-xs uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-2">
+                <span>!</span>
+                <span>Critical Focus Areas for Next Level</span>
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2 text-xs text-slate-200">
                 {scorecard.criticalImprovements.map((s, i) => (
-                  <li
-                    key={i}
-                    className="text-xs sm:text-sm font-body text-foreground/80 flex items-start gap-2"
-                  >
-                    <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">
-                      {i + 1}.
-                    </span>
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold shrink-0">&bull;</span>
                     <span>{s}</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-        </div>
-
-        {/* ── Recommended Resources ──────────────────────────────────── */}
-        {scorecard.recommendedResources.length > 0 && (
-          <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 dark:bg-teal-500/10 p-5 shadow-xs">
-            <h3 className="font-heading font-bold text-sm text-teal-700 dark:text-teal-300 mb-3 flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-              <span>Recommended Study Topics</span>
-            </h3>
-            <ul className="space-y-2">
-              {scorecard.recommendedResources.map((s, i) => (
-                <li
-                  key={i}
-                  className="text-xs sm:text-sm font-body text-foreground/80 flex items-start gap-2"
-                >
-                  <span className="text-teal-600 dark:text-teal-400 shrink-0 mt-0.5">&bull;</span>
-                  <span>{s}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* ── Action Buttons ─────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6 pb-8">
-          <button
-            type="button"
-            onClick={onRetry}
-            className="btn-primary w-full sm:w-auto px-6 py-3.5 rounded-2xl font-heading font-black text-sm shadow-md cursor-pointer active:scale-95"
-          >
-            Start New Interview
-          </button>
-          <button
-            type="button"
-            onClick={onBack}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-heading font-bold text-sm bg-card border border-border/80 text-foreground hover:bg-muted shadow-xs transition-all cursor-pointer active:scale-95"
-          >
-            Back to Interview Hub
-          </button>
         </div>
       </div>
     </div>
