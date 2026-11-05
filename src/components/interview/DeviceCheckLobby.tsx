@@ -208,6 +208,17 @@ export function DeviceCheckLobby({ config, onReady, onBack }: DeviceCheckLobbyPr
       streamRef.current.getTracks().forEach((track) => track.stop());
     }
 
+    // Audio prime to unlock browser autoplay policy for speech synthesis
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        const prime = new SpeechSynthesisUtterance("");
+        prime.volume = 0;
+        window.speechSynthesis.speak(prime);
+      } catch {
+        // Silently continue
+      }
+    }
+
     onReady({
       cameraEnabled: cameraActive && cameraPermission === "granted",
       micEnabled: micActive && micPermission === "granted",

@@ -97,13 +97,13 @@ export function InterviewStudio({
 
   // ── CoderPad Code & In-Browser Test Execution State ────────────────────────
   const [editorLang, setEditorLang] = useState<"typescript" | "javascript" | "python">(
-    config.role === "data-science" ? "python" : "typescript"
+    config.role === "data-science" ? "python" : "javascript"
   );
   const [codeContent, setCodeContent] = useState<string>(() => {
     return (
       challenge.starterCode[editorLang] ||
-      challenge.starterCode.typescript ||
-      challenge.starterCode.javascript
+      challenge.starterCode.javascript ||
+      challenge.starterCode.typescript
     );
   });
   const [testReport, setTestReport] = useState<CodeExecutionReport | null>(null);
@@ -118,13 +118,20 @@ export function InterviewStudio({
   const {
     isListening,
     transcript,
+    interimTranscript,
     isSupported: sttSupported,
     startListening,
     stopListening,
     resetTranscript,
   } = useSpeechRecognition();
 
-  const { isSpeaking, isSupported: ttsSupported, speak, stop: stopSpeaking } = useSpeechSynthesis();
+  const {
+    isSpeaking,
+    isSupported: ttsSupported,
+    hasAutoplayBlocked,
+    speak,
+    stop: stopSpeaking,
+  } = useSpeechSynthesis();
 
   // ── Camera & Microphone Stream Lifecycle ───────────────────────────────────
   const startMediaStream = useCallback(async (videoRequested: boolean, audioRequested: boolean) => {
@@ -443,6 +450,18 @@ export function InterviewStudio({
     setActiveTab("transcript");
   };
 
+  // ── Ask Interviewer for Feedback / Code Walkthrough ────────────────────────
+  const handleExplainCode = () => {
+    const testSummary = testReport
+      ? `Passed ${testReport.passedCount}/${testReport.totalCount} tests.`
+      : "Draft in progress.";
+    const message = `I would like your feedback on my current solution for "${challenge.title}":\n\n\`\`\`${editorLang}\n${codeContent}\n\`\`\`\n\nTest Status: ${testSummary}\nCould you review my approach, data structures, and edge-case handling?`;
+    sendResponse(message, {
+      candidateCode: codeContent,
+      testReport: testReport || undefined,
+    });
+  };
+
   // ── Submit System Design Architecture ──────────────────────────────────────
   const handleSubmitArchitecture = (summary: string) => {
     sendResponse(summary, { canvasSummary: summary });
@@ -460,7 +479,6 @@ export function InterviewStudio({
     ];
     const prompt = hintPrompts[Math.min(hintPrompts.length - 1, nextCount - 1)];
     sendResponse(prompt);
-    setActiveTab("transcript");
   };
 
   // ── Handle Tab & Ctrl+Enter in Editor ───────────────────────────────────────
@@ -541,7 +559,7 @@ export function InterviewStudio({
   const lineNumbers = useMemo(() => codeContent.split("\n").map((_, i) => i + 1), [codeContent]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#070b14] text-slate-100 flex flex-col font-body select-none">
+    <div className="fixed inset-0 z-50 bg-[#070b14] text-slate-100 flex flex-col font-body">
       {/* ── Top Bar (Google Meet Header + Track Badge) ───────────────────── */}
       <header className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-slate-800/80 bg-[#0b0f19] flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -741,8 +759,8 @@ export function InterviewStudio({
               </div>
             </div>
 
-            {/* Live Captions */}
-            <div className="relative z-10 w-full min-h-[44px] rounded-xl bg-black/75 backdrop-blur-md border border-slate-700/70 p-2 text-left">
+            {/* Live Captions & Voice Replay */}
+            <div className="relative z-10 w-full min-h-[48px] rounded-xl bg-black/80 backdrop-blur-md border border-slate-700/70 p-2 text-left">
               <div className="flex items-center gap-1.5 mb-1">
                 <svg
                   width="11"
@@ -760,13 +778,35 @@ export function InterviewStudio({
                 <span className="text-[10px] font-heading font-black text-teal-400 uppercase tracking-wider">
                   Live Captions
                 </span>
-                {isSpeaking && (
-                  <div className="flex items-center gap-0.5 ml-auto">
-                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-bounce" />
-                    <span className="w-1 h-3 bg-teal-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1 h-2 bg-teal-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                  </div>
-                )}
+
+                <div className="flex items-center gap-1.5 ml-auto">
+                  {isSpeaking ? (
+                    <button
+                      type="button"
+                      onClick={() => stopSpeaking()}
+                      className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-mono hover:bg-red-500/30 transition-all cursor-pointer flex items-center gap-1"
+                      title="Stop speaking"
+                    >
+                      <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-ping" />
+                      <span>Stop Voice</span>
+                    </button>
+                  ) : (
+                    latestInterviewerMessage && (
+                      <button
+                        type="button"
+                        onClick={() => speak(latestInterviewerMessage)}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all cursor-pointer flex items-center gap-1 ${
+                          hasAutoplayBlocked
+                            ? "bg-amber-500/30 text-amber-300 border border-amber-400 animate-pulse shadow-sm"
+                            : "bg-teal-500/20 text-teal-300 border border-teal-500/40 hover:bg-teal-500/30"
+                        }`}
+                        title="Play audio out loud"
+                      >
+                        <span>🔊 {hasAutoplayBlocked ? "Play Voice" : "Replay"}</span>
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
               <p className="text-[11px] text-slate-200 line-clamp-2 leading-relaxed">
                 {latestInterviewerMessage ||
@@ -931,7 +971,6 @@ export function InterviewStudio({
                   setInputText(
                     `Before coding, let me clarify the constraints for ${challenge.functionName}: What is the expected range of inputs, memory limits, and target latency?`
                   );
-                  setActiveTab("transcript");
                   inputRef.current?.focus();
                 }}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/40 text-[11px] text-teal-300 font-medium transition-colors cursor-pointer"
@@ -944,7 +983,6 @@ export function InterviewStudio({
                   setInputText(
                     `Analyzing complexity trade-offs:\n- Brute force approach: O(N^2) time with minimal space.\n- Optimized approach: O(N) time using extra auxiliary memory.\nI propose implementing the O(N) solution:`
                   );
-                  setActiveTab("transcript");
                   inputRef.current?.focus();
                 }}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-[11px] text-emerald-300 font-medium transition-colors cursor-pointer"
@@ -957,7 +995,6 @@ export function InterviewStudio({
                   setInputText(
                     `I want to verify boundary edge cases for ${challenge.functionName}: What happens if the input is empty, null, or has duplicates?`
                   );
-                  setActiveTab("transcript");
                   inputRef.current?.focus();
                 }}
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-[11px] text-cyan-300 font-medium transition-colors cursor-pointer"
@@ -970,6 +1007,142 @@ export function InterviewStudio({
                 className="p-1.5 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 text-[11px] text-amber-300 font-medium transition-colors cursor-pointer"
               >
                 &bull; Request Hint (-5 pts)
+              </button>
+            </div>
+          </div>
+
+          {/* ── Persistent Live Intercom Deck (Always Visible) ─────────────── */}
+          <div className="rounded-2xl bg-[#0e1422] border border-slate-800 p-3 shadow-lg space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-[11px] font-heading font-black text-slate-200 uppercase tracking-wide">
+                  Live Intercom with {interviewer.name}
+                </span>
+              </div>
+              {isSpeaking ? (
+                <span className="text-[10px] text-teal-400 font-mono animate-pulse">
+                  Speaking...
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-500 font-mono">Ready for answer</span>
+              )}
+            </div>
+
+            {/* Live Voice Transcription Pill (When listening) */}
+            {isListening && (
+              <div className="p-2.5 rounded-xl bg-teal-950/40 border border-teal-500/40 space-y-2 animate-pulse">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-heading font-bold text-teal-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
+                    Listening to your voice...
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stopListening();
+                      resetTranscript();
+                    }}
+                    className="text-[10px] text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <p className="text-xs text-slate-100 italic font-mono bg-black/40 p-2 rounded-lg min-h-[30px]">
+                  &ldquo;{transcript || interimTranscript || "Speak your reasoning now..."}&rdquo;
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const spoken = (transcript || interimTranscript).trim();
+                    if (spoken) {
+                      sendResponse(spoken);
+                      stopListening();
+                      resetTranscript();
+                    }
+                  }}
+                  disabled={!transcript.trim() && !interimTranscript.trim()}
+                  className="w-full py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-heading font-black transition-colors cursor-pointer disabled:opacity-40"
+                >
+                  ✓ Send Spoken Answer to {interviewer.name}
+                </button>
+              </div>
+            )}
+
+            {/* Quick Text Input & Push-To-Talk */}
+            <div className="flex items-center gap-1.5">
+              <textarea
+                ref={inputRef}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendResponse();
+                  }
+                }}
+                placeholder={`Type verbal answer to ${interviewer.name}... (Enter to send)`}
+                rows={1}
+                className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 resize-none"
+                style={{ maxHeight: "72px" }}
+              />
+
+              {/* Mic Push-to-Talk button */}
+              {sttSupported && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isListening) {
+                      stopListening();
+                    } else {
+                      if (isSpeaking) stopSpeaking();
+                      startListening();
+                    }
+                  }}
+                  className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                    isListening
+                      ? "bg-red-500 text-white border-red-400 animate-pulse shadow-md shadow-red-500/40"
+                      : "bg-slate-900 hover:bg-slate-800 text-teal-400 border-slate-800 hover:border-teal-500/50"
+                  }`}
+                  title={isListening ? "Listening... (Click to stop)" : "Push to Talk"}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Send Button */}
+              <button
+                type="button"
+                onClick={() => sendResponse()}
+                disabled={!inputText.trim() || isLoading}
+                className="btn-primary p-2 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                title="Send answer"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
               </button>
             </div>
           </div>
@@ -1084,6 +1257,28 @@ export function InterviewStudio({
                   <option value="javascript">JavaScript</option>
                   <option value="python">Python</option>
                 </select>
+
+                <button
+                  type="button"
+                  onClick={handleExplainCode}
+                  disabled={isLoading}
+                  className="px-2.5 py-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/40 text-[11px] font-heading font-bold text-teal-300 transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-40"
+                  title="Ask interviewer to review code and approach"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>Ask for Feedback</span>
+                </button>
 
                 <button
                   type="button"

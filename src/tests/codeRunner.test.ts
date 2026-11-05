@@ -32,7 +32,20 @@ describe("In-Browser Code Runner & Assertion Engine", () => {
       const code = `export function solve(a: number, b: string): boolean {\n  return true;\n}`;
       const stripped = stripTypeAnnotations(code);
       expect(stripped).not.toContain("export");
-      expect(stripped).toContain("function solve(a: number, b: string) {");
+      expect(stripped).toContain("function solve(a, b) {");
+    });
+
+    it("strips parameter types, return types, and variable types", () => {
+      const code = `
+        export function calculate(val: number, multiplier: number = 2): number {
+          let factor: number = 10;
+          return val * multiplier + factor;
+        }
+      `;
+      const stripped = stripTypeAnnotations(code);
+      expect(stripped).not.toContain(": number");
+      expect(stripped).toContain("function calculate(val, multiplier = 2) {");
+      expect(stripped).toContain("let factor = 10;");
     });
   });
 

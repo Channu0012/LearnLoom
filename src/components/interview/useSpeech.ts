@@ -21,6 +21,7 @@ interface SpeechRecognitionHook {
 interface SpeechSynthesisHook {
   isSpeaking: boolean;
   isSupported: boolean;
+  hasAutoplayBlocked: boolean;
   speak: (_text: string) => void;
   stop: () => void;
   voices: SpeechSynthesisVoice[];
@@ -177,6 +178,7 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
 export function useSpeechSynthesis(): SpeechSynthesisHook {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
+  const [hasAutoplayBlocked, setHasAutoplayBlocked] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -227,12 +229,24 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
 
-      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setHasAutoplayBlocked(false);
+      };
       utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onerror = (e) => {
+        setIsSpeaking(false);
+        if (e.error === "not-allowed") {
+          setHasAutoplayBlocked(true);
+        }
+      };
 
       utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        setHasAutoplayBlocked(true);
+      }
     },
     [isSupported, voices]
   );
@@ -245,6 +259,7 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
   return {
     isSpeaking,
     isSupported,
+    hasAutoplayBlocked,
     speak,
     stop,
     voices,

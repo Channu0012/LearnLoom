@@ -6,6 +6,7 @@
 // and 7-Day Precision Action Plan.
 // ---------------------------------------------------------------------------
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import {
   type InterviewScorecard as ScorecardType,
   type HiringVerdict,
@@ -74,6 +75,7 @@ const GRADE_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardProps) {
+  const { user, openAuthModal } = useAuth();
   const [codeTab, setCodeTab] = useState<"candidate" | "staff">("candidate");
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -105,7 +107,7 @@ export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardP
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-body pb-20 select-none">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 font-body pb-20">
       {/* ── Sub Header ────────────────────────────────────────────────── */}
       <div className="border-b border-slate-800 bg-[#0b0f1a]/90 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -156,6 +158,30 @@ export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardP
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+        {/* ── Guest Candidate Claim Banner ─────────────────────────────── */}
+        {!user && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-500/15 via-emerald-500/15 to-transparent border border-teal-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3 text-left">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <p className="text-xs font-heading font-extrabold text-white">
+                  Completed in Free Guest Practice Mode
+                </p>
+                <p className="text-[11px] text-slate-300">
+                  Save this official Silicon Valley Hiring Committee Dossier to your permanent
+                  profile &amp; share with recruiters.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => openAuthModal("signin")}
+              className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-heading font-black transition-colors shrink-0 cursor-pointer shadow-md"
+            >
+              Claim &amp; Save to Profile &rarr;
+            </button>
+          </div>
+        )}
         {/* ── Hero Dossier Card ────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1322] p-6 sm:p-8 shadow-2xl">
           <div className="relative flex flex-col md:flex-row items-center gap-6 sm:gap-8 justify-between">

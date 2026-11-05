@@ -64,20 +64,47 @@ export function deepEqual(a: unknown, b: unknown): boolean {
   return true;
 }
 
-// Lightweight TypeScript type-stripper for browser execution
+// Robust TypeScript type-stripper for browser execution
 export function stripTypeAnnotations(code: string): string {
-  // Strip import/export statements that might fail in non-module worker
   let cleaned = code
+    // 1. Remove imports and exports
     .replace(/^\s*export\s+default\s+/gm, "")
     .replace(/^\s*export\s+/gm, "")
     .replace(/^\s*import\s+.*?;?\s*$/gm, "");
 
-  // Strip simple TypeScript return types e.g. "): number {" -> ") {"
-  cleaned = cleaned.replace(/\)\s*:\s*[A-Za-z0-9_<>[\]|,\s&]+\s*=>/g, ") =>");
-  cleaned = cleaned.replace(/\)\s*:\s*[A-Za-z0-9_<>[\]|,\s&]+\s*\{/g, ") {");
-
-  // Strip type/interface declarations
+  // 2. Remove interfaces and type declarations
   cleaned = cleaned.replace(/^\s*(interface|type)\s+[A-Za-z0-9_<>]+[\s\S]*?(?:;|\n\})/gm, "");
+
+  // 3. Remove generics from function definitions: function foo<T>( or foo<T, U>(
+  cleaned = cleaned.replace(/(function\s+[A-Za-z0-9_$]+)\s*<[^>]+>\s*\(/g, "$1(");
+  cleaned = cleaned.replace(/(\w+)\s*<[^>]+>\s*\(/g, "$1(");
+
+  // 4. Remove return type annotations: ): Type { or ): Type =>
+  cleaned = cleaned.replace(/\)\s*:\s*[A-Za-z0-9_<>[\]|,\s&?]+\s*\{/g, ") {");
+  cleaned = cleaned.replace(/\)\s*:\s*[A-Za-z0-9_<>[\]|,\s&?]+\s*=>/g, ") =>");
+
+  // 5. Remove parameter types inside function parentheses: (a: number, b: string = 'val') -> (a, b = 'val')
+  cleaned = cleaned.replace(/\(([^)]*)\)/g, (match, paramList) => {
+    if (!paramList.includes(":")) return match;
+    const parts = paramList.split(",").map((param: string) => {
+      const trimmed = param.trim();
+      const colonIndex = trimmed.indexOf(":");
+      if (colonIndex === -1) return trimmed;
+      const name = trimmed.slice(0, colonIndex).trim();
+      const eqIndex = trimmed.indexOf("=", colonIndex);
+      if (eqIndex !== -1) {
+        return name + " " + trimmed.slice(eqIndex).trim();
+      }
+      return name;
+    });
+    return "(" + parts.join(", ") + ")";
+  });
+
+  // 6. Remove variable type annotations: let x: number = 0 -> let x = 0
+  cleaned = cleaned.replace(/(let|const|var)\s+([A-Za-z0-9_$]+)\s*:\s*[^=;\n]+/g, "$1 $2 ");
+
+  // 7. Remove type assertions: x as number -> x
+  cleaned = cleaned.replace(/\s+as\s+[A-Za-z0-9_<>[\]|&]+/g, "");
 
   return cleaned;
 }

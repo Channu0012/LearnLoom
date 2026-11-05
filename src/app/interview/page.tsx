@@ -195,10 +195,6 @@ export default function InterviewPage() {
   };
 
   const handleStartInterview = () => {
-    if (!user) {
-      openAuthModal("signin");
-      return;
-    }
     if (!selectedRole || selectedTopics.length === 0) return;
 
     const config: InterviewConfig = {
@@ -295,7 +291,7 @@ export default function InterviewPage() {
   // ── Configure View ─────────────────────────────────────────────────────
   if (view === "configure" && selectedRole) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] bg-[#070b14] text-slate-100 py-8 sm:py-12 select-none">
+      <div className="min-h-[calc(100vh-4rem)] bg-[#070b14] text-slate-100 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           {/* Back button */}
           <button
@@ -531,9 +527,24 @@ export default function InterviewPage() {
                 >
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                <span>{user ? "Enter Live Technical Screen" : "Sign In to Begin Interview"}</span>
+                <span>
+                  {user
+                    ? "Enter Live Technical Screen"
+                    : "Start Live Technical Screen (Instant Guest Access)"}
+                </span>
               </button>
-              <p className="text-center text-[11px] text-slate-500 mt-3 font-mono">
+              {!user && (
+                <div className="text-center mt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal("signin")}
+                    className="text-xs text-teal-400/80 hover:text-teal-300 font-heading transition-colors cursor-pointer"
+                  >
+                    Already have an account? Sign in to save scorecards to your profile &rarr;
+                  </button>
+                </div>
+              )}
+              <p className="text-center text-[11px] text-slate-500 mt-2 font-mono">
                 Real In-Browser Sandbox &middot; Live Test Execution &middot; Official Hiring
                 Committee Report
               </p>
@@ -546,7 +557,7 @@ export default function InterviewPage() {
 
   // ── Hub View (Landing) ─────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 pb-20 select-none">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 pb-20">
       {/* ── Hero Section ──────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-12 sm:pt-16 pb-12 sm:pb-16 border-b border-slate-800/80">
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
