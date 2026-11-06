@@ -140,11 +140,6 @@ const nextConfig: NextConfig = {
         destination: "/interview",
         permanent: true,
       },
-      {
-        source: "/arena",
-        destination: "/interview",
-        permanent: true,
-      },
     ];
   },
 };
