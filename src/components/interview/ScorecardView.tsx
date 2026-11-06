@@ -114,11 +114,11 @@ export function ScorecardView({ scorecard, config, onRetry, onBack }: ScorecardP
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icon.png"
+              src="/icon.svg"
               alt="VeySkill"
               width={26}
               height={26}
-              className="w-6 h-6 object-contain rounded-md"
+              className="w-6 h-6 object-contain"
             />
             <div className="flex items-center gap-2">
               <span className="font-heading font-black text-sm tracking-tight">

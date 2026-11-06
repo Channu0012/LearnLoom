@@ -145,11 +145,11 @@ function LoginForm() {
           <Link href="/" className="flex items-center gap-2.5 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icon.png"
+              src="/icon.svg"
               alt="VeySkill Logo"
               width={40}
               height={40}
-              className="w-10 h-10 object-contain rounded-xl transition-transform group-hover:scale-105"
+              className="w-10 h-10 object-contain transition-transform group-hover:scale-105"
             />
             <span className="font-heading font-black text-2xl tracking-tight text-white">
               Vey<span className="text-teal-400">skill</span>
@@ -220,11 +220,11 @@ function LoginForm() {
             <Link href="/" className="flex items-center gap-2 select-none">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/icon.png"
+                src="/icon.svg"
                 alt="VeySkill Logo"
                 width={34}
                 height={34}
-                className="w-8 h-8 object-contain rounded-xl"
+                className="w-8 h-8 object-contain"
               />
               <span className="font-heading font-extrabold text-xl tracking-tight">
                 <span className="text-foreground">Vey</span>

@@ -233,11 +233,11 @@ export function DeviceCheckLobby({ config, onReady, onBack }: DeviceCheckLobbyPr
           <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-700/60 shadow-sm flex items-center justify-center bg-[#111827]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icon.png"
+              src="/icon.svg"
               alt="VeySkill"
               width={26}
               height={26}
-              className="w-6 h-6 object-contain rounded-lg"
+              className="w-6 h-6 object-contain"
             />
           </div>
           <div>

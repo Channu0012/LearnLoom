@@ -568,11 +568,11 @@ export function InterviewStudio({
             <div className="w-7 h-7 rounded-lg overflow-hidden border border-slate-700/60 flex items-center justify-center bg-[#111827]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/icon.png"
+                src="/icon.svg"
                 alt="VeySkill"
                 width={22}
                 height={22}
-                className="w-5 h-5 object-contain rounded-sm"
+                className="w-5 h-5 object-contain"
               />
             </div>
             <span className="font-heading font-black text-sm tracking-tight hidden sm:inline">

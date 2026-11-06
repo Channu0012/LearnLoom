@@ -49,7 +49,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/favicon.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/icon.png", sizes: "512x512", type: "image/png" },
       { url: "/favicon.ico" },
     ],
@@ -158,7 +161,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           name="google-site-verification"
           content="RjVJKECu9rCbm6ruh5G3gWgoIVqvn6SGE_DtDlnhOpo"
         />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         {/* Resource Hints — Critical for Core Web Vitals */}

@@ -45,11 +45,11 @@ export function Footer() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/icon.png"
+                src="/icon.svg"
                 alt="VeySkill Logo"
                 width={28}
                 height={28}
-                className="w-7 h-7 object-contain rounded-lg"
+                className="w-7 h-7 object-contain"
               />
               <span className="font-heading font-extrabold text-lg tracking-tight">
                 <span className="text-foreground">Vey</span>

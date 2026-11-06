@@ -91,12 +91,12 @@ export function Header() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/icon.png"
+            src="/icon.svg"
             alt="VeySkill Logo"
             width={34}
             height={34}
             suppressHydrationWarning
-            className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl transition-transform duration-200 group-hover:scale-105"
+            className="w-8 h-8 sm:w-9 sm:h-9 object-contain transition-transform duration-200 group-hover:scale-105"
           />
           <span
             suppressHydrationWarning

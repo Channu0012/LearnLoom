@@ -15,7 +15,7 @@ export default function GlobalLoading() {
           <div className="relative w-14 h-14 rounded-2xl bg-card border border-border/80 shadow-lg flex items-center justify-center p-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icon.png"
+              src="/icon.svg"
               alt="VeySkill"
               width={36}
               height={36}
