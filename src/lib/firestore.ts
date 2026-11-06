@@ -28,6 +28,7 @@ import {
 import { db } from "./firebase";
 import { COLLECTIONS, PAGE_SIZE, DOUBT_LIMITS } from "./constants";
 import { type LeaderboardStudent, LEADERBOARD_DATA } from "./arena";
+import { recordStudyActivity } from "./streak";
 import type {
   UserDoc,
   CourseDoc,
@@ -1000,8 +1001,12 @@ export function subscribeLeaderboard(
             battles > 0
               ? Math.min(100, Math.max(50, Math.round((won / Math.max(1, battles)) * 100)))
               : 70;
-          const streak =
-            data.battleStreak || Math.min(12, Math.max(1, Math.floor(helperScore / 5)));
+          // Unify streak: Highest of real main currentStreak, battleStreak, or helper level
+          const streak = Math.max(
+            data.currentStreak || 0,
+            data.battleStreak || 0,
+            Math.min(12, Math.max(1, Math.floor(helperScore / 5)))
+          );
           const verified = Boolean(
             data.isAdmin ||
             helperScore >= 30 ||
@@ -1016,7 +1021,7 @@ export function subscribeLeaderboard(
             xp: Math.max(totalXp, 120),
             battles: Math.max(battles, 1),
             winRate,
-            streak: Math.max(streak, 1),
+            streak,
             verified,
             topicDomain: "react",
             uid: data.uid || docSnap.id,
@@ -1062,6 +1067,13 @@ export async function recordUserBattleResult(
     userScore: number;
   }
 ): Promise<void> {
+  // Sync main app streak + XP so header and profile update synchronously
+  let unifiedStreak = 1;
+  try {
+    const activity = recordStudyActivity(result.xpEarned);
+    unifiedStreak = activity.streak;
+  } catch {}
+
   // 1. Client-side optimistic update to users/{uid}
   try {
     const userRef = doc(db, COLLECTIONS.USERS, uid);
@@ -1071,13 +1083,15 @@ export async function recordUserBattleResult(
       const prevXp = prev.xp || 0;
       const prevPlayed = prev.battlesPlayed || 0;
       const prevWon = prev.battlesWon || 0;
-      const prevStreak = prev.battleStreak || 0;
+      const prevBattleStreak = prev.battleStreak || 0;
+      const newBattleStreak = result.outcome === "victory" ? prevBattleStreak + 1 : 0;
 
       await updateDoc(userRef, {
         xp: prevXp + result.xpEarned,
         battlesPlayed: prevPlayed + 1,
         battlesWon: prevWon + (result.outcome === "victory" ? 1 : 0),
-        battleStreak: result.outcome === "victory" ? prevStreak + 1 : 0,
+        battleStreak: newBattleStreak,
+        currentStreak: unifiedStreak,
         updatedAt: serverTimestamp(),
       });
     }

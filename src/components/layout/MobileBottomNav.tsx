@@ -80,8 +80,8 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Learning",
-      href: "/my-learning",
+      name: "Courses",
+      href: "/my-courses",
       icon: (active: boolean) => (
         <svg
           width="22"
@@ -94,8 +94,7 @@ export function MobileBottomNav() {
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       ),
     },
@@ -152,9 +151,11 @@ export function MobileBottomNav() {
               pathname === "/doubts" ||
               pathname?.startsWith("/doubts/"));
 
-          const isLearningMatch =
-            item.href === "/my-learning" &&
-            (pathname === "/my-learning" ||
+          const isCoursesMatch =
+            item.href === "/my-courses" &&
+            (pathname === "/my-courses" ||
+              pathname?.startsWith("/my-courses/") ||
+              pathname === "/my-learning" ||
               pathname?.startsWith("/my-learning/") ||
               pathname === "/profile");
 
@@ -162,7 +163,7 @@ export function MobileBottomNav() {
             item.href === "/"
               ? pathname === "/"
               : isInterviewMatch ||
-                isLearningMatch ||
+                isCoursesMatch ||
                 pathname === item.href ||
                 Boolean(pathname?.startsWith(`${item.href}/`));
 

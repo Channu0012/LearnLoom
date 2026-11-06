@@ -39,7 +39,7 @@ export function getShareableChallengeUrl(roomId: string): string {
 
 export function getWhatsAppShareUrl(roomId: string, topicLabel: string): string {
   const url = getShareableChallengeUrl(roomId);
-  const text = `⚔️ Technical Quiz Duel Challenge! I created a live ${topicLabel} battle on VeySkill Arena. Test your skills and compete with me here: ${url}`;
+  const text = `[VeySkill Arena] Technical Quiz Duel Challenge: I created a live ${topicLabel} battle on VeySkill Arena. Test your skills and compete with me here: ${url}`;
   return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 }
 

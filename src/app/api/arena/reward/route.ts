@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     const incrementBattlesPlayed = Boolean(body.incrementBattlesPlayed);
     const incrementBattlesWon = Boolean(body.incrementBattlesWon);
     const streak = typeof body.streak === "number" ? Math.max(0, body.streak) : undefined;
+    const currentStreak =
+      typeof body.currentStreak === "number" ? Math.max(0, body.currentStreak) : undefined;
 
     if (!isFirebaseAdminConfigured) {
       // In local dev without admin keys, acknowledge request gracefully
@@ -56,6 +58,9 @@ export async function POST(request: NextRequest) {
     }
     if (typeof streak === "number") {
       updates.battleStreak = streak;
+    }
+    if (typeof currentStreak === "number") {
+      updates.currentStreak = currentStreak;
     }
 
     if (Object.keys(updates).length > 0) {

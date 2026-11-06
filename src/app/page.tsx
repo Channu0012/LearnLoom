@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
 import { ArenaHomeSection } from "@/components/home/ArenaHomeSection";
+import { HomeQuickAccessBar } from "@/components/home/HomeQuickAccessBar";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SVG Icons — Pure Vector, Zero Emojis (Google / Stripe aesthetic)
@@ -524,6 +525,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── 1.5. Student Quick Access Bar (Courses, Arena, Interview, Explore) ── */}
+      <HomeQuickAccessBar />
 
       {/* ── 2. How It Works (Clean 3-Step Architecture) ──────────────────── */}
       <section

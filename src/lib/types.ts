@@ -24,6 +24,7 @@ export interface UserDoc {
   battlesPlayed?: number;
   battlesWon?: number;
   battleStreak?: number;
+  currentStreak?: number;
   campus?: string;
 }
 

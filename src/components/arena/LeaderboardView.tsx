@@ -140,7 +140,7 @@ interface LeaderboardViewProps {
 }
 
 export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
-  const { user } = useAuth();
+  const { user, userDoc } = useAuth();
   const [timeframe, setTimeframe] = useState<"all" | "weekly" | "campus">("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -550,11 +550,15 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
                   ? (user.displayName ?? "Your Battle Profile")
                   : "Join the Verified Leaderboard"}
               </h4>
-              {currentUserStanding && (
+              {currentUserStanding ? (
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-700 dark:text-teal-300 text-[11px] font-mono font-bold">
                   Rank #{currentUserStanding.rank}
                 </span>
-              )}
+              ) : userDoc?.xp ? (
+                <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-700 dark:text-teal-300 text-[11px] font-mono font-bold">
+                  Active Contender
+                </span>
+              ) : null}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               {currentUserStanding ? (
@@ -566,7 +570,14 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
                   rate · {currentUserStanding.streak} streak
                 </span>
               ) : user ? (
-                "Challenge fellow scholars to 1v1 duels to establish your official rank and earn recruiter-verified standing."
+                <span>
+                  <strong className="text-foreground font-mono font-semibold">
+                    {(userDoc?.xp || 0).toLocaleString()} XP
+                  </strong>{" "}
+                  earned · {userDoc?.battlesPlayed || 0} duels ·{" "}
+                  {userDoc?.currentStreak || userDoc?.battleStreak || 0} streak · Challenge peers in
+                  1v1 duels to break into the Top 20!
+                </span>
               ) : (
                 "Sign in and compete in 1v1 duels to establish your official skill standing."
               )}
