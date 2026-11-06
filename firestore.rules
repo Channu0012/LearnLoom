@@ -306,5 +306,13 @@ service cloud.firestore {
       allow update: if isAuth() && exData().userId == request.auth.uid;
       allow delete: if isAuth() && (exData().userId == request.auth.uid || isAdmin());
     }
+
+    // ── arena_rooms/{roomId} (Multiplayer Quiz Duels & Group Battles) ─────────
+    match /arena_rooms/{roomId} {
+      // Open read and join for multiplayer friend duels via link
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
   }
 }

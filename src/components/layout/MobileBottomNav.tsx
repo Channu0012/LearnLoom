@@ -100,21 +100,29 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Courses",
-      href: "/my-courses",
+      name: "Arena",
+      href: "/arena",
+      badge: "LIVE",
       icon: (active: boolean) => (
         <svg
           width="22"
           height="22"
           viewBox="0 0 24 24"
-          fill={active ? "currentColor" : "none"}
-          stroke="currentColor"
+          fill="none"
+          stroke={active ? "var(--teal-500, #14b8a6)" : "currentColor"}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+          <line x1="13" y1="19" x2="19" y2="13" />
+          <line x1="16" y1="16" x2="20" y2="20" />
+          <line x1="19" y1="21" x2="21" y2="19" />
+          <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+          <line x1="5" y1="14" x2="9" y2="18" />
+          <line x1="7" y1="17" x2="4" y2="20" />
+          <line x1="3" y1="19" x2="5" y2="21" />
         </svg>
       ),
     },
@@ -141,7 +149,6 @@ export function MobileBottomNav() {
             item.href === "/interview" &&
             (pathname === "/interview" ||
               pathname?.startsWith("/interview/") ||
-              pathname === "/arena" ||
               pathname === "/doubts" ||
               pathname?.startsWith("/doubts/"));
 

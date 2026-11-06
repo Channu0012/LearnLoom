@@ -1026,7 +1026,19 @@ export function subscribeLeaderboard(
 
         // Sort by total XP descending
         realUsers.sort((a, b) => b.xp - a.xp);
-        const ranked = realUsers.map((s, idx) => ({ ...s, rank: idx + 1 }));
+
+        // Guarantee a full Top 20 roster by blending verified seed scholars
+        const combined = [...realUsers];
+        const existingUids = new Set(realUsers.map((u) => u.uid).filter(Boolean));
+        for (const seed of LEADERBOARD_DATA) {
+          if (combined.length >= 20) break;
+          if (!seed.uid || !existingUids.has(seed.uid)) {
+            combined.push(seed);
+          }
+        }
+        combined.sort((a, b) => b.xp - a.xp);
+
+        const ranked = combined.slice(0, 20).map((s, idx) => ({ ...s, rank: idx + 1 }));
         callback(ranked);
       },
       (err) => {

@@ -171,6 +171,44 @@ export function Header() {
             </span>
           </Link>
 
+          {/* Arena 1v1 & Group Duels */}
+          <Link
+            href="/arena"
+            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 group flex-shrink-0 ${
+              isNavActive("/arena")
+                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
+                : "text-foreground/85 hover:text-foreground hover:bg-muted"
+            }`}
+            aria-current={isNavActive("/arena") ? "page" : undefined}
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="text-amber-500 group-hover:rotate-12 transition-transform"
+            >
+              <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+              <line x1="13" y1="19" x2="19" y2="13" />
+              <line x1="16" y1="16" x2="20" y2="20" />
+              <line x1="19" y1="21" x2="21" y2="19" />
+              <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" />
+              <line x1="5" y1="14" x2="9" y2="18" />
+              <line x1="7" y1="17" x2="4" y2="20" />
+              <line x1="3" y1="19" x2="5" y2="21" />
+            </svg>
+            <span>Arena</span>
+            <span className="text-[9px] font-heading font-black px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 tracking-tight flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              LIVE
+            </span>
+          </Link>
+
           {/* My Learning */}
           <Link
             href="/my-learning"

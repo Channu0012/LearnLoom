@@ -212,18 +212,20 @@ export function LeaderboardView({ onStartBattleClick }: LeaderboardViewProps) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-heading font-bold text-foreground">Verified Standings</h2>
+            <h2 className="text-lg font-heading font-bold text-foreground">
+              Top 20 Verified Scholars
+            </h2>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] font-heading font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-              {isLiveSynced ? "Live Sync Active" : "Real-Time Sync"}
+              {isLiveSynced ? "Live Sync Active" : "Top 20 Live"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             {timeframe === "weekly"
-              ? "Active 7-day sprint rankings — calibrated from recent duels, streak acceleration, and weekly bonus points."
+              ? "Active 7-day sprint rankings — calibrated from recent 1v1 duels, streak acceleration, and speed bonuses."
               : timeframe === "campus"
-                ? "Inter-collegiate rankings — premier engineering and science universities competing for national campus prestige."
-                : "Rankings calibrated from all-time 1v1 battle victories, response speed, and question accuracy."}
+                ? "Inter-collegiate rankings — premier engineering institutes competing for national campus prestige."
+                : "Top 20 verified student scholars calibrated from live 1v1 & group battles, response velocity, and question accuracy."}
           </p>
         </div>
 

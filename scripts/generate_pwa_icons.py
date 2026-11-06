@@ -64,3 +64,4 @@ fav_64.save(
     sizes=[(16, 16), (32, 32), (48, 48), (64, 64)]
 )
 print("Saved multi-size favicon.ico (16, 32, 48, 64)")
+

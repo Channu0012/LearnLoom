@@ -310,4 +310,153 @@ export const LEADERBOARD_DATA: LeaderboardStudent[] = [
     verified: false,
     topicDomain: "database",
   },
+  {
+    rank: 11,
+    name: "Aditya Verma",
+    campus: "IIT Madras",
+    xp: 1040,
+    battles: 52,
+    winRate: 58,
+    streak: 4,
+    verified: true,
+    topicDomain: "react",
+  },
+  {
+    rank: 12,
+    name: "Tanvi Deshmukh",
+    campus: "IIT Kharagpur",
+    xp: 980,
+    battles: 49,
+    winRate: 57,
+    streak: 3,
+    verified: true,
+    topicDomain: "python",
+  },
+  {
+    rank: 13,
+    name: "Harsh Vardhan",
+    campus: "BITS Goa",
+    xp: 910,
+    battles: 46,
+    winRate: 56,
+    streak: 3,
+    verified: false,
+    topicDomain: "algorithms",
+  },
+  {
+    rank: 14,
+    name: "Pooja Hegde",
+    campus: "RVCE Bangalore",
+    xp: 850,
+    battles: 43,
+    winRate: 55,
+    streak: 3,
+    verified: true,
+    topicDomain: "javascript",
+  },
+  {
+    rank: 15,
+    name: "Nikhil Joshi",
+    campus: "COEP Pune",
+    xp: 790,
+    battles: 40,
+    winRate: 54,
+    streak: 2,
+    verified: false,
+    topicDomain: "database",
+  },
+  {
+    rank: 16,
+    name: "Ishita Sen",
+    campus: "Jadavpur University",
+    xp: 730,
+    battles: 37,
+    winRate: 53,
+    streak: 2,
+    verified: true,
+    topicDomain: "react",
+  },
+  {
+    rank: 17,
+    name: "Rahul Bansal",
+    campus: "NSUT Delhi",
+    xp: 680,
+    battles: 35,
+    winRate: 52,
+    streak: 2,
+    verified: false,
+    topicDomain: "algorithms",
+  },
+  {
+    rank: 18,
+    name: "Shruti Iyer",
+    campus: "IIIT Bangalore",
+    xp: 630,
+    battles: 32,
+    winRate: 51,
+    streak: 2,
+    verified: true,
+    topicDomain: "python",
+  },
+  {
+    rank: 19,
+    name: "Varun Chopra",
+    campus: "PEC Chandigarh",
+    xp: 590,
+    battles: 30,
+    winRate: 50,
+    streak: 1,
+    verified: false,
+    topicDomain: "javascript",
+  },
+  {
+    rank: 20,
+    name: "Neha Kulkarni",
+    campus: "VNIT Nagpur",
+    xp: 550,
+    battles: 28,
+    winRate: 50,
+    streak: 1,
+    verified: true,
+    topicDomain: "database",
+  },
 ];
+
+// ── Real-Time Multiplayer Room Models ────────────────────────────────────────
+
+export type ArenaRoomStatus = "waiting" | "starting" | "active" | "completed";
+
+export interface ArenaParticipant {
+  uid: string;
+  name: string;
+  avatar?: string | null;
+  campus?: string;
+  isHost: boolean;
+  score: number;
+  streak: number;
+  currentQ: number;
+  answers: Array<{
+    qIndex: number;
+    selectedOption: number;
+    isCorrect: boolean;
+    timeTakenMs: number;
+    points: number;
+  }>;
+  status: "joined" | "ready" | "in_quiz" | "finished";
+  finishedAt?: number;
+  updatedAt: number;
+}
+
+export interface ArenaRoomDoc {
+  id: string; // e.g. "VS-8K49A"
+  hostUid: string;
+  hostName: string;
+  topic: DomainType;
+  topicLabel: string;
+  maxPlayers: number; // 2 for 1v1, up to 5 for group
+  status: ArenaRoomStatus;
+  createdAt: number;
+  startedAt?: number;
+  questionIds?: string[];
+  participants: Record<string, ArenaParticipant>;
+}

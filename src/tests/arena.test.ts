@@ -49,16 +49,54 @@ describe("Arena — Battle Engine & Question Sampling", () => {
     }
   });
 
-  it("verifies leaderboard rankings integrity and verified badges", () => {
-    expect(LEADERBOARD_DATA.length).toBe(10);
+  it("verifies leaderboard rankings integrity and verified badges for Top 20", () => {
+    expect(LEADERBOARD_DATA.length).toBe(20);
     expect(LEADERBOARD_DATA[0]?.rank).toBe(1);
     expect(LEADERBOARD_DATA[0]?.name).toBe("Aarav Sharma");
+    expect(LEADERBOARD_DATA[19]?.rank).toBe(20);
     // All win rates should be between 50 and 100
     for (const student of LEADERBOARD_DATA) {
       expect(student.winRate).toBeGreaterThanOrEqual(50);
       expect(student.winRate).toBeLessThanOrEqual(100);
       expect(student.streak).toBeGreaterThan(0);
     }
+  });
+
+  it("verifies arena multiplayer room generator and scoring math", async () => {
+    const {
+      generateRoomId,
+      calculateQuestionPoints,
+      getShareableChallengeUrl,
+      getWhatsAppShareUrl,
+    } = await import("@/lib/arenaBattle");
+
+    const id = generateRoomId();
+    expect(id).toMatch(/^VS-[A-Z0-9]{5}$/);
+
+    const shareUrl = getShareableChallengeUrl(id);
+    expect(shareUrl).toContain(`/arena?room=${id}`);
+
+    const waUrl = getWhatsAppShareUrl(id, "React & Next.js");
+    expect(waUrl).toContain("api.whatsapp.com/send");
+    expect(waUrl).toContain(encodeURIComponent(shareUrl));
+
+    // Scoring math
+    // Fast answer (2 seconds taken out of 15): speed bonus should be high
+    const fastScore = calculateQuestionPoints(true, 2000, 0, 15);
+    expect(fastScore.points).toBeGreaterThan(130);
+    expect(fastScore.speedBonus).toBeGreaterThan(40);
+    expect(fastScore.streakMultiplier).toBe(1.0);
+    expect(fastScore.newStreak).toBe(1);
+
+    // Answer with streak 3: streakMultiplier should be 1.25x
+    const streakScore = calculateQuestionPoints(true, 5000, 2, 15);
+    expect(streakScore.streakMultiplier).toBe(1.25);
+    expect(streakScore.newStreak).toBe(3);
+
+    // Incorrect answer: points 0, streak resets to 0
+    const wrongScore = calculateQuestionPoints(false, 3000, 5, 15);
+    expect(wrongScore.points).toBe(0);
+    expect(wrongScore.newStreak).toBe(0);
   });
 
   it("verifies firestore doubt helpers are exported as functions", async () => {

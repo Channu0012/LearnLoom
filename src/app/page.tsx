@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { HeroConverterBar } from "@/components/home/HeroConverterBar";
+import { ArenaHomeSection } from "@/components/home/ArenaHomeSection";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SVG Icons — Pure Vector, Zero Emojis (Google / Stripe aesthetic)
@@ -681,6 +682,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── 3.5. Live Arena & Multiplayer Quiz Competitions ───────────── */}
+      <ArenaHomeSection />
 
       {/* ── 4. Animated Stats Bar ──────────────────────────────────────── */}
       <section

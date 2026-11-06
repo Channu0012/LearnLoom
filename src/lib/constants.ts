@@ -54,6 +54,7 @@ export const COLLECTIONS = {
   DOUBTS: "doubts",
   ANSWERS: "answers",
   INTERVIEWS: "interviews",
+  ARENA_ROOMS: "arena_rooms",
 } as const;
 
 /** Doubt Solve limits */
