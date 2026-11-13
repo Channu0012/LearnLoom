@@ -297,9 +297,10 @@ interface BattleRecord {
 
 interface BattleArenaProps {
   onLeaderboardClick?: () => void;
+  onChallengeFriendClick?: () => void;
 }
 
-export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
+export function BattleArena({ onLeaderboardClick, onChallengeFriendClick }: BattleArenaProps) {
   const { user, openAuthModal } = useAuth();
 
   const [selectedTopic, setSelectedTopic] = useState<DomainType>("react");
@@ -757,8 +758,9 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
                       <span className="text-[10px] font-heading font-bold px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground">
                         {activeMeta.difficultyTier} Tier
                       </span>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        🔥 {activeMeta.activeBattlesCount} scholars dueling
+                      <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                        <FlameIcon size={12} className="text-amber-500" />
+                        <span>{activeMeta.activeBattlesCount} scholars dueling</span>
                       </span>
                     </div>
                     <h4 className="font-heading font-black text-base sm:text-lg text-foreground">
@@ -769,14 +771,27 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleStartBattle}
-                    className="px-5 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 transition-all flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 active:scale-[0.98] flex-shrink-0"
-                  >
-                    <SwordsIcon size={16} />
-                    <span>Launch 1v1 Battle Now</span>
-                  </button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleStartBattle}
+                      className="px-4 sm:px-5 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 transition-all flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 active:scale-[0.98]"
+                    >
+                      <SwordsIcon size={16} />
+                      <span>Launch 1v1 Battle Now</span>
+                    </button>
+                    {onChallengeFriendClick && (
+                      <button
+                        type="button"
+                        onClick={onChallengeFriendClick}
+                        className="px-3.5 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm bg-card border border-border hover:bg-muted text-foreground transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                        title={`Challenge a friend in ${activeMeta.label}`}
+                      >
+                        <UsersIcon size={15} />
+                        <span className="hidden sm:inline">Challenge Friend</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })()}

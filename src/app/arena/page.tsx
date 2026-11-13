@@ -182,7 +182,10 @@ function ArenaHubInner() {
 
           {/* Active Tab View */}
           {activeTab === "arena" ? (
-            <BattleArena onLeaderboardClick={() => setActiveTab("leaderboard")} />
+            <BattleArena
+              onLeaderboardClick={() => setActiveTab("leaderboard")}
+              onChallengeFriendClick={() => setIsChallengeModalOpen(true)}
+            />
           ) : (
             <LeaderboardView onStartBattleClick={() => setIsChallengeModalOpen(true)} />
           )}

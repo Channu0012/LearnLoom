@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   BATTLE_TOPICS,
@@ -222,6 +222,28 @@ export function FriendChallengeModal({
   const [createdRoom, setCreatedRoom] = useState<ArenaRoomDoc | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Sync selected topic if prop changes
+  useEffect(() => {
+    if (initialTopic) {
+      setSelectedTopic(initialTopic);
+    }
+  }, [initialTopic, isOpen]);
+
+  // Handle Escape key and lock background scroll while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const currentUserName = user?.displayName || (user?.email ? user.email.split("@")[0] : "Learner");
@@ -289,12 +311,23 @@ export function FriendChallengeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="challenge-modal-title"
+    >
+      {/* High-contrast non-blur dark scrim backdrop with instant click-to-close */}
       <div
-        className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-scale-up max-h-[92vh] flex flex-col"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="challenge-modal-title"
+        className="fixed inset-0 bg-slate-950/75 transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Crystal Clear Dialog Card */}
+      <div
+        className="relative w-full max-w-lg rounded-3xl border border-border/80 bg-card text-card-foreground shadow-2xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col my-auto z-10"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/20 flex-shrink-0">
@@ -317,7 +350,7 @@ export function FriendChallengeModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
             aria-label="Close modal"
           >
             <CloseIcon size={18} />
