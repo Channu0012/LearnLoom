@@ -139,38 +139,6 @@ export function Header() {
             <span>Explore</span>
           </Link>
 
-          {/* AI Mock Interview */}
-          <Link
-            href="/interview"
-            className={`font-body font-semibold text-xs lg:text-sm px-2 sm:px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1.5 group flex-shrink-0 ${
-              isNavActive("/interview")
-                ? "text-teal-600 dark:text-teal-400 bg-teal-500/10 font-bold"
-                : "text-foreground/85 hover:text-foreground hover:bg-muted"
-            }`}
-            aria-current={isNavActive("/interview") ? "page" : undefined}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"
-            >
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-            <span>Interview</span>
-            <span className="text-[9px] font-heading font-black px-1.5 py-0.2 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30 tracking-tight">
-              AI
-            </span>
-          </Link>
-
           {/* Arena 1v1 & Group Duels */}
           <Link
             href="/arena"

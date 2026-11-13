@@ -53,7 +53,6 @@ export const COLLECTIONS = {
   PAYMENTS: "payments",
   DOUBTS: "doubts",
   ANSWERS: "answers",
-  INTERVIEWS: "interviews",
   ARENA_ROOMS: "arena_rooms",
 } as const;
 

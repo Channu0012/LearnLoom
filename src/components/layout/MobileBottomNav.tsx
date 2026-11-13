@@ -58,28 +58,6 @@ export function MobileBottomNav() {
       ),
     },
     {
-      name: "Interview",
-      href: "/interview",
-      badge: "AI",
-      icon: (_active: boolean) => (
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" y1="19" x2="12" y2="22" />
-        </svg>
-      ),
-    },
-    {
       name: "Courses",
       href: "/my-courses",
       icon: (active: boolean) => (
@@ -142,15 +120,8 @@ export function MobileBottomNav() {
       }}
       aria-label="Mobile Bottom Navigation"
     >
-      <div className="grid grid-cols-5 h-16 px-1 items-center max-w-lg mx-auto">
+      <div className="grid grid-cols-4 h-16 px-1 items-center max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isInterviewMatch =
-            item.href === "/interview" &&
-            (pathname === "/interview" ||
-              pathname?.startsWith("/interview/") ||
-              pathname === "/doubts" ||
-              pathname?.startsWith("/doubts/"));
-
           const isCoursesMatch =
             item.href === "/my-courses" &&
             (pathname === "/my-courses" ||
@@ -162,8 +133,7 @@ export function MobileBottomNav() {
           const isActive =
             item.href === "/"
               ? pathname === "/"
-              : isInterviewMatch ||
-                isCoursesMatch ||
+              : isCoursesMatch ||
                 pathname === item.href ||
                 Boolean(pathname?.startsWith(`${item.href}/`));
 

@@ -49,26 +49,6 @@ function SwordsIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-function MicIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-    </svg>
-  );
-}
-
 function CompassIcon({ size = 18 }: { size?: number }) {
   return (
     <svg
@@ -136,18 +116,6 @@ export function HomeQuickAccessBar() {
       featured: false,
     },
     {
-      title: "AI Interview",
-      description: "Voice-driven technical practice",
-      href: "/interview",
-      badge: "AI 2.0",
-      icon: MicIcon,
-      color: "text-cyan-600 dark:text-cyan-400",
-      bgColor: "bg-cyan-500/10",
-      borderColor: "border-cyan-500/30 hover:border-cyan-500/60",
-      glowColor: "hover:shadow-cyan-500/10",
-      featured: false,
-    },
-    {
       title: "Explore",
       description: "12,000+ curated curriculum lessons",
       href: "/explore",
@@ -163,7 +131,7 @@ export function HomeQuickAccessBar() {
 
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 mb-10" aria-label="Student Quick Navigation">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
         {actions.map((act) => {
           const Icon = act.icon;
           return (
