@@ -99,6 +99,41 @@ describe("Arena — Battle Engine & Question Sampling", () => {
     expect(wrongScore.newStreak).toBe(0);
   });
 
+  it("verifies arena procedural sound engine and safe server fallback", async () => {
+    const {
+      isSoundEnabled,
+      setSoundEnabled,
+      playCountdownTick,
+      playBattleStart,
+      playOptionSelect,
+      playCorrectSound,
+      playWrongSound,
+      playStreakSound,
+      playVictoryFanfare,
+      triggerHaptic,
+    } = await import("@/lib/arenaSound");
+
+    // Setting & reading sound preference
+    setSoundEnabled(true);
+    expect(isSoundEnabled()).toBe(true);
+
+    setSoundEnabled(false);
+    expect(isSoundEnabled()).toBe(false);
+
+    setSoundEnabled(true);
+    expect(isSoundEnabled()).toBe(true);
+
+    // Audio and haptics safely degrade in non-browser/mock environment without throwing
+    expect(() => playCountdownTick(520)).not.toThrow();
+    expect(() => playBattleStart()).not.toThrow();
+    expect(() => playOptionSelect()).not.toThrow();
+    expect(() => playCorrectSound()).not.toThrow();
+    expect(() => playWrongSound()).not.toThrow();
+    expect(() => playStreakSound(3)).not.toThrow();
+    expect(() => playVictoryFanfare()).not.toThrow();
+    expect(() => triggerHaptic(15)).not.toThrow();
+  });
+
   it("verifies firestore doubt helpers are exported as functions", async () => {
     const firestore = await import("@/lib/firestore");
     expect(typeof firestore.getDoubtsFeed).toBe("function");

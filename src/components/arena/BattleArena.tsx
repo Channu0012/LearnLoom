@@ -4,8 +4,79 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getDomainQuestions, type QuizQuestion, type DomainType } from "@/lib/curriculumEngine";
 import { recordUserBattleResult } from "@/lib/firestore";
+import {
+  playCountdownTick,
+  playBattleStart,
+  playOptionSelect,
+  playCorrectSound,
+  playWrongSound,
+  playStreakSound,
+  playVictoryFanfare,
+  isSoundEnabled,
+  setSoundEnabled as persistSoundEnabled,
+} from "@/lib/arenaSound";
+import { ConfettiCanvas } from "./ConfettiCanvas";
 
 // ── SVG Icons (Zero Emojis) ──────────────────────────────────────────────────
+
+function FlameIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </svg>
+  );
+}
+
+function Volume2Icon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  );
+}
+
+function VolumeXIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="22" y1="9" x2="16" y2="15" />
+      <line x1="16" y1="9" x2="22" y2="15" />
+    </svg>
+  );
+}
 
 function SwordsIcon({ size = 18 }: { size?: number }) {
   return (
@@ -222,6 +293,19 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
   // Live Scores
   const [userScore, setUserScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
+  const [userStreak, setUserStreak] = useState(0);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+
+  // Sync sound setting on mount
+  useEffect(() => {
+    setSoundEnabledState(isSoundEnabled());
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabledState(next);
+    persistSoundEnabled(next);
+  };
 
   // Match Outcome
   const [xpDelta, setXpDelta] = useState(0);
@@ -296,14 +380,19 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
     setCurrentQIndex(0);
     setUserScore(0);
     setOpponentScore(0);
+    setUserStreak(0);
     setRoundResults([]);
     setBattleState("matchmaking");
 
     // Matchmaking takes ~2.2 seconds
     setTimeout(() => {
       setBattleState("ready");
+      playCountdownTick(440);
+      setTimeout(() => playCountdownTick(554), 500);
+      setTimeout(() => playCountdownTick(659), 1000);
       // 1.5 seconds countdown
       setTimeout(() => {
+        playBattleStart();
         startQuestionRound(0, qList, randomOpponent);
       }, 1500);
     }, 2200);
@@ -347,6 +436,7 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
   const handleOptionSelect = (optIndex: number) => {
     if (selectedOption !== null || battleState !== "question") return;
 
+    playOptionSelect();
     setSelectedOption(optIndex);
     if (timerRef.current) clearInterval(timerRef.current);
 
@@ -366,6 +456,25 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
 
     const userIsCorrect = chosenOpt === q.correctIndex;
 
+    // Streak Multiplier & Audio feedback
+    const nextStreak = userIsCorrect ? userStreak + 1 : 0;
+    setUserStreak(nextStreak);
+
+    let streakMultiplier = 1.0;
+    if (nextStreak === 2) streakMultiplier = 1.1;
+    else if (nextStreak === 3) streakMultiplier = 1.25;
+    else if (nextStreak >= 4) streakMultiplier = 1.5;
+
+    if (userIsCorrect) {
+      if (nextStreak >= 2) {
+        playStreakSound(nextStreak);
+      } else {
+        playCorrectSound();
+      }
+    } else {
+      playWrongSound();
+    }
+
     // Simulate opponent correctness
     const oppRoll = Math.random();
     const oppIsCorrect = oppRoll <= opp.accuracy;
@@ -374,9 +483,11 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
       : (q.correctIndex + 1) % q.options.length;
 
     // Calculate Points
-    // Base 100 for correct + up to 50 for speed
+    // Base 100 for correct + up to 50 for speed multiplied by streak combo
     const userSpeedBonus = userIsCorrect ? Math.max(0, Math.round((15 - elapsed) * 3.3)) : 0;
-    const userRoundPoints = userIsCorrect ? 100 + userSpeedBonus : 0;
+    const userRoundPoints = userIsCorrect
+      ? Math.round((100 + userSpeedBonus) * streakMultiplier)
+      : 0;
 
     const oppElapsed = Math.min(13, opp.responseTimeRange[0] + 2);
     const oppSpeedBonus = oppIsCorrect ? Math.max(0, Math.round((15 - oppElapsed) * 3.3)) : 0;
@@ -422,9 +533,11 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
     if (finalUser > finalOpp) {
       outcome = "victory";
       earnedXp = 150 + Math.round(finalUser / 10);
+      playVictoryFanfare();
     } else if (finalUser < finalOpp) {
       outcome = "defeat";
       earnedXp = 40 + Math.round(finalUser / 20);
+      playWrongSound();
     } else {
       outcome = "draw";
       earnedXp = 80 + Math.round(finalUser / 15);
@@ -738,38 +851,62 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
       {/* ─── 4. QUESTION ROUND & 5. ROUND RESULT SCREEN ─────────────────────── */}
       {(battleState === "question" || battleState === "round_result") && (
         <div className="max-w-3xl mx-auto space-y-4">
-          {/* Top Status Bar: Scores & Timer */}
-          <div className="rounded-2xl border border-border bg-card p-4">
+          {/* Top Status Bar: Scores, Streak, Sound & Timer */}
+          <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between gap-4">
               {/* You */}
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-heading font-bold text-xs border border-teal-500/25">
-                  {(user?.displayName ?? "U")[0]?.toUpperCase()}
+                <div className="relative">
+                  <div className="w-9 h-9 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-heading font-bold text-xs border border-teal-500/25">
+                    {(user?.displayName ?? "U")[0]?.toUpperCase()}
+                  </div>
+                  {userStreak >= 2 && (
+                    <span className="absolute -bottom-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-white shadow-xs">
+                      <FlameIcon size={10} className="text-white" />
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <p className="font-heading font-bold text-xs text-foreground truncate max-w-[100px] sm:max-w-none">
-                    {user?.displayName ?? "You"}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-heading font-bold text-xs text-foreground truncate max-w-[100px] sm:max-w-none">
+                      {user?.displayName ?? "You"}
+                    </p>
+                    {userStreak >= 2 && (
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                        x{userStreak >= 4 ? "1.5" : userStreak === 3 ? "1.25" : "1.1"} Streak
+                      </span>
+                    )}
+                  </div>
                   <p className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400">
                     {userScore} pts
                   </p>
                 </div>
               </div>
 
-              {/* Central Timer & Question Progress */}
+              {/* Central Timer & Velocity */}
               <div className="flex flex-col items-center">
                 <span className="text-[11px] font-heading font-semibold text-muted-foreground mb-0.5">
-                  Question {currentQIndex + 1} of {questions.length}
+                  Round {currentQIndex + 1} of {questions.length}
                 </span>
-                <div
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-colors ${
-                    timeLeft <= 4
-                      ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse"
-                      : "bg-muted text-foreground border border-border"
-                  }`}
-                >
-                  <TimerIcon size={13} />
-                  <span>{timeLeft}s</span>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-colors ${
+                      timeLeft <= 4
+                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse"
+                        : "bg-muted text-foreground border border-border"
+                    }`}
+                  >
+                    <TimerIcon size={13} />
+                    <span>{timeLeft}s</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleToggleSound}
+                    title={soundEnabled ? "Mute Arena Audio" : "Enable Arena Audio"}
+                    className="p-1 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition-all"
+                  >
+                    {soundEnabled ? <Volume2Icon size={14} /> : <VolumeXIcon size={14} />}
+                  </button>
                 </div>
               </div>
 
@@ -778,8 +915,8 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
                 <div>
                   <div className="flex items-center justify-end gap-1.5">
                     {opponentLockedIn && (
-                      <span className="text-[9px] font-heading font-bold px-1.5 py-px rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
-                        Locked
+                      <span className="text-[9px] font-heading font-bold px-1.5 py-px rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 animate-pulse">
+                        Locked In
                       </span>
                     )}
                     <p className="font-heading font-bold text-xs text-foreground truncate max-w-[100px] sm:max-w-none">
@@ -796,18 +933,42 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
               </div>
             </div>
 
-            {/* Linear Progress Bar for 15s Timer */}
-            <div className="w-full bg-muted/60 h-1 rounded-full mt-3 overflow-hidden">
-              <div
-                className={`h-full transition-all duration-1000 ease-linear rounded-full ${
-                  timeLeft <= 4
-                    ? "bg-rose-500"
-                    : timeLeft <= 8
-                      ? "bg-amber-500"
-                      : "bg-teal-600 dark:bg-teal-400"
-                }`}
-                style={{ width: `${(timeLeft / QUESTION_SECONDS) * 100}%` }}
-              />
+            {/* Live Tug-of-War Momentum Bar */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground px-0.5">
+                <span className="text-teal-600 dark:text-teal-400 font-bold">
+                  {userScore >= opponentScore ? "Leading" : "Trailing"}
+                </span>
+                <span>Speed Bonus: +{Math.max(0, Math.round(timeLeft * 3.3))} pts</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold">Rival</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden flex">
+                <div
+                  className={`h-full transition-all duration-500 ease-out ${
+                    userScore >= opponentScore ? "bg-teal-500" : "bg-rose-500"
+                  }`}
+                  style={{
+                    width: `${
+                      userScore + opponentScore === 0
+                        ? 50
+                        : Math.min(95, Math.max(5, (userScore / (userScore + opponentScore)) * 100))
+                    }%`,
+                  }}
+                />
+                <div
+                  className="h-full bg-indigo-500/60 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${
+                      userScore + opponentScore === 0
+                        ? 50
+                        : Math.min(
+                            95,
+                            Math.max(5, (opponentScore / (userScore + opponentScore)) * 100)
+                          )
+                    }%`,
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -887,8 +1048,10 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
 
       {/* ─── 6. MATCH FINISHED / VICTORY / DEFEAT SCREEN ───────────────────── */}
       {battleState === "match_finished" && (
-        <div className="max-w-2xl mx-auto space-y-6 animate-scale-in py-4">
-          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4">
+        <div className="relative max-w-2xl mx-auto space-y-6 animate-scale-in py-4">
+          {userScore > opponentScore && <ConfettiCanvas durationMs={4500} />}
+
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4 shadow-xl">
             {/* Outcome Icon & Title */}
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mx-auto">
               {userScore > opponentScore ? (
@@ -934,6 +1097,43 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
                 <p className="text-2xl font-mono font-black text-muted-foreground">
                   {opponentScore}
                 </p>
+              </div>
+            </div>
+
+            {/* Stats Trio */}
+            <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto text-center py-1">
+              <div className="p-2 rounded-xl bg-muted/20 border border-border/70">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">
+                  Accuracy
+                </span>
+                <span className="font-mono font-bold text-xs text-foreground">
+                  {Math.round(
+                    (roundResults.filter((r) => r.userCorrect).length /
+                      Math.max(1, roundResults.length)) *
+                      100
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="p-2 rounded-xl bg-muted/20 border border-border/70">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">
+                  Avg Velocity
+                </span>
+                <span className="font-mono font-bold text-xs text-foreground">
+                  {(
+                    roundResults.reduce((acc, r) => acc + r.userTimeTaken, 0) /
+                    Math.max(1, roundResults.length)
+                  ).toFixed(1)}
+                  s
+                </span>
+              </div>
+              <div className="p-2 rounded-xl bg-muted/20 border border-border/70">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">
+                  XP Earned
+                </span>
+                <span className="font-mono font-bold text-xs text-teal-600 dark:text-teal-400">
+                  +{xpDelta}
+                </span>
               </div>
             </div>
 

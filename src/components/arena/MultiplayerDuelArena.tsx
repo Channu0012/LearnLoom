@@ -12,8 +12,60 @@ import {
 } from "@/lib/arenaBattle";
 import { getDomainQuestions, type QuizQuestion } from "@/lib/curriculumEngine";
 import { recordUserBattleResult } from "@/lib/firestore";
+import {
+  playCountdownTick,
+  playBattleStart,
+  playOptionSelect,
+  playCorrectSound,
+  playWrongSound,
+  playStreakSound,
+  playVictoryFanfare,
+  isSoundEnabled,
+  setSoundEnabled as persistSoundEnabled,
+} from "@/lib/arenaSound";
+import { ConfettiCanvas } from "./ConfettiCanvas";
 
 // ── Clean Vector SVGs (Zero Emojis, Google / Stripe standard) ─────────────────
+
+function Volume2Icon({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  );
+}
+
+function VolumeXIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="22" y1="9" x2="16" y2="15" />
+      <line x1="16" y1="9" x2="22" y2="15" />
+    </svg>
+  );
+}
 
 function SwordsIcon({ size = 18 }: { size?: number }) {
   return (
@@ -176,6 +228,17 @@ export function MultiplayerDuelArena({
 
   const [room, setRoom] = useState<ArenaRoomDoc | null>(null);
   const [copied, setCopied] = useState(false);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+
+  useEffect(() => {
+    setSoundEnabledState(isSoundEnabled());
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabledState(next);
+    persistSoundEnabled(next);
+  };
 
   // Active Question State
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -215,15 +278,18 @@ export function MultiplayerDuelArena({
       const diff = Math.ceil((room.startedAt - now) / 1000);
       if (diff > 0) {
         setCountdownValue(diff);
+        playCountdownTick(440 + diff * 80);
         const timer = setInterval(() => {
           const rem = Math.ceil((room.startedAt! - Date.now()) / 1000);
           if (rem <= 0) {
             setCountdownValue(null);
             clearInterval(timer);
+            playBattleStart();
             setRoundStartTime(Date.now());
             setRoundTimeLeft(15);
           } else {
             setCountdownValue(rem);
+            playCountdownTick(440 + rem * 80);
           }
         }, 500);
         return () => clearInterval(timer);
@@ -236,6 +302,7 @@ export function MultiplayerDuelArena({
   const handleSelectOption = useCallback(
     async (optionIdx: number) => {
       if (isLockedIn || !room) return;
+      playOptionSelect();
       setSelectedOption(optionIdx);
       setIsLockedIn(true);
 
@@ -243,12 +310,25 @@ export function MultiplayerDuelArena({
       const q = questions[currentQIndex];
       const isCorrect = optionIdx === q?.correctIndex;
 
-      await submitPlayerAnswer(room.id, currentUid, {
+      const updated = await submitPlayerAnswer(room.id, currentUid, {
         qIndex: currentQIndex,
         selectedOption: optionIdx,
         isCorrect,
         timeTakenMs: timeTaken,
       });
+
+      const myUpdated = updated?.participants[currentUid];
+      const currentStreak = myUpdated?.streak || 0;
+
+      if (isCorrect) {
+        if (currentStreak >= 2) {
+          playStreakSound(currentStreak);
+        } else {
+          playCorrectSound();
+        }
+      } else {
+        playWrongSound();
+      }
 
       setRoundStatus("breakdown");
     },
@@ -308,6 +388,12 @@ export function MultiplayerDuelArena({
     let outcome: "victory" | "defeat" | "draw" = "draw";
     if (myScore > highestOther) outcome = "victory";
     else if (myScore < highestOther) outcome = "defeat";
+
+    if (outcome === "victory") {
+      playVictoryFanfare();
+    } else if (outcome === "defeat") {
+      playWrongSound();
+    }
 
     const xpEarned = outcome === "victory" ? 140 : 50;
 
@@ -506,7 +592,9 @@ export function MultiplayerDuelArena({
     const isWinner = sortedRanking[0]?.uid === currentUid;
 
     return (
-      <div className="max-w-2xl mx-auto py-6 space-y-6 animate-fade-in">
+      <div className="relative max-w-2xl mx-auto py-6 space-y-6 animate-fade-in">
+        {isWinner && <ConfettiCanvas durationMs={4500} />}
+
         <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xl text-center space-y-6">
           <div className="space-y-2">
             <div
@@ -642,15 +730,25 @@ export function MultiplayerDuelArena({
           <span className="text-[10px] font-heading font-bold text-muted-foreground uppercase tracking-wider">
             Round {currentQIndex + 1}/5
           </span>
-          <div
-            className={`font-mono font-bold text-sm px-2.5 py-0.5 rounded-full border flex items-center gap-1 mt-0.5 ${
-              roundTimeLeft <= 4
-                ? "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
-                : "bg-muted text-foreground border-border"
-            }`}
-          >
-            <TimerIcon size={12} />
-            <span>{roundTimeLeft}s</span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <div
+              className={`font-mono font-bold text-sm px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                roundTimeLeft <= 4
+                  ? "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
+                  : "bg-muted text-foreground border-border"
+              }`}
+            >
+              <TimerIcon size={12} />
+              <span>{roundTimeLeft}s</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              title={soundEnabled ? "Mute Arena Audio" : "Enable Arena Audio"}
+              className="p-1 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition-all"
+            >
+              {soundEnabled ? <Volume2Icon size={13} /> : <VolumeXIcon size={13} />}
+            </button>
           </div>
         </div>
 
@@ -670,6 +768,25 @@ export function MultiplayerDuelArena({
               </div>
             ))}
         </div>
+      </div>
+
+      {/* Live Speed Bonus & Momentum Indicator */}
+      <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground px-1">
+        <span className="text-teal-600 dark:text-teal-400 font-bold">
+          Speed Bonus: +{Math.max(0, Math.round(roundTimeLeft * 3.3))} pts
+        </span>
+        <span>
+          {(myParticipant?.streak || 0) >= 2 && (
+            <span className="text-amber-500 font-bold">
+              Combo Multiplier x
+              {(myParticipant?.streak || 0) >= 4
+                ? "1.5"
+                : (myParticipant?.streak || 0) === 3
+                  ? "1.25"
+                  : "1.1"}
+            </span>
+          )}
+        </span>
       </div>
 
       {/* Progress Bar */}
