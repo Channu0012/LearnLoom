@@ -23,11 +23,16 @@ describe("Arena — Rank Tiers & Qualifications", () => {
 
 describe("Arena — Battle Engine & Question Sampling", () => {
   it("provides valid technical battle topics with 5 questions per duel", () => {
-    expect(BATTLE_TOPICS.length).toBeGreaterThanOrEqual(4);
+    expect(BATTLE_TOPICS.length).toBe(18);
     for (const topic of BATTLE_TOPICS) {
       expect(topic.questionCount).toBe(5);
       expect(topic.label.length).toBeGreaterThan(0);
       expect(topic.description.length).toBeGreaterThan(0);
+      expect(topic.branch.length).toBeGreaterThan(0);
+      expect(topic.branchBadge.length).toBeGreaterThan(0);
+      expect(["Beginner", "Intermediate", "Advanced", "Expert"]).toContain(topic.difficultyTier);
+      expect(topic.activeBattlesCount).toBeGreaterThanOrEqual(10);
+      expect(topic.tags.length).toBeGreaterThanOrEqual(2);
     }
   });
 

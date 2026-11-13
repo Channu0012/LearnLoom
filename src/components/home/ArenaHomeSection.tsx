@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BATTLE_TOPICS, LEADERBOARD_DATA } from "@/lib/arena";
+import {
+  BATTLE_TOPICS,
+  DISCIPLINE_BRANCHES,
+  type DisciplineBranch,
+  LEADERBOARD_DATA,
+} from "@/lib/arena";
 import { createArenaRoom } from "@/lib/arenaBattle";
 import { useAuth } from "@/context/AuthContext";
 import type { DomainType } from "@/lib/curriculumEngine";
@@ -120,10 +125,18 @@ export function ArenaHomeSection() {
   const router = useRouter();
   const { user } = useAuth();
   const [selectedTopic, setSelectedTopic] = useState<DomainType>("react");
+  const [selectedBranch, setSelectedBranch] = useState<DisciplineBranch>("all");
   const [joinCode, setJoinCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const topThree = LEADERBOARD_DATA.slice(0, 3);
+
+  const displayedTopics = useMemo(() => {
+    if (selectedBranch === "all") {
+      return BATTLE_TOPICS.slice(0, 6);
+    }
+    return BATTLE_TOPICS.filter((t) => t.branch === selectedBranch);
+  }, [selectedBranch]);
 
   const handleCreateFastDuel = async () => {
     setIsGenerating(true);
@@ -209,28 +222,75 @@ export function ArenaHomeSection() {
 
               {/* Topic Pills */}
               <div className="space-y-2">
-                <label className="text-xs font-heading font-bold text-foreground block">
-                  Select Technical Discipline
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-heading font-bold text-foreground">
+                    Select Technical Discipline
+                  </label>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {displayedTopics.length} of 18 shown
+                  </span>
+                </div>
+
+                {/* Branch selector pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {DISCIPLINE_BRANCHES.map((b) => {
+                    const isBranchActive = selectedBranch === b.id;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => setSelectedBranch(b.id)}
+                        className={`text-[10px] font-heading font-bold px-2 py-0.5 rounded-md whitespace-nowrap transition-all ${
+                          isBranchActive
+                            ? "bg-teal-500 text-white shadow-xs"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {b.label.replace(" Disciplines", "")}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {BATTLE_TOPICS.map((topic) => {
+                  {displayedTopics.map((topic) => {
                     const isSelected = selectedTopic === topic.id;
                     return (
                       <button
                         key={topic.id}
                         type="button"
                         onClick={() => setSelectedTopic(topic.id)}
-                        className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                        className={`p-2.5 rounded-xl border text-left text-xs transition-all flex flex-col justify-between ${
                           isSelected
                             ? "bg-teal-500/15 border-teal-500/40 text-teal-700 dark:text-teal-300 font-bold shadow-xs"
                             : "bg-muted/20 border-border text-foreground hover:bg-muted/40"
                         }`}
                       >
+                        <div className="flex items-center justify-between w-full mb-1">
+                          <span className="text-[9px] font-mono uppercase px-1 py-0.2 rounded bg-muted/60 text-muted-foreground">
+                            {topic.branchBadge}
+                          </span>
+                          <span className="text-[9px] font-mono text-muted-foreground/70">
+                            {topic.difficultyTier}
+                          </span>
+                        </div>
                         <span className="block truncate font-heading">{topic.label}</span>
                       </button>
                     );
                   })}
                 </div>
+
+                {selectedBranch === "all" && (
+                  <div className="text-right pt-0.5">
+                    <Link
+                      href="/arena"
+                      className="text-[11px] font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>+ 12 more engineering disciplines in Hub</span>
+                      <ArrowRightIcon size={11} />
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

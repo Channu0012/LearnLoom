@@ -16,7 +16,17 @@ export type DomainType =
   | "algorithms"
   | "ai_ml"
   | "systems"
-  | "science";
+  | "science"
+  | "data_science"
+  | "ece_embedded"
+  | "eee_power"
+  | "mech_thermal"
+  | "civil_structural"
+  | "aptitude_quant"
+  | "os_networks"
+  | "cybersecurity"
+  | "science_math"
+  | "science_physics";
 
 export type DifficultyLevel = "easy" | "medium" | "hard";
 
@@ -903,6 +913,725 @@ const ALGORITHMS_QUESTIONS: QuizQuestion[] = [
   },
 ];
 
+const AI_ML_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "deep_learning",
+    question:
+      "What is the primary function of an Activation Function in a multi-layer Neural Network?",
+    options: [
+      "To introduce non-linearity into the network",
+      "To normalize input gradients to zero",
+      "To calculate the final loss against targets",
+      "To decrease the number of trainable weights",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Activation functions (like ReLU, GELU, Sigmoid) introduce non-linear transformations, enabling networks to learn complex non-linear decision boundaries.",
+  },
+  {
+    difficulty: "medium",
+    topic: "regularization",
+    question:
+      "Which regularization technique randomly deactivates neurons during training to prevent co-adaptation?",
+    options: ["Dropout", "Batch Normalization", "Gradient Clipping", "L2 Weight Decay"],
+    correctIndex: 0,
+    explanation:
+      "Dropout randomly drops a proportion of neurons during forward propagation, preventing co-adaptation of feature detectors.",
+  },
+  {
+    difficulty: "hard",
+    topic: "transformers",
+    question:
+      "In Transformer architectures, what is the computational complexity of the standard Scaled Dot-Product Self-Attention mechanism relative to sequence length N?",
+    options: ["O(N^2)", "O(N log N)", "O(N)", "O(N^3)"],
+    correctIndex: 0,
+    explanation:
+      "Standard self-attention computes an attention weight between every pair of tokens in the sequence, leading to quadratic O(N^2) time and memory complexity.",
+  },
+  {
+    difficulty: "medium",
+    topic: "optimization",
+    question:
+      "What does the vanishing gradient problem refer to in deep neural networks trained with backpropagation?",
+    options: [
+      "Gradients exponentially diminish as they propagate backwards through layers",
+      "Gradients explode to infinity causing numerical overflow",
+      "Loss reaches zero before weights are updated",
+      "The learning rate becomes negative during optimization",
+    ],
+    correctIndex: 0,
+    explanation:
+      "In deep networks using saturating activation functions (like sigmoid), gradients shrink exponentially during backpropagation, causing earlier layers to train extremely slowly.",
+  },
+  {
+    difficulty: "hard",
+    topic: "evaluation",
+    question:
+      "Which metric is most appropriate for evaluating a binary classification model on a heavily imbalanced dataset (e.g., 99.9% negative, 0.1% positive)?",
+    options: [
+      "Precision-Recall AUC / F1-Score",
+      "Overall Classification Accuracy",
+      "Mean Squared Error",
+      "Cross-Validation R^2",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Accuracy is deceptive on imbalanced datasets because a trivial model predicting all negatives achieves 99.9% accuracy. Precision, Recall, and F1-Score isolate true positive detection.",
+  },
+];
+
+const DEVOPS_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "kubernetes",
+    question: "What is the primary architectural purpose of a Kubernetes Pod?",
+    options: [
+      "The smallest deployable computing unit composed of one or more co-located containers",
+      "A virtual machine host running the Linux kernel",
+      "A persistent physical disk volume for cluster storage",
+      "A DNS resolver for external incoming network ingress",
+    ],
+    correctIndex: 0,
+    explanation:
+      "A Pod is the fundamental unit of deployment in Kubernetes, sharing network namespace, storage volumes, and IP address across its containers.",
+  },
+  {
+    difficulty: "easy",
+    topic: "docker",
+    question: "In Docker image construction, how does layer caching improve build efficiency?",
+    options: [
+      "Reuses unmodified intermediate image layers from cache until a changed instruction is encountered",
+      "Compresses file sizes using gzip after every instruction",
+      "Executes all RUN commands simultaneously in parallel",
+      "Compiles source code into native machine assembly",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Docker caches each instruction as a read-only layer. Unmodified instructions are retrieved from cache, drastically reducing build times.",
+  },
+  {
+    difficulty: "medium",
+    topic: "git",
+    question:
+      "In Git, what is the core architectural difference between 'git merge' and 'git rebase'?",
+    options: [
+      "Merge preserves full historical branch commits with a merge commit, while rebase linearizes commits onto target base",
+      "Rebase creates a 3-way merge commit while merge discards commit history",
+      "Merge only works on remote repositories while rebase is purely local",
+      "Rebase deletes all untracked working directory files permanently",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Rebase rewrites project history by replaying branch commits onto the tip of the target branch, creating a clean linear timeline without merge commits.",
+  },
+  {
+    difficulty: "medium",
+    topic: "deployment",
+    question:
+      "Which CI/CD deployment strategy minimizes downtime by running two identical production environments simultaneously?",
+    options: [
+      "Blue-Green Deployment",
+      "Canary Deployment",
+      "In-Place Rolling Upgrade",
+      "Big Bang Deployment",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Blue-Green deployment provisions identical Blue (live) and Green (idle/staging) environments, switching the router to Green once validated.",
+  },
+  {
+    difficulty: "hard",
+    topic: "linux",
+    question:
+      "In Linux system administration, which signal is sent to immediately and non-gracefully terminate a process (cannot be caught or ignored)?",
+    options: [
+      "SIGKILL (Signal 9)",
+      "SIGTERM (Signal 15)",
+      "SIGHUP (Signal 1)",
+      "SIGINT (Signal 2)",
+    ],
+    correctIndex: 0,
+    explanation:
+      "SIGKILL (9) is handled directly by the kernel and cannot be intercepted, blocked, or ignored by the target process.",
+  },
+];
+
+const ECE_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "digital_logic",
+    question: "In digital logic design, what distinguishes a Flip-Flop from a Latch?",
+    options: [
+      "A Flip-Flop is edge-triggered by a clock pulse, whereas a Latch is level-sensitive",
+      "A Flip-Flop is purely combinational with no internal memory",
+      "A Latch operates exclusively with negative voltages",
+      "A Flip-Flop requires analog feedback loops while a Latch is digital",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Latches change output state continuously while the enable signal remains high (level-sensitive), while Flip-Flops sample inputs strictly on a clock edge transition.",
+  },
+  {
+    difficulty: "medium",
+    topic: "signal_processing",
+    question:
+      "According to the Nyquist-Shannon Sampling Theorem, what is the minimum sampling frequency required to avoid aliasing of a continuous signal with bandwidth B?",
+    options: [
+      "At least 2 times the maximum frequency component (2 * B)",
+      "Equal to the bandwidth B",
+      "At least 4 times the root mean square frequency",
+      "Half the maximum frequency (B / 2)",
+    ],
+    correctIndex: 0,
+    explanation:
+      "To faithfully reconstruct an analog signal without aliasing distortion, the sampling rate must be at least twice the maximum frequency present in the signal.",
+  },
+  {
+    difficulty: "medium",
+    topic: "vlsi",
+    question:
+      "Which CMOS logic gate configuration consumes virtually zero static power dissipation in steady state?",
+    options: [
+      "Complementary PMOS pull-up and NMOS pull-down network",
+      "Bipolar Junction Transistor ECL gates",
+      "Resistor-Transistor Logic (RTL) gates",
+      "NMOS-only pull-up depletion mode inverters",
+    ],
+    correctIndex: 0,
+    explanation:
+      "In steady state, either the PMOS pull-up or NMOS pull-down network is completely turned off, eliminating direct paths from Vdd to ground and minimizing static power.",
+  },
+  {
+    difficulty: "hard",
+    topic: "microcontrollers",
+    question:
+      "In microcontrollers, what is the role of an Analog-to-Digital Converter (ADC) Resolution (e.g., 10-bit or 12-bit)?",
+    options: [
+      "Determines the number of discrete quantization levels (2^n) used to represent the analog voltage",
+      "Specifies the clock frequency of the processor core",
+      "Indicates the maximum baud rate of UART serial transmission",
+      "Controls the current limit on general purpose I/O pins",
+    ],
+    correctIndex: 0,
+    explanation:
+      "An n-bit ADC divides the reference voltage range into 2^n discrete quantization steps (e.g., 1024 levels for 10-bit, 4096 levels for 12-bit).",
+  },
+  {
+    difficulty: "hard",
+    topic: "timing",
+    question:
+      "What happens during Setup Time violation in synchronous sequential digital circuits?",
+    options: [
+      "The flip-flop output may enter a metastable state of indeterminate voltage",
+      "The clock frequency automatically doubles to compensate",
+      "The power supply voltage drops to zero ground",
+      "The combinational propagation delay becomes zero",
+    ],
+    correctIndex: 0,
+    explanation:
+      "If data does not remain stable for the required setup time before the clock edge, the flip-flop can enter a metastable state between logic 0 and 1.",
+  },
+];
+
+const EEE_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "power_systems",
+    question:
+      "Why are high-voltage transmission lines preferred for long-distance electrical power distribution?",
+    options: [
+      "Stepping up voltage reduces line current, thereby minimizing I^2 * R ohmic transmission losses",
+      "High voltage increases the frequency of the alternating current",
+      "High voltage eliminates the need for grounded neutral lines",
+      "High voltage allows using thinner insulating materials on towers",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Because power P = V * I, increasing transmission voltage reduces current I proportionally, which exponentially reduces power loss governed by P_loss = I^2 * R.",
+  },
+  {
+    difficulty: "easy",
+    topic: "transformers",
+    question:
+      "In an ideal single-phase transformer, what is the relationship between the primary-to-secondary turns ratio (N1/N2) and voltages (V1/V2)?",
+    options: [
+      "V1 / V2 = N1 / N2",
+      "V1 / V2 = N2 / N1",
+      "V1 * V2 = N1 * N2",
+      "V1 / V2 = (N1 / N2)^2",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Induced EMF per turn is identical in both windings under ideal magnetic coupling, so V1 / V2 = N1 / N2.",
+  },
+  {
+    difficulty: "medium",
+    topic: "power_factor",
+    question: "What is the physical cause of Power Factor degradation in AC circuits?",
+    options: [
+      "Inductive loads (like motors) drawing reactive magnetizing current that lags voltage",
+      "Excessive resistive heating in transmission copper",
+      "Direct current leakage through capacitive coupling",
+      "Harmonic resonance causing voltage inversion",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Inductive loads consume reactive power to establish magnetic fields, causing the AC current waveform to lag behind voltage and reducing the power factor below 1.0.",
+  },
+  {
+    difficulty: "medium",
+    topic: "circuit_theory",
+    question: "What does Kirchhoff's Current Law (KCL) state regarding electric circuit nodes?",
+    options: [
+      "The algebraic sum of currents entering any circuit node must equal zero",
+      "The total voltage across any closed loop must equal the supply voltage",
+      "Current is directly proportional to conductor resistance",
+      "Capacitive current leads inductor voltage by 180 degrees",
+    ],
+    correctIndex: 0,
+    explanation:
+      "KCL is a direct consequence of conservation of electrical charge: the sum of currents entering a junction must equal the sum of currents leaving.",
+  },
+  {
+    difficulty: "hard",
+    topic: "electrical_machines",
+    question: "In a 3-phase induction motor, what is slip (s) defined as?",
+    options: [
+      "The fractional difference between synchronous stator magnetic field speed and rotor mechanical speed",
+      "The phase angle between stator voltage and rotor current",
+      "The physical friction coefficient of motor bearings",
+      "The ratio of input electrical power to output torque",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Slip s = (N_s - N_r) / N_s, where N_s is the synchronous speed of the rotating magnetic field and N_r is the rotor mechanical speed.",
+  },
+];
+
+const MECHANICAL_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "thermodynamics",
+    question:
+      "According to the Second Law of Thermodynamics (Kelvin-Planck statement), what is impossible for a heat engine operating in a cycle?",
+    options: [
+      "To convert all heat received from a single reservoir entirely into work without rejecting heat to a lower sink",
+      "To operate at temperatures above 1000 Kelvin",
+      "To produce work when expanding an ideal gas",
+      "To achieve higher thermal efficiency than Carnot limit when isothermal",
+    ],
+    correctIndex: 0,
+    explanation:
+      "No cyclic process can convert heat absorbed from a single thermal reservoir completely into work without rejecting heat to a lower-temperature sink.",
+  },
+  {
+    difficulty: "medium",
+    topic: "fluid_mechanics",
+    question:
+      "In fluid mechanics, what does Bernoulli's Equation express along a streamline for an incompressible, inviscid fluid?",
+    options: [
+      "Conservation of total mechanical energy (pressure + kinetic + potential energy = constant)",
+      "Conservation of fluid mass through variable cross-section pipes",
+      "Linear increase of shear stress with velocity gradient",
+      "Rate of entropy generation during turbulent mixing",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Bernoulli's principle states that P/rho + v^2/2 + g*z = constant, representing the conservation of mechanical energy along a streamline.",
+  },
+  {
+    difficulty: "medium",
+    topic: "mechanics_of_materials",
+    question:
+      "What does the area under the Stress-Strain curve up to the fracture point represent?",
+    options: [
+      "Material Toughness (total energy absorbed per unit volume before fracture)",
+      "Modulus of Elasticity (Young's Modulus)",
+      "Yield Strength of the alloy",
+      "Poisson's Ratio of lateral contraction",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Toughness is the capacity of a material to absorb energy and plastically deform before fracturing, measured by the total area under the stress-strain curve.",
+  },
+  {
+    difficulty: "hard",
+    topic: "ic_engines",
+    question:
+      "In internal combustion engines, which idealized thermodynamic cycle models spark-ignition (petrol) engines?",
+    options: [
+      "Otto Cycle (constant volume heat addition)",
+      "Diesel Cycle (constant pressure heat addition)",
+      "Rankine Cycle (phase change steam expansion)",
+      "Brayton Cycle (constant pressure gas turbine)",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The Otto cycle consists of two isentropic and two constant-volume (isochoric) processes, modeling the rapid combustion of spark-ignition engines.",
+  },
+  {
+    difficulty: "hard",
+    topic: "fluid_dynamics",
+    question: "What does the Reynolds Number (Re) characterize in fluid dynamics?",
+    options: [
+      "The ratio of inertial forces to viscous forces within a fluid",
+      "The ratio of acoustic speed to fluid velocity",
+      "The rate of convective heat transfer to conductive heat transfer",
+      "The surface tension of liquid droplets in suspension",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Reynolds number Re = rho * v * L / mu measures the ratio of inertial forces to viscous forces, predicting laminar vs turbulent flow regimes.",
+  },
+];
+
+const CIVIL_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "structural_analysis",
+    question:
+      "In beam theory, what occurs at the location where the Shear Force diagram crosses zero?",
+    options: [
+      "The Bending Moment reaches its local maximum or minimum value",
+      "The deflection of the beam is strictly zero",
+      "The beam fractures due to pure tension",
+      "Torsional shear stress is maximized",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Because dM/dx = V (the derivative of bending moment is shear force), where shear force V = 0, the bending moment M reaches an extremum.",
+  },
+  {
+    difficulty: "easy",
+    topic: "concrete_technology",
+    question: "What is the primary objective of the Slump Test in concrete construction?",
+    options: [
+      "To evaluate the workability and consistency of fresh concrete",
+      "To measure the 28-day compressive crushing strength",
+      "To determine the heat of hydration during curing",
+      "To measure the corrosion rate of internal steel rebar",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The slump cone test measures the consistency and workability of freshly mixed concrete before placement.",
+  },
+  {
+    difficulty: "medium",
+    topic: "solid_mechanics",
+    question: "What does Hooke's Law state within the elastic limit of structural materials?",
+    options: [
+      "Stress is directly proportional to strain (sigma = E * epsilon)",
+      "Deformation increases exponentially with applied thermal load",
+      "Plastic strain occurs immediately upon load application",
+      "Shear modulus is equal to bulk modulus",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Hooke's Law states that within the proportional elastic limit, stress is linearly proportional to strain through Young's Modulus E.",
+  },
+  {
+    difficulty: "hard",
+    topic: "soil_mechanics",
+    question: "In soil mechanics, what does Terzaghi's Principle of Effective Stress express?",
+    options: [
+      "Total stress equals effective stress plus pore water pressure (sigma = sigma' + u)",
+      "Soil shear strength depends solely on atmospheric pressure",
+      "Consolidation rate is independent of soil permeability",
+      "Dry density is maximum at zero moisture content",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Terzaghi established that effective stress sigma' = sigma - u governs the volume change and shear strength behavior of soil masses.",
+  },
+  {
+    difficulty: "medium",
+    topic: "surveying",
+    question: "In land surveying, what is the purpose of a Theodolite or Total Station?",
+    options: [
+      "Measuring both horizontal and vertical angles along with slope distances",
+      "Measuring soil compaction density on site",
+      "Determining water table depth using sonar",
+      "Analyzing aggregate sieve distributions",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Theodolites and electronic Total Stations measure horizontal and vertical angles, and modern Total Stations integrate EDM for precision distance calculation.",
+  },
+];
+
+const APTITUDE_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "speed_and_distance",
+    question:
+      "If a train traveling at 72 km/h crosses a 200m long platform in 25 seconds, what is the length of the train?",
+    options: ["300 meters", "250 meters", "350 meters", "180 meters"],
+    correctIndex: 0,
+    explanation:
+      "Speed in m/s = 72 * (5/18) = 20 m/s. Total distance in 25s = 20 * 25 = 500m. Train length = 500m - 200m platform = 300 meters.",
+  },
+  {
+    difficulty: "easy",
+    topic: "time_and_work",
+    question:
+      "A and B can complete a project in 12 days and 18 days respectively. If they work together, in how many days will the project be completed?",
+    options: ["7.2 days", "8.5 days", "6.0 days", "9.0 days"],
+    correctIndex: 0,
+    explanation:
+      "Combined rate = 1/12 + 1/18 = (3 + 2)/36 = 5/36 per day. Time required = 36 / 5 = 7.2 days.",
+  },
+  {
+    difficulty: "medium",
+    topic: "permutations",
+    question: "In how many distinct ways can the letters of the word 'VECTOR' be arranged?",
+    options: ["720 ways", "120 ways", "5040 ways", "360 ways"],
+    correctIndex: 0,
+    explanation:
+      "'VECTOR' has 6 distinct letters. Number of permutations = 6! = 6 * 5 * 4 * 3 * 2 * 1 = 720.",
+  },
+  {
+    difficulty: "medium",
+    topic: "probability",
+    question:
+      "What is the probability of rolling a sum of 7 when two fair six-sided dice are thrown simultaneously?",
+    options: ["1/6 (6 outcomes out of 36)", "1/12", "1/4", "7/36"],
+    correctIndex: 0,
+    explanation:
+      "The favorable outcomes are (1,6), (2,5), (3,4), (4,3), (5,2), (6,1) = 6 combinations. Total outcomes = 36. Probability = 6/36 = 1/6.",
+  },
+  {
+    difficulty: "hard",
+    topic: "profit_and_loss",
+    question:
+      "A shopkeeper marks an item 40% above cost price and then offers a 20% discount. What is the net profit percentage?",
+    options: ["12% profit", "20% profit", "16% profit", "8% profit"],
+    correctIndex: 0,
+    explanation:
+      "Let CP = 100. Marked Price = 140. Selling Price after 20% discount = 140 * 0.80 = 112. Profit = (112 - 100) = 12%.",
+  },
+];
+
+const OS_NETWORKS_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "operating_systems",
+    question:
+      "What is the primary condition required for a Deadlock to occur according to Coffman conditions?",
+    options: [
+      "Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait simultaneously",
+      "CPU clock speed exceeding bus bandwidth",
+      "A single thread accessing non-shared read-only memory",
+      "Disk thrashing during virtual memory page replacement",
+    ],
+    correctIndex: 0,
+    explanation:
+      "All 4 Coffman conditions must hold simultaneously for a deadlock to exist: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait.",
+  },
+  {
+    difficulty: "easy",
+    topic: "processes_and_threads",
+    question:
+      "What is the fundamental difference between a Process and a Thread in operating system architectures?",
+    options: [
+      "A process has its own address space, while threads of the same process share code, data, and open files",
+      "A thread cannot execute CPU instructions independently",
+      "A process cannot create more than one thread",
+      "Processes share stack memory while threads do not",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Processes are isolated execution units with independent memory address spaces; threads are lightweight execution units within a process sharing memory and resources.",
+  },
+  {
+    difficulty: "medium",
+    topic: "networking",
+    question:
+      "In the TCP 3-Way Handshake, which flag sequence establishes an initial reliable connection between client and server?",
+    options: [
+      "SYN -> SYN-ACK -> ACK",
+      "ACK -> SYN -> FIN",
+      "RST -> SYN -> ACK",
+      "SYN -> ACK -> DATA",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The client transmits SYN, the server replies with SYN-ACK, and the client acknowledges with ACK to establish a full-duplex connection.",
+  },
+  {
+    difficulty: "medium",
+    topic: "ipv4_subnetting",
+    question:
+      "In IPv4 networking, what is the default network mask for a Class C subnet (e.g., /24 prefix)?",
+    options: ["255.255.255.0", "255.255.0.0", "255.0.0.0", "255.255.255.255"],
+    correctIndex: 0,
+    explanation:
+      "A /24 prefix masks the first 24 bits for the network identifier (255.255.255.0), leaving 8 bits for up to 254 usable host addresses.",
+  },
+  {
+    difficulty: "hard",
+    topic: "virtual_memory",
+    question: "What causes 'Thrashing' in virtual memory operating systems?",
+    options: [
+      "The system spends more time swapping pages between RAM and disk than executing user instructions",
+      "The CPU fan operates at maximum speed due to thermal overload",
+      "Two threads deadlocking on a binary mutex semaphore",
+      "The cache controller invalidating L1 cache lines prematurely",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Thrashing occurs when the total working set of active processes exceeds physical RAM, causing constant page faults and I/O disk thrashing.",
+  },
+];
+
+const CYBERSECURITY_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "cryptography",
+    question: "Why should passwords never be stored using simple unsalted MD5 or SHA-256 hashes?",
+    options: [
+      "They are vulnerable to precomputed Rainbow Table lookup and rapid offline GPU dictionary attacks",
+      "Hashes are easily decrypted using symmetric private keys",
+      "SHA-256 creates variable length outputs that overflow database columns",
+      "MD5 hashes can only be verified on the original machine that generated them",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Unsalted hashes can be matched against precomputed rainbow tables in milliseconds. Modern authentication requires salted, slow hashing functions like bcrypt or Argon2.",
+  },
+  {
+    difficulty: "medium",
+    topic: "web_security",
+    question:
+      "What is an SQL Injection (SQLi) vulnerability and how is it reliably mitigated in web applications?",
+    options: [
+      "Attacker manipulates database queries via untrusted inputs; mitigated using Parameterized Queries (Prepared Statements)",
+      "Direct memory buffer overflow on database servers; mitigated using firewalls",
+      "Cross-site cookie theft; mitigated using SameSite cookies",
+      "DNS spoofing on database ports; mitigated using TLS certificates",
+    ],
+    correctIndex: 0,
+    explanation:
+      "SQLi occurs when user input is concatenated into query strings. Parameterized queries separate SQL logic from data, ensuring inputs are strictly treated as parameters.",
+  },
+  {
+    difficulty: "medium",
+    topic: "public_key_crypto",
+    question:
+      "In public key cryptography (like RSA or ECC), which key is used to create a digital signature and which key verifies it?",
+    options: [
+      "Signed with the sender's Private Key, verified with the sender's Public Key",
+      "Signed with the sender's Public Key, verified with the receiver's Private Key",
+      "Signed with a shared symmetric key, verified with a hash digest",
+      "Signed with the root certificate authority key, verified with IP address",
+    ],
+    correctIndex: 0,
+    explanation:
+      "A digital signature is encrypted using the sender's private key (proving authenticity and non-repudiation) and decrypted/verified by anyone with the sender's public key.",
+  },
+  {
+    difficulty: "hard",
+    topic: "zero_trust",
+    question:
+      "In cybersecurity defense architecture, what is the foundational premise of the 'Zero Trust' model?",
+    options: [
+      "'Never trust, always verify' — treat all users and devices as untrusted regardless of network location",
+      "Trust internal corporate intranet traffic while blocking external VPNs",
+      "Use single-factor passwords without multi-factor authentication",
+      "Assume firewalls block 100% of malicious network packets",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Zero Trust eliminates implicit trust based on network location, requiring continuous authentication, authorization, and validation of every transaction.",
+  },
+  {
+    difficulty: "hard",
+    topic: "browser_security",
+    question:
+      "What is the primary security principle behind Cross-Origin Resource Sharing (CORS) in web browsers?",
+    options: [
+      "Enforces Same-Origin Policy and allows servers to explicitly declare which foreign origins may access resources",
+      "Encrypts all HTTP payloads using end-to-end AES-256",
+      "Prevents DNS rebinding attacks on local network interfaces",
+      "Restricts iframe embedding using Content-Security-Policy headers",
+    ],
+    correctIndex: 0,
+    explanation:
+      "CORS is a browser security mechanism that relaxes the Same-Origin Policy, allowing servers to whitelist authorized origins through HTTP headers.",
+  },
+];
+
+const SCIENCE_MATH_QUESTIONS: QuizQuestion[] = [
+  {
+    difficulty: "easy",
+    topic: "linear_algebra",
+    question:
+      "For an n x n square matrix A, what is the geometric meaning of an Eigenvector v and its associated Eigenvalue lambda?",
+    options: [
+      "Matrix multiplication Av scales the vector v by factor lambda without altering its directional line",
+      "Av rotates the vector v by exactly 90 degrees in Euclidean space",
+      "The determinant of A is equal to the sum of its row vectors",
+      "The transpose of A is equal to its inverse matrix",
+    ],
+    correctIndex: 0,
+    explanation:
+      "An eigenvector satisfies Av = lambda * v, meaning the linear transformation A acts on v purely by scaling its magnitude by lambda without rotating its axis.",
+  },
+  {
+    difficulty: "medium",
+    topic: "probability",
+    question:
+      "What does Bayes' Theorem state mathematically for two events A and B (where P(B) > 0)?",
+    options: [
+      "P(A|B) = [P(B|A) * P(A)] / P(B)",
+      "P(A|B) = P(A) * P(B)",
+      "P(A|B) = P(A) + P(B) - P(A and B)",
+      "P(A|B) = P(B|A) / P(A)",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Bayes' theorem updates the prior probability P(A) using the likelihood P(B|A) and evidence P(B) to compute posterior probability P(A|B).",
+  },
+  {
+    difficulty: "medium",
+    topic: "calculus",
+    question: "What is the derivative of f(x) = ln(x^2 + 1) with respect to x?",
+    options: ["2x / (x^2 + 1)", "1 / (x^2 + 1)", "2x * (x^2 + 1)", "x / (x^2 + 1)"],
+    correctIndex: 0,
+    explanation:
+      "Using the chain rule: d/dx[ln(u)] = (1/u) * du/dx. Here u = x^2 + 1 and du/dx = 2x, yielding 2x / (x^2 + 1).",
+  },
+  {
+    difficulty: "hard",
+    topic: "matrix_theory",
+    question:
+      "In linear algebra, what does it mean if the Determinant of a square matrix is zero (det(A) = 0)?",
+    options: [
+      "The matrix is singular and has no inverse (columns are linearly dependent)",
+      "The matrix is symmetric and orthogonal",
+      "All eigenvalues of the matrix must be strictly positive",
+      "The matrix represents a pure rotational isometry",
+    ],
+    correctIndex: 0,
+    explanation:
+      "A zero determinant indicates that the matrix collapses space into lower dimensions, has linearly dependent rows/columns, and is non-invertible (singular).",
+  },
+  {
+    difficulty: "hard",
+    topic: "graph_theory",
+    question: "In planar graph theory, what does the Four Color Theorem guarantee?",
+    options: [
+      "Every planar map can be colored using at most 4 colors such that no two adjacent regions share the same color",
+      "Every graph with 4 vertices has an Eulerian cycle",
+      "A graph is planar if and only if it contains exactly 4 cycles",
+      "4 independent sets are required to partition any bipartite graph",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The Four Color Theorem proves that no more than four colors are required to color the regions of any planar map so that adjacent regions have distinct colors.",
+  },
+];
+
 // ===========================================================================
 // 6. DYNAMIC QUESTION SELECTOR & GENERATOR
 // ===========================================================================
@@ -933,11 +1662,43 @@ export function getDomainQuestions(
     case "database":
       bank = DATABASE_QUESTIONS;
       break;
-    case "algorithms":
     case "ai_ml":
+    case "data_science":
+      bank = AI_ML_QUESTIONS;
+      break;
     case "devops":
+      bank = DEVOPS_QUESTIONS;
+      break;
+    case "ece_embedded":
+      bank = ECE_QUESTIONS;
+      break;
+    case "eee_power":
+      bank = EEE_QUESTIONS;
+      break;
+    case "mech_thermal":
+      bank = MECHANICAL_QUESTIONS;
+      break;
+    case "civil_structural":
+      bank = CIVIL_QUESTIONS;
+      break;
+    case "aptitude_quant":
+      bank = APTITUDE_QUESTIONS;
+      break;
+    case "os_networks":
+      bank = OS_NETWORKS_QUESTIONS;
+      break;
+    case "cybersecurity":
+      bank = CYBERSECURITY_QUESTIONS;
+      break;
+    case "science_math":
+      bank = SCIENCE_MATH_QUESTIONS;
+      break;
     case "science":
+    case "science_physics":
+      bank = SCIENCE_MATH_QUESTIONS;
+      break;
     case "systems":
+    case "algorithms":
     default:
       bank = ALGORITHMS_QUESTIONS;
       break;

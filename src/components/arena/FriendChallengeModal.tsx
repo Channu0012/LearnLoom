@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { BATTLE_TOPICS, type ArenaRoomDoc } from "@/lib/arena";
+import {
+  BATTLE_TOPICS,
+  DISCIPLINE_BRANCHES,
+  type DisciplineBranch,
+  type ArenaRoomDoc,
+} from "@/lib/arena";
 import {
   createArenaRoom,
   joinArenaRoom,
@@ -156,6 +161,25 @@ function CloseIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+function SearchIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
 interface FriendChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -173,11 +197,26 @@ export function FriendChallengeModal({
 
   const [activeTab, setActiveTab] = useState<"create" | "join">("create");
   const [selectedTopic, setSelectedTopic] = useState<DomainType>(initialTopic);
+  const [activeBranch, setActiveBranch] = useState<DisciplineBranch>("all");
+  const [modalSearch, setModalSearch] = useState("");
   const [playerMode, setPlayerMode] = useState<"1v1" | "group">("1v1");
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Filtered topics for modal
+  const filteredModalTopics = useMemo(() => {
+    return BATTLE_TOPICS.filter((t) => {
+      const matchBranch = activeBranch === "all" || t.branch === activeBranch;
+      const matchSearch =
+        modalSearch.trim() === "" ||
+        t.label.toLowerCase().includes(modalSearch.toLowerCase()) ||
+        t.branch.toLowerCase().includes(modalSearch.toLowerCase()) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(modalSearch.toLowerCase()));
+      return matchBranch && matchSearch;
+    });
+  }, [activeBranch, modalSearch]);
 
   // Created room state
   const [createdRoom, setCreatedRoom] = useState<ArenaRoomDoc | null>(null);
@@ -252,13 +291,13 @@ export function FriendChallengeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
       <div
-        className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-scale-up"
+        className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-scale-up max-h-[92vh] flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-labelledby="challenge-modal-title"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/20">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/20 flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center">
               <SwordsIcon size={16} />
@@ -287,7 +326,7 @@ export function FriendChallengeModal({
 
         {/* Tab switch */}
         {!createdRoom && (
-          <div className="flex border-b border-border bg-muted/10 px-6 pt-3">
+          <div className="flex border-b border-border bg-muted/10 px-6 pt-3 flex-shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("create")}
@@ -316,7 +355,7 @@ export function FriendChallengeModal({
         )}
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto flex-1">
           {errorMsg && (
             <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-body">
               {errorMsg}
@@ -392,34 +431,116 @@ export function FriendChallengeModal({
             /* Create Tab */
             <div className="space-y-4">
               {/* Topic Selector */}
-              <div>
-                <label className="text-xs font-heading font-bold text-foreground block mb-2">
-                  Select Technical Domain
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {BATTLE_TOPICS.map((topic) => {
-                    const isSelected = selectedTopic === topic.id;
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-heading font-bold text-foreground">
+                    Select Battle Discipline
+                  </label>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {filteredModalTopics.length} disciplines
+                  </span>
+                </div>
+
+                {/* Instant Search Bar */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-muted-foreground">
+                    <SearchIcon size={13} />
+                  </div>
+                  <input
+                    type="text"
+                    value={modalSearch}
+                    onChange={(e) => setModalSearch(e.target.value)}
+                    placeholder="Search engineering disciplines & courses..."
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-muted/30 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-teal-500 font-body"
+                  />
+                  {modalSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setModalSearch("")}
+                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[10px] text-muted-foreground hover:text-foreground font-heading"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {/* Branch Pills Filter */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+                  {DISCIPLINE_BRANCHES.map((b) => {
+                    const isBranchActive = activeBranch === b.id;
                     return (
                       <button
-                        key={topic.id}
+                        key={b.id}
                         type="button"
-                        onClick={() => setSelectedTopic(topic.id)}
-                        className={`p-3 rounded-xl border text-left transition-all ${
-                          isSelected
-                            ? "bg-teal-500/10 border-teal-500/40 text-teal-700 dark:text-teal-300 shadow-xs"
-                            : "bg-card border-border hover:bg-muted/40 text-foreground"
+                        onClick={() => setActiveBranch(b.id)}
+                        className={`text-[10px] font-heading font-bold px-2 py-0.5 rounded-md whitespace-nowrap transition-all ${
+                          isBranchActive
+                            ? "bg-teal-500 text-white shadow-xs"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-heading font-bold text-xs">{topic.label}</span>
-                          {isSelected && <CheckIcon size={13} />}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1">
-                          {topic.description}
-                        </p>
+                        {b.label.replace(" Disciplines", "")}
                       </button>
                     );
                   })}
+                </div>
+
+                {/* Topics Scrollable Container */}
+                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 border border-border/50 rounded-xl p-1.5 bg-muted/10">
+                  {filteredModalTopics.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-muted-foreground">
+                      No disciplines match your filter.
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveBranch("all");
+                          setModalSearch("");
+                        }}
+                        className="block mx-auto mt-1 text-teal-600 dark:text-teal-400 font-bold hover:underline"
+                      >
+                        Reset filters
+                      </button>
+                    </div>
+                  ) : (
+                    filteredModalTopics.map((topic) => {
+                      const isSelected = selectedTopic === topic.id;
+                      return (
+                        <button
+                          key={topic.id}
+                          type="button"
+                          onClick={() => setSelectedTopic(topic.id)}
+                          className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                            isSelected
+                              ? "bg-teal-500/10 border-teal-500/40 text-teal-700 dark:text-teal-300 shadow-xs"
+                              : "bg-card border-border/70 hover:bg-muted/40 text-foreground"
+                          }`}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
+                                {topic.branchBadge}
+                              </span>
+                              <span className="font-heading font-bold text-xs truncate">
+                                {topic.label}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {topic.description}
+                            </p>
+                          </div>
+                          {isSelected ? (
+                            <span className="w-5 h-5 rounded-full bg-teal-500 text-white flex items-center justify-center flex-shrink-0">
+                              <CheckIcon size={11} />
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/60 font-mono flex-shrink-0">
+                              {topic.difficultyTier}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 

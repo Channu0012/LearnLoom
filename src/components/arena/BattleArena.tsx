@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getDomainQuestions, type QuizQuestion, type DomainType } from "@/lib/curriculumEngine";
 import { recordUserBattleResult } from "@/lib/firestore";
@@ -16,8 +16,34 @@ import {
   setSoundEnabled as persistSoundEnabled,
 } from "@/lib/arenaSound";
 import { ConfettiCanvas } from "./ConfettiCanvas";
+import {
+  BATTLE_TOPICS,
+  PEER_OPPONENTS,
+  DISCIPLINE_BRANCHES,
+  type OpponentProfile,
+  type DisciplineBranch,
+} from "@/lib/arena";
 
 // ── SVG Icons (Zero Emojis) ──────────────────────────────────────────────────
+
+function SearchIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
 
 function FlameIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
@@ -241,7 +267,6 @@ function UsersIcon({ size = 18 }: { size?: number }) {
 
 // ── Models & Topics are imported from @/lib/arena
 export { type BattleTopic, BATTLE_TOPICS, type OpponentProfile, PEER_OPPONENTS } from "@/lib/arena";
-import { BATTLE_TOPICS, PEER_OPPONENTS, type OpponentProfile } from "@/lib/arena";
 
 type BattleState =
   "lobby" | "matchmaking" | "ready" | "question" | "round_result" | "match_finished";
@@ -278,6 +303,22 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
   const { user, openAuthModal } = useAuth();
 
   const [selectedTopic, setSelectedTopic] = useState<DomainType>("react");
+  const [selectedBranch, setSelectedBranch] = useState<DisciplineBranch>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTopics = useMemo(() => {
+    return BATTLE_TOPICS.filter((t) => {
+      const matchBranch = selectedBranch === "all" || t.branch === selectedBranch;
+      const q = searchQuery.trim().toLowerCase();
+      const matchSearch =
+        !q ||
+        t.label.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(q));
+      return matchBranch && matchSearch;
+    });
+  }, [selectedBranch, searchQuery]);
   const [battleState, setBattleState] = useState<BattleState>("lobby");
   const [activeOpponent, setActiveOpponent] = useState<OpponentProfile>(PEER_OPPONENTS[0]!);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -616,51 +657,213 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
             </div>
           </div>
 
-          {/* Topic Selector */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground">
-                Select Battle Discipline
-              </h3>
-              <span className="text-xs text-muted-foreground">
-                Current:{" "}
-                <span className="font-semibold text-foreground">
-                  {BATTLE_TOPICS.find((t) => t.id === selectedTopic)?.label}
-                </span>
+          {/* Live Arena Activity Ticker */}
+          <div className="rounded-2xl border border-teal-500/20 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-cyan-500/10 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span className="font-heading font-black text-foreground">Live Arena Network</span>
+              <span className="text-muted-foreground hidden sm:inline">
+                &middot; 1,420 Duels Completed Today
+              </span>
+            </div>
+            <div className="flex items-center gap-3 font-mono text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 font-bold">
+                <ZapIcon size={12} /> 18 Battle Disciplines
+              </span>
+              <span className="hidden md:inline">&middot; &lt; 2.5s Matchmaking</span>
+              <span>&middot; Top 20 Verified</span>
+            </div>
+          </div>
+
+          {/* Topic & Branch Discipline Selector */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-foreground">
+                  Select Battle Discipline
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Covering all engineering disciplines, computer science tracks, and campus
+                  placements.
+                </p>
+              </div>
+              <span className="text-xs text-muted-foreground font-mono">
+                Showing {filteredTopics.length} of {BATTLE_TOPICS.length} disciplines
               </span>
             </div>
 
+            {/* Branch Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {DISCIPLINE_BRANCHES.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setSelectedBranch(b.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none ${
+                    selectedBranch === b.id
+                      ? "bg-teal-600 text-white shadow-xs"
+                      : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-border"
+                  }`}
+                >
+                  <span>{b.label}</span>
+                  <span
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                      selectedBranch === b.id
+                        ? "bg-white/20 text-white"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {b.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Instant Search Bar */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                <SearchIcon size={14} />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search disciplines by branch, subject, tags (e.g. Python, ECE, Aptitude, SQL, Thermodynamics)..."
+                className="w-full bg-card border border-border rounded-xl pl-9 pr-8 py-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs p-1"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Active Selected Discipline Card Launcher */}
+            {(() => {
+              const activeMeta = BATTLE_TOPICS.find((t) => t.id === selectedTopic);
+              if (!activeMeta) return null;
+              return (
+                <div className="p-4 sm:p-5 rounded-2xl border border-teal-500/30 bg-gradient-to-r from-teal-500/[0.08] via-card to-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fade-in">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-heading font-black px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                        {activeMeta.branchBadge}
+                      </span>
+                      <span className="text-[10px] font-heading font-bold px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground">
+                        {activeMeta.difficultyTier} Tier
+                      </span>
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        🔥 {activeMeta.activeBattlesCount} scholars dueling
+                      </span>
+                    </div>
+                    <h4 className="font-heading font-black text-base sm:text-lg text-foreground">
+                      Locked In: {activeMeta.label}
+                    </h4>
+                    <p className="text-xs text-muted-foreground line-clamp-1 max-w-xl">
+                      {activeMeta.description}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleStartBattle}
+                    className="px-5 py-2.5 rounded-xl font-heading font-bold text-xs sm:text-sm text-white bg-teal-600 hover:bg-teal-500 transition-all flex items-center justify-center gap-2 shadow-md shadow-teal-500/20 active:scale-[0.98] flex-shrink-0"
+                  >
+                    <SwordsIcon size={16} />
+                    <span>Launch 1v1 Battle Now</span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Disciplines Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {BATTLE_TOPICS.map((topic) => {
+              {filteredTopics.map((topic) => {
                 const isSelected = selectedTopic === topic.id;
+
+                let branchBadgeStyle = "bg-teal-500/10 text-teal-600 border-teal-500/20";
+                if (topic.branch === "ai_data") {
+                  branchBadgeStyle =
+                    "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20";
+                } else if (topic.branch === "core_engineering") {
+                  branchBadgeStyle =
+                    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+                } else if (topic.branch === "placement_aptitude") {
+                  branchBadgeStyle =
+                    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+                } else if (topic.branch === "applied_sciences") {
+                  branchBadgeStyle =
+                    "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20";
+                }
+
                 return (
                   <button
                     key={topic.id}
                     type="button"
                     onClick={() => setSelectedTopic(topic.id)}
-                    className={`text-left p-4 rounded-xl border transition-all relative ${
+                    className={`text-left p-4 rounded-2xl border transition-all relative flex flex-col justify-between select-none ${
                       isSelected
-                        ? "bg-teal-500/[0.06] border-teal-500/50 shadow-xs ring-1 ring-teal-500/20"
+                        ? "bg-teal-500/[0.08] border-teal-500 shadow-md ring-2 ring-teal-500/30"
                         : "bg-card border-border hover:border-border/80 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <span className="font-heading font-bold text-sm text-foreground">
+                    <div>
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span
+                          className={`text-[9px] font-heading font-black px-2 py-0.5 rounded-full border ${branchBadgeStyle}`}
+                        >
+                          {topic.branchBadge}
+                        </span>
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+                          <span>{topic.difficultyTier}</span>
+                          <span>&middot;</span>
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">
+                            {topic.activeBattlesCount} duels
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Title & Category */}
+                      <h4 className="font-heading font-bold text-sm text-foreground mb-0.5">
                         {topic.label}
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground">
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground font-mono mb-2">
                         {topic.category}
-                      </span>
+                      </p>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">
+                        {topic.description}
+                      </p>
+
+                      {/* Topic Tags */}
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {topic.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-muted/60 text-muted-foreground"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                      {topic.description}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground font-medium pt-2 border-t border-border/50">
-                      <span>5 Questions &middot; 15s Timer</span>
-                      {isSelected && (
-                        <span className="text-teal-600 dark:text-teal-400 font-semibold flex items-center gap-1">
+
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium pt-2.5 border-t border-border/50">
+                      <span>5 Qs &middot; 15s Timer</span>
+                      {isSelected ? (
+                        <span className="text-teal-600 dark:text-teal-400 font-heading font-bold flex items-center gap-1">
                           <CheckIcon size={13} />
                           Selected
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground group-hover:text-foreground text-[10px] font-heading font-semibold">
+                          Click to Select
                         </span>
                       )}
                     </div>
@@ -668,6 +871,24 @@ export function BattleArena({ onLeaderboardClick }: BattleArenaProps) {
                 );
               })}
             </div>
+
+            {filteredTopics.length === 0 && (
+              <div className="text-center py-10 rounded-2xl border border-dashed border-border bg-card/40 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  No disciplines found matching &quot;{searchQuery}&quot;.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedBranch("all");
+                  }}
+                  className="text-xs font-heading font-bold text-teal-600 dark:text-teal-400 hover:underline"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Battle Mechanics & Campus Pride */}
